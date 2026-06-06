@@ -96,7 +96,15 @@ If a browser check requires login, paid services, or unavailable tooling, report
 
 ## Validation
 
-Run the marker scan before publishing, opening a public pull request, or copying content into another repository:
+Run the local checks before opening a pull request, cutting a release, or copying content into another repository:
+
+```powershell
+pwsh scripts/test-public-readiness.ps1
+pwsh scripts/test-scan-private-markers.ps1
+pwsh scripts/scan-private-markers.ps1
+```
+
+The marker scan checks for common secret and private-context markers:
 
 ```powershell
 pwsh scripts/scan-private-markers.ps1
@@ -107,9 +115,21 @@ The scan allows this repository's own GitHub URLs by default. Add only intention
 On Windows PowerShell:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1
+powershell -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1
 powershell -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 ```
 
+GitHub Actions runs the same public-readiness and private-marker checks for pull requests and pushes.
+
+## Contributing
+
+Contributions are welcome when they keep the skill portable, safe to publish, and honest about what was actually verified. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening an issue or pull request.
+
+## Security
+
+Do not include secrets, tokens, OAuth credentials, API keys, auth cookies, private repository URLs, local absolute paths, customer data, or real operational logs in public issues, pull requests, screenshots, or examples. See [`SECURITY.md`](SECURITY.md) for reporting guidance.
+
 ## License
 
-This repository currently contains an MIT license draft. Confirm the final license choice and copyright holder before public release.
+This repository is licensed under the [`MIT License`](LICENSE).

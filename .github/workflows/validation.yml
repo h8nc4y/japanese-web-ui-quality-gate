@@ -1,0 +1,31 @@
+name: Validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Public readiness and marker scan
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run public readiness checks
+        shell: pwsh
+        run: ./scripts/test-public-readiness.ps1
+
+      - name: Run private marker scanner tests
+        shell: pwsh
+        run: ./scripts/test-scan-private-markers.ps1
+
+      - name: Run private marker scan
+        shell: pwsh
+        run: ./scripts/scan-private-markers.ps1
