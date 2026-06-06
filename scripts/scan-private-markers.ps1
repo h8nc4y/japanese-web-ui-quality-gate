@@ -6,7 +6,25 @@ param(
 $ErrorActionPreference = "Stop"
 
 $root = Resolve-Path -LiteralPath $Path
+$rootPath = $root.Path
 $scriptPath = $MyInvocation.MyCommand.Path
+
+function Get-PathRelativeToScanRoot {
+    param([string]$TargetPath)
+
+    $resolvedTargetPath = (Resolve-Path -LiteralPath $TargetPath).Path
+    $basePath = $rootPath
+    $directorySeparator = [System.IO.Path]::DirectorySeparatorChar
+    $alternateSeparator = [System.IO.Path]::AltDirectorySeparatorChar
+
+    if (-not $basePath.EndsWith($directorySeparator) -and -not $basePath.EndsWith($alternateSeparator)) {
+        $basePath = $basePath + $directorySeparator
+    }
+
+    $baseUri = [System.Uri]$basePath
+    $targetUri = [System.Uri]$resolvedTargetPath
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($targetUri).ToString()).Replace("/", $directorySeparator)
+}
 
 $patterns = @(
     @{ Name = "OpenAI-style token"; Pattern = "s" + "k-[A-Za-z0-9_-]{10,}" },
@@ -36,10 +54,10 @@ foreach ($repository in $AllowedGitHubRepositories) {
 $githubRepositoryUrlPattern = "https?://github\.com/([^/\s?#]+)/([^/\s?#]+)"
 
 $excludedDirectories = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-@(".git", "node_modules", "vendor", "dist", "build") | ForEach-Object { [void]$excludedDirectories.Add($_) }
+@(".git", ".test-tmp", "node_modules", "vendor", "dist", "build") | ForEach-Object { [void]$excludedDirectories.Add($_) }
 
 $files = Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object {
-    $relative = Resolve-Path -LiteralPath $_.FullName -Relative
+    $relative = Get-PathRelativeToScanRoot -TargetPath $_.FullName
     $parts = $relative -split "[\\/]+"
     foreach ($part in $parts) {
         if ($excludedDirectories.Contains($part)) { return $false }
@@ -59,7 +77,7 @@ foreach ($file in $files) {
     foreach ($entry in $patterns) {
         if ([regex]::IsMatch($content, $entry.Pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
             $hits += [pscustomobject]@{
-                File = Resolve-Path -LiteralPath $file.FullName -Relative
+                File = Get-PathRelativeToScanRoot -TargetPath $file.FullName
                 Marker = $entry.Name
             }
         }
@@ -75,7 +93,7 @@ foreach ($file in $files) {
         $repositorySlug = "$owner/$repositoryName"
         if (-not $allowedGitHubRepositorySet.Contains($repositorySlug)) {
             $hits += [pscustomobject]@{
-                File = Resolve-Path -LiteralPath $file.FullName -Relative
+                File = Get-PathRelativeToScanRoot -TargetPath $file.FullName
                 Marker = "Non-allowlisted GitHub repository URL: $repositorySlug"
             }
         }
