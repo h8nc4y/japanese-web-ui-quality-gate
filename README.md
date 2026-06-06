@@ -4,6 +4,8 @@
 
 It turns web UI completion into a rendered quality gate: Japanese-first copy, responsive viewport checks, browser evidence, accessibility basics, state coverage, and honest reporting of what was actually verified.
 
+Repository: <https://github.com/h8nc4y/japanese-web-ui-quality-gate>
+
 ## When To Use
 
 Use this skill when working on:
@@ -25,6 +27,12 @@ Use this skill when working on:
 
 ## Installation
 
+Clone the repository:
+
+```bash
+git clone https://github.com/h8nc4y/japanese-web-ui-quality-gate.git
+```
+
 Place `SKILL.md` in a skill directory named `japanese-web-ui-quality-gate` according to your Codex or agent runtime's skill installation process.
 
 Example layout:
@@ -34,7 +42,26 @@ japanese-web-ui-quality-gate/
 └── SKILL.md
 ```
 
+For a Codex-style skill directory, one manual install shape is:
+
+```powershell
+$target = Join-Path $HOME ".agents/skills/japanese-web-ui-quality-gate"
+New-Item -ItemType Directory -Force -Path $target | Out-Null
+Copy-Item -Path ".\SKILL.md" -Destination (Join-Path $target "SKILL.md") -Force
+```
+
+If your runtime expects a different skill root, copy `SKILL.md` into that runtime's documented skill directory instead.
+
+## Manual Use
+
 For manual use in a different agent environment, read `SKILL.md` as the operating checklist for the UI task and keep the examples as synthetic reference prompts only.
+
+Suggested manual workflow:
+
+1. Read `SKILL.md` before starting a Japanese web UI task.
+2. Use [`examples/checklist.md`](examples/checklist.md) as the review checklist.
+3. Use [`examples/final-report-template.md`](examples/final-report-template.md) when reporting what was actually checked.
+4. State unavailable browser tooling, OAuth blockers, paid-service blockers, or unverified labels as `未確認` instead of guessing.
 
 ## Usage Examples
 

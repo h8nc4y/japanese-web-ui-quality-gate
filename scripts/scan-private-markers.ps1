@@ -68,6 +68,7 @@ foreach ($file in $files) {
     foreach ($match in [regex]::Matches($content, $githubRepositoryUrlPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
         $owner = $match.Groups[1].Value
         $repositoryName = $match.Groups[2].Value
+        $repositoryName = $repositoryName.TrimEnd(">", ".", ",", ":", ";", ")", "]")
         if ($repositoryName.EndsWith(".git", [System.StringComparison]::OrdinalIgnoreCase)) {
             $repositoryName = $repositoryName.Substring(0, $repositoryName.Length - 4)
         }
