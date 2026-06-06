@@ -6,6 +6,10 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 
 ## [Unreleased]
 
+No unreleased changes yet.
+
+## [0.1.0] - 2026-06-06
+
 ### Added
 
 - Public-readiness validation for OSS management files, CI wiring, and stale draft-language checks.
