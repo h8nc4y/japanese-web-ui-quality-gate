@@ -1,5 +1,6 @@
 param(
-    [string]$Path = "."
+    [string]$Path = ".",
+    [string[]]$AllowedGitHubRepositories = @("h8nc4y/japanese-web-ui-quality-gate")
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,9 +18,22 @@ $patterns = @(
     @{ Name = "Windows user absolute path"; Pattern = "[A-Za-z]:\\Users\\" },
     @{ Name = "Windows absolute path"; Pattern = "[A-Za-z]:\\[A-Za-z0-9_. -]+\\[A-Za-z0-9_. -]+" },
     @{ Name = "Unix home absolute path"; Pattern = "/(Users|home)/[^/\s]+" },
-    @{ Name = "Email address"; Pattern = "[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}" },
-    @{ Name = "GitHub repository URL"; Pattern = "https?://github\.com/[^/\s]+/[^/\s]+" }
+    @{ Name = "Email address"; Pattern = "[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}" }
 )
+
+$allowedGitHubRepositorySet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+foreach ($repository in $AllowedGitHubRepositories) {
+    $normalizedRepository = $repository.Trim().Trim("/")
+    if ($normalizedRepository.StartsWith("https://github.com/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $normalizedRepository = $normalizedRepository.Substring("https://github.com/".Length)
+    }
+    if ($normalizedRepository.EndsWith(".git", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $normalizedRepository = $normalizedRepository.Substring(0, $normalizedRepository.Length - 4)
+    }
+    [void]$allowedGitHubRepositorySet.Add($normalizedRepository)
+}
+
+$githubRepositoryUrlPattern = "https?://github\.com/([^/\s?#]+)/([^/\s?#]+)"
 
 $excludedDirectories = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 @(".git", "node_modules", "vendor", "dist", "build") | ForEach-Object { [void]$excludedDirectories.Add($_) }
@@ -47,6 +61,21 @@ foreach ($file in $files) {
             $hits += [pscustomobject]@{
                 File = Resolve-Path -LiteralPath $file.FullName -Relative
                 Marker = $entry.Name
+            }
+        }
+    }
+
+    foreach ($match in [regex]::Matches($content, $githubRepositoryUrlPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
+        $owner = $match.Groups[1].Value
+        $repositoryName = $match.Groups[2].Value
+        if ($repositoryName.EndsWith(".git", [System.StringComparison]::OrdinalIgnoreCase)) {
+            $repositoryName = $repositoryName.Substring(0, $repositoryName.Length - 4)
+        }
+        $repositorySlug = "$owner/$repositoryName"
+        if (-not $allowedGitHubRepositorySet.Contains($repositorySlug)) {
+            $hits += [pscustomobject]@{
+                File = Resolve-Path -LiteralPath $file.FullName -Relative
+                Marker = "Non-allowlisted GitHub repository URL: $repositorySlug"
             }
         }
     }

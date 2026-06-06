@@ -71,6 +71,8 @@ Run the marker scan before publishing, opening a public pull request, or copying
 pwsh scripts/scan-private-markers.ps1
 ```
 
+The scan allows this repository's own GitHub URLs by default. Add only intentional public repositories with `-AllowedGitHubRepositories` when needed.
+
 On Windows PowerShell:
 
 ```powershell
