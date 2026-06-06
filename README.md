@@ -46,6 +46,10 @@ For a Codex-style skill directory, one manual install shape is:
 
 ```powershell
 $target = Join-Path $HOME ".agents/skills/japanese-web-ui-quality-gate"
+if (Test-Path $target) {
+  Write-Error "Skill already exists at $target. Review it before overwriting."
+  exit 1
+}
 New-Item -ItemType Directory -Force -Path $target | Out-Null
 Copy-Item -Path ".\SKILL.md" -Destination (Join-Path $target "SKILL.md") -Force
 ```
