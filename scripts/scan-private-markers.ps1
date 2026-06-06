@@ -15,7 +15,10 @@ $patterns = @(
     @{ Name = "Authorization token header"; Pattern = "Bear" + "er\s+[A-Za-z0-9._~+/-]+=*" },
     @{ Name = "Private key block"; Pattern = "BEGIN" + " (RSA |EC |OPENSSH |)?PRIVATE KEY" },
     @{ Name = "Windows user absolute path"; Pattern = "[A-Za-z]:\\Users\\" },
-    @{ Name = "Unix home absolute path"; Pattern = "/(Users|home)/[^/\s]+" }
+    @{ Name = "Windows absolute path"; Pattern = "[A-Za-z]:\\[A-Za-z0-9_. -]+\\[A-Za-z0-9_. -]+" },
+    @{ Name = "Unix home absolute path"; Pattern = "/(Users|home)/[^/\s]+" },
+    @{ Name = "Email address"; Pattern = "[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}" },
+    @{ Name = "GitHub repository URL"; Pattern = "https?://github\.com/[^/\s]+/[^/\s]+" }
 )
 
 $excludedDirectories = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
