@@ -114,3 +114,4 @@ if ($failures.Count -gt 0) {
 }
 
 Write-Host "Public readiness checks passed."
+exit 0

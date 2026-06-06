@@ -87,6 +87,17 @@ $cleanRepoResult = Invoke-Scanner -ScanPath $repoRoot
 Assert-ExitCode -Result $cleanRepoResult -Expected 0 -Description "repository scan"
 Assert-OutputContains -Result $cleanRepoResult -Pattern "No private or secret markers found" -Description "repository scan"
 
+$ignoredScratchDirectory = New-TestDirectory
+try {
+    $syntheticToken = ("s" + "k-" + "ignoredScratchMarker1234567890")
+    Set-Content -LiteralPath (Join-Path $ignoredScratchDirectory "notes.md") -Value "Token: $syntheticToken" -Encoding UTF8
+    $ignoredScratchResult = Invoke-Scanner -ScanPath $repoRoot
+    Assert-ExitCode -Result $ignoredScratchResult -Expected 0 -Description "ignored .test-tmp scratch directory"
+}
+finally {
+    Remove-TestDirectory -Directory $ignoredScratchDirectory
+}
+
 $allowedRepositoryDirectory = New-TestDirectory
 try {
     $allowedUrl = "https://github.com/" + "h8nc4y/japanese-web-ui-quality-gate"
@@ -129,3 +140,4 @@ if ($failures.Count -gt 0) {
 }
 
 Write-Host "Private marker scanner tests passed."
+exit 0
