@@ -16,3 +16,4 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 ### Changed
 
 - README validation and license sections now describe the repository as public MIT-licensed OSS.
+- README now documents the safe update path for an existing installed skill directory.

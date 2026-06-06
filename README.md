@@ -56,6 +56,28 @@ Copy-Item -Path ".\SKILL.md" -Destination (Join-Path $target "SKILL.md") -Force
 
 If your runtime expects a different skill root, copy `SKILL.md` into that runtime's documented skill directory instead.
 
+## Updating an Existing Install
+
+If the target skill directory already exists, compare the installed skill with the repository version before replacing it:
+
+```powershell
+$target = Join-Path $HOME ".agents/skills/japanese-web-ui-quality-gate"
+$installedSkill = Join-Path $target "SKILL.md"
+Compare-Object `
+  -ReferenceObject (Get-Content -LiteralPath $installedSkill) `
+  -DifferenceObject (Get-Content -LiteralPath ".\SKILL.md")
+```
+
+If the difference is expected, create a timestamped backup and copy the repository version into the existing skill directory:
+
+```powershell
+$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+Copy-Item -LiteralPath $installedSkill -Destination (Join-Path $target "SKILL.md.$timestamp.bak") -Force
+Copy-Item -LiteralPath ".\SKILL.md" -Destination $installedSkill -Force
+```
+
+Restart the agent runtime or open a new chat if updated skills are not reloaded immediately.
+
 ## Manual Use
 
 For manual use in a different agent environment, read `SKILL.md` as the operating checklist for the UI task and keep the examples as synthetic reference prompts only.
