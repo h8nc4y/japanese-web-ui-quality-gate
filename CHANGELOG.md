@@ -6,7 +6,13 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 
 ## [Unreleased]
 
-No unreleased changes yet.
+### Added
+
+- `AGENTS.md` documenting the autonomous agent development workflow, `check:all` verification, and the human-approval gates.
+
+### Changed
+
+- `HANDOFF.md` and `TASKS_BACKLOG.md` updated to reflect the merged task inventory and the autonomous operating model.
 
 ## [0.1.0] - 2026-06-06
 
