@@ -12,6 +12,7 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 
 ### Changed
 
+- `examples/checklist.md` now includes the `Design Baseline` review points from `SKILL.md`.
 - `HANDOFF.md` and `TASKS_BACKLOG.md` updated to reflect the merged task inventory and the autonomous operating model.
 
 ## [0.1.0] - 2026-06-06
