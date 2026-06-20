@@ -7,6 +7,13 @@
 - [ ] Human-facing instructions match visible Japanese labels.
 - [ ] Unverified labels are reported as 未確認.
 
+## Design Baseline
+
+- [ ] Existing project design systems, components, tokens, and copy style were used when available.
+- [ ] Generic pasted templates were adjusted to fit the product goal, information architecture, spacing, hierarchy, density, copy, and state coverage.
+- [ ] Design files, components, variables, layouts, or tokens were treated as source of truth when available without OAuth, secret, token, or cost blockers.
+- [ ] Paid or price-unconfirmed design services were not used without explicit cost confirmation.
+
 ## Rendered Verification
 
 - [ ] Build or type success is not treated as UI completion.

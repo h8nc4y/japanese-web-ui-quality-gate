@@ -18,6 +18,7 @@
 - 既定ブランチは `main`。ローカル/リモートとも `main` のみ（作業ブランチは整理済み）。
 - タスク棚卸し（`TASKS_BACKLOG.md` / 旧 `HANDOFF.md`）は PR #8 で `main` にマージ済み。棚卸し用ブランチ `chore-tasks-backlog-inventory` は削除済み。
 - その後、自律運用契約 `AGENTS.md` を追加（このファイルの現状反映を含む）。
+- `examples/checklist.md` に `SKILL.md` の `Design Baseline` 観点を反映しました。
 - `TASKS_BACKLOG.md` に doing タスクはありません。
 - コード内 TODO / FIXME は実質的な未着手項目としては見つかっていません。
 - GitHub open issues / open PR は 0 件です。
@@ -31,6 +32,7 @@
 | `T002` 引き継ぎ用 `HANDOFF.md` 作成・締め状態記録 | done（PR #8 でマージ済み） |
 | `T003` 自律エージェント運用契約 `AGENTS.md` を追加 | done |
 | `T004` `HANDOFF.md` をマージ後の現状へ更新 | done（このファイル） |
+| `T005` `examples/checklist.md` に Design Baseline 観点を反映 | done |
 
 ## 未完了 / skip タスク
 
@@ -71,6 +73,6 @@ Windows PowerShell の互換実行例は README の `Validation` セクション
 
 ## 次にやるべき候補
 
-1. `AGENTS.md` §15 の kickoff に従い、`check:all` をベースライン確認してから §5 の優先度ルールで改善タスクを1件選ぶ。
+1. §5 の優先度ルールに従い、既存ドキュメント/挙動の不整合・陳腐化を次の1件として探す。
 2. doing は常に1件に保ち、`TASKS_BACKLOG.md` を起点に進める。
 3. §6 ゲート該当（release/tag・有料API・secret/実データ・製品要件変更）に当たったら停止して承認を仰ぐ。
