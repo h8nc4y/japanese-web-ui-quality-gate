@@ -5,7 +5,7 @@
 ## 棚卸しサマリー
 
 - 棚卸し日時: 2026/06/11 20:52 JST
-- 最終更新: 2026/06/20 23:06 JST
+- 最終更新: 2026/06/21 00:03 JST
 - 対象ブランチ: `main`
 - タスク管理: このファイル（`TASKS_BACKLOG.md`）＋運用契約 `AGENTS.md`
 - README / docs の未完了項目: 該当なし
@@ -24,6 +24,7 @@
 | T003 | 自律エージェント運用契約 `AGENTS.md` を追加する | ユーザー Goal / Codex 自律主開発への移行 | 高 | M | done |
 | T004 | マージ後の実状態に合わせて `HANDOFF.md` を更新する | 整合性（PR #8 マージ後の陳腐化解消） | 高 | S | done |
 | T005 | `examples/checklist.md` に Design Baseline 観点を反映する | 整合性（`SKILL.md` とチェックリストの観点差分） | 高 | S | done |
+| T006 | `CHANGELOG.md` の versioned release 表現を現状に合わせる | 陳腐化（v0.1.0 タグ後の表現更新） | 高 | S | done |
 
 ## 検証ログ
 
