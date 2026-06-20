@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-The format follows a simple keep-a-changelog style, and this project uses semantic versioning once versioned releases begin.
+The format follows a simple keep-a-changelog style, and this project uses semantic versioning for versioned releases.
 
 ## [Unreleased]
 
@@ -12,6 +12,7 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 
 ### Changed
 
+- `CHANGELOG.md` now describes semantic versioning as active for versioned releases.
 - `examples/checklist.md` now includes the `Design Baseline` review points from `SKILL.md`.
 - `HANDOFF.md` and `TASKS_BACKLOG.md` updated to reflect the merged task inventory and the autonomous operating model.
 

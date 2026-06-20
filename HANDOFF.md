@@ -19,6 +19,7 @@
 - タスク棚卸し（`TASKS_BACKLOG.md` / 旧 `HANDOFF.md`）は PR #8 で `main` にマージ済み。棚卸し用ブランチ `chore-tasks-backlog-inventory` は削除済み。
 - その後、自律運用契約 `AGENTS.md` を追加（このファイルの現状反映を含む）。
 - `examples/checklist.md` に `SKILL.md` の `Design Baseline` 観点を反映しました。
+- `CHANGELOG.md` の semantic versioning 説明を、v0.1.0 後の現状に合う表現へ更新しました。
 - `TASKS_BACKLOG.md` に doing タスクはありません。
 - コード内 TODO / FIXME は実質的な未着手項目としては見つかっていません。
 - GitHub open issues / open PR は 0 件です。
@@ -33,6 +34,7 @@
 | `T003` 自律エージェント運用契約 `AGENTS.md` を追加 | done |
 | `T004` `HANDOFF.md` をマージ後の現状へ更新 | done（このファイル） |
 | `T005` `examples/checklist.md` に Design Baseline 観点を反映 | done |
+| `T006` `CHANGELOG.md` の versioned release 表現を現状に合わせる | done |
 
 ## 未完了 / skip タスク
 
