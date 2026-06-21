@@ -27,3 +27,15 @@ pwsh scripts/test-public-readiness.ps1
 pwsh scripts/test-scan-private-markers.ps1
 pwsh scripts/scan-private-markers.ps1
 ```
+
+`scan-private-markers.ps1` scans the **git-tracked** files of the repository by default,
+so its result matches what CI checks out (untracked working-tree files such as local
+`docs/` drafts are not scanned until you `git add` them). When run outside a git working
+tree it falls back to a filesystem walk that excludes common build, scratch, and local
+work directories.
+
+The scanner is a **best-effort** heuristic. It detects a curated set of secret formats
+(for example OpenAI, GitHub, Slack, AWS, Google, Stripe tokens, and PEM private-key
+blocks) plus private absolute paths, emails, and non-allowlisted repository URLs. It does
+**not** guarantee detection of every possible secret form. A clean scan is a safety net,
+not a substitute for not committing secrets in the first place.
