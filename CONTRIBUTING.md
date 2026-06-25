@@ -17,9 +17,9 @@ This repository is intentionally small. Good contributions keep the skill portab
 Run these checks locally from the repository root:
 
 ```powershell
-pwsh scripts/test-public-readiness.ps1
-pwsh scripts/test-scan-private-markers.ps1
-pwsh scripts/scan-private-markers.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 ```
 
 On Windows PowerShell, use:

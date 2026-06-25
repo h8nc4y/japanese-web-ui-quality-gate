@@ -33,7 +33,7 @@ function Get-PathRelativeToScanRoot {
 # scanner file itself does not carry a literal secret prefix (no blanket self-exemption).
 # Best-effort heuristics only: this list does not guarantee detection of every secret form.
 $patterns = @(
-    @{ Name = "OpenAI-style token"; Pattern = "s" + "k-[A-Za-z0-9_-]{10,}" },
+    @{ Name = "OpenAI-style token"; Pattern = "(?<![A-Za-z0-9_-])" + "s" + "k-[A-Za-z0-9_-]{10,}" },
     @{ Name = "GitHub classic token"; Pattern = "gh" + "p_[A-Za-z0-9_]{10,}" },
     @{ Name = "GitHub fine-grained token"; Pattern = "github" + "_pat_[A-Za-z0-9_]{10,}" },
     @{ Name = "Slack token"; Pattern = "xo" + "x[pabr]-[A-Za-z0-9-]{10,}" },

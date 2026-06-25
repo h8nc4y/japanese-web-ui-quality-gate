@@ -12,6 +12,8 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 
 ### Changed
 
+- The private-marker scanner now defaults to git-tracked files, skips binary-like files, reports line numbers, adds AWS/GCP/Slack/Stripe/PEM coverage, and avoids treating `task-scanner`-style slugs as OpenAI-style tokens.
+- Validation command examples now use the same `pwsh -NoProfile -ExecutionPolicy Bypass -File` form across README, contribution, security, and pull request guidance.
 - `CHANGELOG.md` now describes semantic versioning as active for versioned releases.
 - `examples/checklist.md` now includes the `Design Baseline` review points from `SKILL.md`.
 - `HANDOFF.md` and `TASKS_BACKLOG.md` updated to reflect the merged task inventory and the autonomous operating model.

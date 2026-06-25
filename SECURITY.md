@@ -23,9 +23,9 @@ Maintainers should remove or redact sensitive public content when possible, pres
 Run these checks before publishing changes:
 
 ```powershell
-pwsh scripts/test-public-readiness.ps1
-pwsh scripts/test-scan-private-markers.ps1
-pwsh scripts/scan-private-markers.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 ```
 
 `scan-private-markers.ps1` scans the **git-tracked** files of the repository by default,

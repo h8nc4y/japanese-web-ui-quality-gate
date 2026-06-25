@@ -86,7 +86,19 @@ function Remove-TestDirectory {
         throw "Refusing to remove directory outside scratch root: $resolvedDirectory"
     }
 
-    Remove-Item -LiteralPath $resolvedDirectory -Recurse -Force
+    $lastError = $null
+    for ($attempt = 1; $attempt -le 5; $attempt++) {
+        try {
+            Remove-Item -LiteralPath $resolvedDirectory -Recurse -Force -ErrorAction Stop
+            return
+        }
+        catch {
+            $lastError = $_
+            Start-Sleep -Milliseconds (100 * $attempt)
+        }
+    }
+
+    throw $lastError
 }
 
 $cleanRepoResult = Invoke-Scanner -ScanPath $repoRoot
@@ -208,6 +220,19 @@ try {
 }
 finally {
     Remove-TestDirectory -Directory $bareBearerDirectory
+}
+
+# --- False-positive suppression: ordinary hyphenated documentation slugs such as
+#     "task-scanner" must not be interpreted as an OpenAI-style token. ---
+$openAiBoundaryDirectory = New-TestDirectory
+try {
+    $benignSlug = "codex-ta" + "s" + "k-scanner-hardening.md"
+    Set-Content -LiteralPath (Join-Path $openAiBoundaryDirectory "doc.md") -Value ("See " + $benignSlug) -Encoding UTF8
+    $openAiBoundaryResult = Invoke-Scanner -ScanPath $openAiBoundaryDirectory -NoGit
+    Assert-ExitCode -Result $openAiBoundaryResult -Expected 0 -Description "OpenAI token boundary ignores hyphenated documentation slug"
+}
+finally {
+    Remove-TestDirectory -Directory $openAiBoundaryDirectory
 }
 
 # --- Binary files are skipped (NUL-byte detection): a synthetic token inside a binary blob

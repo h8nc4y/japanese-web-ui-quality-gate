@@ -121,15 +121,15 @@ If a browser check requires login, paid services, or unavailable tooling, report
 Run the local checks before opening a pull request, cutting a release, or copying content into another repository:
 
 ```powershell
-pwsh scripts/test-public-readiness.ps1
-pwsh scripts/test-scan-private-markers.ps1
-pwsh scripts/scan-private-markers.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 ```
 
 The marker scan checks for common secret and private-context markers:
 
 ```powershell
-pwsh scripts/scan-private-markers.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 ```
 
 The scan allows this repository's own GitHub URLs by default. Add only intentional public repositories with `-AllowedGitHubRepositories` when needed.
