@@ -8,6 +8,7 @@ $repoRoot = (Resolve-Path -LiteralPath $Path).Path
 $scannerPath = Join-Path $repoRoot "scripts/scan-private-markers.ps1"
 $scratchRoot = Join-Path $repoRoot ".test-tmp/scan-private-markers"
 $failures = [System.Collections.Generic.List[string]]::new()
+$cleanupWarningWritten = $false
 
 function Add-Failure {
     param([string]$Message)
@@ -87,7 +88,7 @@ function Remove-TestDirectory {
     }
 
     $lastError = $null
-    for ($attempt = 1; $attempt -le 5; $attempt++) {
+    for ($attempt = 1; $attempt -le 2; $attempt++) {
         try {
             Remove-Item -LiteralPath $resolvedDirectory -Recurse -Force -ErrorAction Stop
             return
@@ -98,7 +99,11 @@ function Remove-TestDirectory {
         }
     }
 
-    throw $lastError
+    # Cleanup failures should not hide scanner assertion results; the scratch root is gitignored.
+    if (-not $script:cleanupWarningWritten) {
+        Write-Warning "Could not remove one or more test scratch directories after retries; leaving gitignored scratch for later cleanup."
+        $script:cleanupWarningWritten = $true
+    }
 }
 
 $cleanRepoResult = Invoke-Scanner -ScanPath $repoRoot
@@ -293,20 +298,21 @@ if ($gitCommand) {
         $previousErrorActionPreference = $ErrorActionPreference
         $ErrorActionPreference = "Continue"
         & git -C $gitFixtureRoot add untracked.md 2>&1 | Out-Null
+        $gitAddExitCode = $LASTEXITCODE
+        $trackedFiles = & git -C $gitFixtureRoot ls-files -- untracked.md 2>$null
         $ErrorActionPreference = $previousErrorActionPreference
 
-        $trackedResult = Invoke-Scanner -ScanPath $gitFixtureRoot
-        Assert-ExitCode -Result $trackedResult -Expected 1 -Description "git-tracked scan detects tracked private marker"
-        Assert-OutputContains -Result $trackedResult -Pattern "OpenAI-style token" -Description "git-tracked scan detects tracked private marker"
+        if ($gitAddExitCode -ne 0 -or [string]::IsNullOrWhiteSpace(($trackedFiles -join ""))) {
+            Add-Failure "git-tracked fixture could not stage tracked marker; tracked-marker detection was not verified"
+        }
+        else {
+            $trackedResult = Invoke-Scanner -ScanPath $gitFixtureRoot
+            Assert-ExitCode -Result $trackedResult -Expected 1 -Description "git-tracked scan detects tracked private marker"
+            Assert-OutputContains -Result $trackedResult -Pattern "OpenAI-style token" -Description "git-tracked scan detects tracked private marker"
+        }
     }
     finally {
-        if (Test-Path -LiteralPath $gitFixtureRoot) {
-            $resolvedFixture = (Resolve-Path -LiteralPath $gitFixtureRoot).Path
-            $resolvedScratch = (Resolve-Path -LiteralPath $scratchRoot).Path
-            if ($resolvedFixture.StartsWith($resolvedScratch, [System.StringComparison]::OrdinalIgnoreCase)) {
-                Remove-Item -LiteralPath $resolvedFixture -Recurse -Force
-            }
-        }
+        Remove-TestDirectory -Directory $gitFixtureRoot
     }
 }
 else {
