@@ -5,15 +5,15 @@
 ## 棚卸しサマリー
 
 - 棚卸し日時: 2026/06/11 20:52 JST
-- 最終更新: 2026/06/21 00:03 JST
-- 対象ブランチ: `main`
+- 最終更新: 2026/06/29 JST
+- 対象ブランチ: `fix/scanner-hardening-boundary`（既定ブランチは `main`）
 - タスク管理: このファイル（`TASKS_BACKLOG.md`）＋運用契約 `AGENTS.md`
 - README / docs の未完了項目: 該当なし
 - コード内 TODO / FIXME: 該当なし
 - 失敗しているローカル検証: 該当なし
-- 未コミット変更: 該当なし（マージ単位で整理）
-- GitHub open issues / open PR: 0 件
-- doing タスク: 0 件
+- 未コミット変更: あり（scanner self-test cleanup境界、HANDOFF/TASKS_BACKLOG整合。未追跡 advisory docs は別PR候補として分離）
+- GitHub open issues: 2026/06/29時点0件。open PR: #12 `fix/scanner-hardening-boundary`
+- doing タスク: 0 件（現在のローカルWIPはPR #12への追加コミット候補。advisory docsは今回PRから分離）
 
 ## タスク一覧
 
@@ -25,17 +25,26 @@
 | T004 | マージ後の実状態に合わせて `HANDOFF.md` を更新する | 整合性（PR #8 マージ後の陳腐化解消） | 高 | S | done |
 | T005 | `examples/checklist.md` に Design Baseline 観点を反映する | 整合性（`SKILL.md` とチェックリストの観点差分） | 高 | S | done |
 | T006 | `CHANGELOG.md` の versioned release 表現を現状に合わせる | 陳腐化（v0.1.0 タグ後の表現更新） | 高 | S | done |
+| T007 | 検証コマンド表記を canonical な実行形へ統一する | 整合性（README/CONTRIBUTING/SECURITY/PR template の表記揺れ） | 高 | S | done |
+| T008 | Claude scanner hardening ブランチを検証し `main` へ統合する | 2026-06-21 Claude Code 実装ブランチ | 高 | S | done |
+| T009 | scanner self-test の cleanup 失敗を検証結果から分離し、tracked-marker assertion は必須のまま保つ | 2026-06-29 Codex WIP | 中 | S | done(local WIP, PR #12追加予定) |
+| T010 | advisory docs (`docs/CLAUDE_CODE_REVIEW_2026-06-21.md`, `docs/codex-task-scanner-hardening.md`) の採用/分割を次コミット前に明示する | 2026-06-29 Codex WIP | 中 | S | done(split: 今回PRから分離) |
 
 ## 検証ログ
 
 | コマンド | 結果 |
 | --- | --- |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026/06/20 pass |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026/06/20 pass |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026/06/20 pass |
-| `gh issue list --state open --limit 50` | open issue なし |
-| `gh pr list --state open` | open PR なし |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026/06/29 pass |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026/06/29 pass。cleanup warningなし（権限付き再実行）、tracked-marker assertionも通過 |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026/06/29 pass |
+| `gh issue list --state open --limit 50 --json number,title,url` | 2026/06/29 `[]` |
+| `gh pr list --state open --json ...` | 2026/06/29 PR #12 open (`MERGEABLE` / `CLEAN`) |
 
 ## skip
 
 該当なし。
+
+- 📌 2026-06-21 Claude Code 再レビュー: High 指摘の委譲タスク仕様 `docs/codex-task-scanner-hardening.md` を参照（advisory／着手前に spec 内のコスト・secret・要件ゲート④の境界を確認）。横断索引: `CLAUDE_CODE_REVIEW_INDEX_2026-06-21.md`。
+
+
+- 🔧 2026-06-23 Codex 統合: `fix/claude-scanner-hardening` を `main` へ fast-forward 統合済み。`check:all` は 3 本 pass。push は未実施。

@@ -8,9 +8,9 @@
 
 ## Tests / 検証
 
-- [ ] `pwsh scripts/test-public-readiness.ps1`
-- [ ] `pwsh scripts/test-scan-private-markers.ps1`
-- [ ] `pwsh scripts/scan-private-markers.ps1`
+- [ ] `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1`
+- [ ] `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1`
+- [ ] `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1`
 
 ## Review Notes / レビュー観点
 
