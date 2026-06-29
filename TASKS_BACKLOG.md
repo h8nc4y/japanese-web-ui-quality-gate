@@ -6,14 +6,14 @@
 
 - 棚卸し日時: 2026/06/11 20:52 JST
 - 最終更新: 2026/06/29 JST
-- 対象ブランチ: `fix/scanner-hardening-boundary`（既定ブランチは `main`）
+- 対象ブランチ: `docs/sync-current-handoff-state`（既定ブランチ `main` は PR #12 merge commit `2be441b` まで `origin/main` と同期済み）
 - タスク管理: このファイル（`TASKS_BACKLOG.md`）＋運用契約 `AGENTS.md`
 - README / docs の未完了項目: 該当なし
 - コード内 TODO / FIXME: 該当なし
 - 失敗しているローカル検証: 該当なし
-- 未コミット変更: あり（scanner self-test cleanup境界、HANDOFF/TASKS_BACKLOG整合。未追跡 advisory docs は別PR候補として分離）
-- GitHub open issues: 2026/06/29時点0件。open PR: #12 `fix/scanner-hardening-boundary`
-- doing タスク: 0 件（現在のローカルWIPはPR #12への追加コミット候補。advisory docsは今回PRから分離）
+- 未コミット変更: あり（`HANDOFF.md` / `TASKS_BACKLOG.md` の現状同期のみ。未追跡 advisory docs 2件は別PR候補として分離）
+- GitHub open issues: 2026/06/29 14:20 JST時点0件。open PR: 0件。PR #12は `2be441b` でmerge済み
+- doing タスク: 0 件（今回の現状同期後も未追跡 advisory docs 2件は別PR候補として分離）
 
 ## タスク一覧
 
@@ -27,8 +27,9 @@
 | T006 | `CHANGELOG.md` の versioned release 表現を現状に合わせる | 陳腐化（v0.1.0 タグ後の表現更新） | 高 | S | done |
 | T007 | 検証コマンド表記を canonical な実行形へ統一する | 整合性（README/CONTRIBUTING/SECURITY/PR template の表記揺れ） | 高 | S | done |
 | T008 | Claude scanner hardening ブランチを検証し `main` へ統合する | 2026-06-21 Claude Code 実装ブランチ | 高 | S | done |
-| T009 | scanner self-test の cleanup 失敗を検証結果から分離し、tracked-marker assertion は必須のまま保つ | 2026-06-29 Codex WIP | 中 | S | done(local WIP, PR #12追加予定) |
+| T009 | scanner self-test の cleanup 失敗を検証結果から分離し、tracked-marker assertion は必須のまま保つ | 2026-06-29 Codex WIP | 中 | S | done(PR #12でマージ済み) |
 | T010 | advisory docs (`docs/CLAUDE_CODE_REVIEW_2026-06-21.md`, `docs/codex-task-scanner-hardening.md`) の採用/分割を次コミット前に明示する | 2026-06-29 Codex WIP | 中 | S | done(split: 今回PRから分離) |
+| T011 | PR #12 merge後の `HANDOFF.md` / `TASKS_BACKLOG.md` を現在状態へ同期する | 2026-06-29 Codex WIP | 高 | S | done(このPR) |
 
 ## 検証ログ
 
@@ -38,7 +39,8 @@
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026/06/29 pass。cleanup warningなし（権限付き再実行）、tracked-marker assertionも通過 |
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026/06/29 pass |
 | `gh issue list --state open --limit 50 --json number,title,url` | 2026/06/29 `[]` |
-| `gh pr list --state open --json ...` | 2026/06/29 PR #12 open (`MERGEABLE` / `CLEAN`) |
+| `gh pr list --state open --json ...` | 2026/06/29 14:20 JST `[]` |
+| `gh pr view 12 --json state,mergedAt,mergeCommit,...` | 2026/06/29 PR #12 `MERGED` / merge commit `2be441b` |
 
 ## skip
 
@@ -47,4 +49,5 @@
 - 📌 2026-06-21 Claude Code 再レビュー: High 指摘の委譲タスク仕様 `docs/codex-task-scanner-hardening.md` を参照（advisory／着手前に spec 内のコスト・secret・要件ゲート④の境界を確認）。横断索引: `CLAUDE_CODE_REVIEW_INDEX_2026-06-21.md`。
 
 
-- 🔧 2026-06-23 Codex 統合: `fix/claude-scanner-hardening` を `main` へ fast-forward 統合済み。`check:all` は 3 本 pass。push は未実施。
+- 🔧 2026-06-23 Codex 統合: `fix/claude-scanner-hardening` を `main` へ fast-forward 統合済み。`check:all` は 3 本 pass。
+- 🔧 2026-06-29 Codex 統合: PR #12 `fix/scanner-hardening-boundary` は merge commit `2be441b` で `main` に反映済み。open PR 0件。
