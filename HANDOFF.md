@@ -15,16 +15,16 @@
 
 ## 現状サマリ
 
-- 既定ブランチは `main`。2026/06/30 02:50 JST 時点で `main` は PR #15 merge commit `9ee95a4` まで `origin/main` と同期済み。現在の作業ブランチ `docs/advisory-disposition-sync` は、未追跡 advisory docs 2件のraw非採用と短縮disposition記録だけを行う。
+- 既定ブランチは `main`。2026/06/30 07:10 JST 時点で `main` は PR #16 merge commit `5f6b826` まで `origin/main` と同期済み。作業ブランチはなく、GitHub open PR は 0件。
 - タスク棚卸し（`TASKS_BACKLOG.md` / 旧 `HANDOFF.md`）は PR #8 で `main` にマージ済み。棚卸し用ブランチ `chore-tasks-backlog-inventory` は削除済み。
 - その後、自律運用契約 `AGENTS.md` を追加（このファイルの現状反映を含む）。
 - `examples/checklist.md` に `SKILL.md` の `Design Baseline` 観点を反映しました。
 - `CHANGELOG.md` の semantic versioning 説明を、v0.1.0 後の現状に合う表現へ更新しました。
 - README、CONTRIBUTING、SECURITY、PR テンプレートの検証コマンド表記を canonical な `pwsh -NoProfile -ExecutionPolicy Bypass -File` 形へ統一しました。
 - Claude Code の `fix/claude-scanner-hardening` を `main` に fast-forward 統合し、scanner の git-tracked 既定、secret 形式追加、行番号出力、バイナリ除外、`task-scanner` slug 偽陽性修正を反映しました。
-- `TASKS_BACKLOG.md` の現在の doing はありません。PR #15 までの scanner hardening / cleanup境界整理と handoff 同期は `main` に反映済み。未追跡 `docs/` の advisory docs 2件は raw のまま採用せず、`.gitignore` で誤stageを防ぎ、短縮版 `docs/advisory-review-disposition.md` だけをtrackする。
+- `TASKS_BACKLOG.md` の現在の doing はありません。PR #16 までの scanner hardening / cleanup境界整理 / handoff同期 / advisory disposition同期は `main` に反映済み。未追跡 `docs/` の advisory docs 2件は raw のまま採用せず、`.gitignore` で誤stageを防ぎ、短縮版 `docs/advisory-review-disposition.md` だけをtrackする。
 - コード内 TODO / FIXME は実質的な未着手項目としては見つかっていません。
-- GitHub open issues は 2026/06/30 02:50 JST 時点で 0 件。open PR も 0 件。PR #15 `docs: PR #14後の引き継ぎ状態を同期` は `9ee95a4` で merge 済み。
+- GitHub open issues は 2026/06/30 02:50 JST 時点で 0 件。open PR は 2026/06/30 07:10 JST 時点で 0 件。PR #16 `docs: advisory原本の扱いを短縮記録` は `5f6b826` で merge 済み。
 - ローカル検証3本（§7）は 2026/06/30 02:50 JST に `pwsh` / Windows PowerShell の両方で pass。`test-scan-private-markers.ps1` は git fixture staging false negativeを避けるため権限付きで再実行した。staged secret scan / diff checkもpass。
 
 ## 完了タスク
@@ -44,7 +44,7 @@
 | `T011` PR #12 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #13 でマージ済み） |
 | `T012` PR #13 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #14 でマージ済み） |
 | `T013` PR #14 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #15 でマージ済み） |
-| `T014` advisory docs raw非採用と短縮disposition記録 | done（このPR） |
+| `T014` advisory docs raw非採用と短縮disposition記録 | done（PR #16でマージ済み） |
 
 ## 未完了 / skip タスク
 
@@ -75,6 +75,7 @@
 | コマンド | 結果 |
 | --- | --- |
 | `gh pr view 15 --json number,state,mergedAt,mergeCommit,title,url,headRefName,statusCheckRollup` | pass: PR #15 `MERGED` / merge commit `9ee95a4` / Validation `SUCCESS` |
+| `gh pr view 16 --json number,state,mergedAt,mergeCommit,title,url,headRefName,statusCheckRollup` | pass: PR #16 `MERGED` / merge commit `5f6b826` / Validation `SUCCESS` |
 | `gh issue list --state open --limit 50 --json number,title,url` | pass: `[]` |
 | `gh pr list --state open --json number,title,url,headRefName,mergeStateStatus` | pass: `[]` |
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | pass |
@@ -102,8 +103,8 @@ Windows PowerShell の互換実行例は README の `Validation` セクション
 
 | ブランチ | 状態 | 内容 |
 | --- | --- | --- |
-| `main` | `origin/main` と同期済み。HEAD `9ee95a4` | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #15 handoff同期まで反映済み |
-| `docs/advisory-disposition-sync` | 現在の作業ブランチ | raw advisory docs 2件のignore化と短縮disposition記録のみ |
+| `main` | `origin/main` と同期済み。HEAD `5f6b826` | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #16 advisory disposition同期まで反映済み |
+| なし | 作業ブランチなし | 次の改善は `AGENTS.md` §5 の優先度ルールに従って選定 |
 
 ## 次にやるべき候補
 

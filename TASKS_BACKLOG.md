@@ -5,15 +5,15 @@
 ## 棚卸しサマリー
 
 - 棚卸し日時: 2026/06/11 20:52 JST
-- 最終更新: 2026/06/30 02:50 JST
-- 対象ブランチ: `docs/advisory-disposition-sync`（既定ブランチ `main` は PR #15 merge commit `9ee95a4` まで `origin/main` と同期済み）
+- 最終更新: 2026/06/30 07:10 JST
+- 対象ブランチ: `main`（PR #16 merge commit `5f6b826` まで `origin/main` と同期済み）
 - タスク管理: このファイル（`TASKS_BACKLOG.md`）＋運用契約 `AGENTS.md`
 - README / docs の未完了項目: 該当なし
 - コード内 TODO / FIXME: 該当なし
 - 失敗しているローカル検証: 該当なし
-- 未コミット変更: あり（`AGENTS.md` / `.gitignore` / `HANDOFF.md` / `TASKS_BACKLOG.md` / `docs/advisory-review-disposition.md` の advisory disposition同期。raw advisory docs 2件はignore対象）
-- GitHub open issues: 2026/06/30 02:50 JST時点0件。open PR: 0件。PR #15は `9ee95a4` でmerge済み
-- doing タスク: 0 件（T014 advisory disposition同期はこのPRで完了。raw advisory docs 2件は `.gitignore` で誤stageを防ぎ、短縮版のみtrackする）
+- 未コミット変更: なし（このdocs同期ブランチ着手前）。raw advisory docs 2件はignore対象。
+- GitHub open issues: 2026/06/30 02:50 JST時点0件。open PR: 2026/06/30 07:10 JST時点0件。PR #16は `5f6b826` でmerge済み
+- doing タスク: 0 件（T014 advisory disposition同期はPR #16で完了。raw advisory docs 2件は `.gitignore` で誤stageを防ぎ、短縮版のみtrackする）
 
 ## タスク一覧
 
@@ -32,7 +32,7 @@
 | T011 | PR #12 merge後の `HANDOFF.md` / `TASKS_BACKLOG.md` を現在状態へ同期する | 2026-06-29 Codex WIP | 高 | S | done(PR #13でマージ済み) |
 | T012 | PR #13 merge後の `HANDOFF.md` / `TASKS_BACKLOG.md` を現在状態へ同期する | 2026-06-29 Codex WIP | 高 | S | done(PR #14でマージ済み) |
 | T013 | PR #14 merge後の `HANDOFF.md` / `TASKS_BACKLOG.md` を現在状態へ同期する | 2026-06-29 Codex WIP | 高 | S | done(PR #15でマージ済み) |
-| T014 | advisory docs 2件のraw非採用と短縮dispositionを記録する | 未追跡 `docs/` advisory docs / AGENTS scanner drift | 中 | S | done(このPR) |
+| T014 | advisory docs 2件のraw非採用と短縮dispositionを記録する | 未追跡 `docs/` advisory docs / AGENTS scanner drift | 中 | S | done(PR #16でマージ済み) |
 
 ## 検証ログ
 
@@ -49,6 +49,7 @@
 | `gh pr view 13 --json number,state,mergedAt,mergeCommit,title,url` | 2026/06/29 PR #13 `MERGED` / merge commit `9f62edb` |
 | `gh pr view 14 --json number,state,mergedAt,mergeCommit,title,url,headRefName` | 2026/06/29 PR #14 `MERGED` / merge commit `870b8c5` |
 | `gh pr view 15 --json number,state,mergedAt,mergeCommit,title,url,headRefName,statusCheckRollup` | 2026/06/30 PR #15 `MERGED` / merge commit `9ee95a4` / Validation `SUCCESS` |
+| `gh pr view 16 --json number,state,mergedAt,mergeCommit,title,url,headRefName,statusCheckRollup` | 2026/06/30 PR #16 `MERGED` / merge commit `5f6b826` / Validation `SUCCESS` |
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026/06/30 02:50 JST pass |
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026/06/30 02:49 JST pass（権限付き。git fixture staging false negative回避） |
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026/06/30 02:49 JST pass / scan mode `git-tracked` |
@@ -70,3 +71,4 @@
 - 🔧 2026-06-29 Codex 同期: PR #13 `docs: PR #12後の引き継ぎ状態を同期` は merge commit `9f62edb` で `main` に反映済み。未追跡 advisory docs 2件は raw 採用せず、必要なら redaction 済み短縮版だけを別PRで扱う。
 - 🔧 2026-06-29 Codex 同期: PR #14 `docs: sync post-PR13 handoff state` は merge commit `870b8c5` で `main` に反映済み。未追跡 advisory docs 2件のraw採用は引き続き保留し、tracked handoff/backlogだけをpost-PR #14状態へ同期する。
 - 🔧 2026-06-30 Codex 同期: PR #15 `docs: PR #14後の引き継ぎ状態を同期` は merge commit `9ee95a4` で `main` に反映済み。本T014では raw advisory 2件を ignore し、`docs/advisory-review-disposition.md` に短縮判断だけを残す。
+- 🔧 2026-06-30 Codex 同期: PR #16 `docs: advisory原本の扱いを短縮記録` は merge commit `5f6b826` で `main` に反映済み。open PR 0件、doing 0件。
