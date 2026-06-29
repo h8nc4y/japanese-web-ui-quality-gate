@@ -15,17 +15,17 @@
 
 ## 現状サマリ
 
-- 既定ブランチは `main`。2026/06/29 18:35 JST 時点で `main` は PR #13 merge commit `9f62edb` まで `origin/main` と同期済み。現在の作業ブランチ `docs/sync-post-pr13-state` は、このhandoff/backlogの post-PR #13 現状同期だけを行う。
+- 既定ブランチは `main`。2026/06/29 21:56 JST 時点で `main` は PR #14 merge commit `870b8c5` まで `origin/main` と同期済み。現在の作業ブランチ `docs/sync-post-pr14-state` は、このhandoff/backlogの post-PR #14 現状同期だけを行う。
 - タスク棚卸し（`TASKS_BACKLOG.md` / 旧 `HANDOFF.md`）は PR #8 で `main` にマージ済み。棚卸し用ブランチ `chore-tasks-backlog-inventory` は削除済み。
 - その後、自律運用契約 `AGENTS.md` を追加（このファイルの現状反映を含む）。
 - `examples/checklist.md` に `SKILL.md` の `Design Baseline` 観点を反映しました。
 - `CHANGELOG.md` の semantic versioning 説明を、v0.1.0 後の現状に合う表現へ更新しました。
 - README、CONTRIBUTING、SECURITY、PR テンプレートの検証コマンド表記を canonical な `pwsh -NoProfile -ExecutionPolicy Bypass -File` 形へ統一しました。
 - Claude Code の `fix/claude-scanner-hardening` を `main` に fast-forward 統合し、scanner の git-tracked 既定、secret 形式追加、行番号出力、バイナリ除外、`task-scanner` slug 偽陽性修正を反映しました。
-- `TASKS_BACKLOG.md` に現在の doing タスクはありません。PR #13 までの scanner hardening / cleanup境界整理と handoff 同期は `main` に反映済み。未追跡 `docs/` の advisory docs 2件は、raw のまま採用せず、必要なら redaction 済みの短縮版を別PR候補として扱う。
+- `TASKS_BACKLOG.md` に現在の doing タスクはありません。PR #14 までの scanner hardening / cleanup境界整理と handoff 同期は `main` に反映済み。未追跡 `docs/` の advisory docs 2件は、raw のまま採用せず、必要なら redaction 済みの短縮版を別PR候補として扱う。
 - コード内 TODO / FIXME は実質的な未着手項目としては見つかっていません。
-- GitHub open issues は 2026/06/29 18:32 JST 時点で 0 件。open PR も 0 件。PR #13 `docs: PR #12後の引き継ぎ状態を同期` は `9f62edb` で merge 済み。
-- ローカル検証3本（§7）は 2026/06/29 18:38 JST に pass。`test-scan-private-markers.ps1` は sandbox で git-tracked fixture staging/cleanup が失敗したため、権限付き再実行で pass を確認。PR #12 merge後の `main` push CI `Validation` run `28341292545` も success。
+- GitHub open issues は 2026/06/29 21:56 JST 時点で 0 件。open PR も 0 件。PR #14 `docs: sync post-PR13 handoff state` は `870b8c5` で merge 済み。
+- ローカル検証3本（§7）は 2026/06/29 18:38 JST に pass。`test-scan-private-markers.ps1` は sandbox で git-tracked fixture staging/cleanup が失敗したため、権限付き再実行で pass を確認。今回の post-PR #14 docs同期では、変更後に対象ファイルのdiff-checkと公開安全スキャンを再実行する。
 
 ## 完了タスク
 
@@ -42,7 +42,8 @@
 | `T009` scanner self-test の cleanup 失敗を検証結果から分離 | done（PR #12 でマージ済み） |
 | `T010` advisory docs の採用/分割方針を明示 | done（今回PRから分離） |
 | `T011` PR #12 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #13 でマージ済み） |
-| `T012` PR #13 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（このファイル） |
+| `T012` PR #13 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #14 でマージ済み） |
+| `T013` PR #14 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（このファイル） |
 
 ## 未完了 / skip タスク
 
@@ -55,16 +56,18 @@
 
 ## 最終検証結果
 
-2026/06/29 18:38 JST に以下を実行しました。
+2026/06/29 22:06 JST までに以下を実行しました。
 
 | コマンド | 結果 |
 | --- | --- |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | pass: `Public readiness checks passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | pass: sandbox では staging/cleanup false negative、権限付き再実行で `Private marker scanner tests passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | pass: `No private or secret markers found.` |
+| `gh issue list --state open --limit 50 --json number,title,url` | pass: `[]` |
+| `gh pr list --state open --json number,title,url,headRefName,mergeStateStatus` | pass: `[]` |
+| `gh pr view 14 --json number,state,mergedAt,mergeCommit,title,url,headRefName` | pass: PR #14 `MERGED` / merge commit `870b8c5` |
 | `git diff --check -- HANDOFF.md TASKS_BACKLOG.md` | pass |
-| `gitleaks detect --no-git --redact --no-banner --source HANDOFF.md --source TASKS_BACKLOG.md` | pass: no leaks found |
-
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | pass: `Public readiness checks passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | pass: sandbox は git-tracked fixture staging で false negative、権限付き再実行で `Private marker scanner tests passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | pass: `No private or secret markers found.` |
+| `gitleaks detect --no-git --redact --no-banner --source . --verbose` | pass: self-test由来のgitignored scratch削除後に no leaks found |
 ## セットアップ・テスト・ビルドコマンド
 
 このリポジトリは現時点で package manager や build step を持っていません。検証は PowerShell スクリプトで行います（`AGENTS.md` §7 の `check:all`）。
@@ -81,8 +84,8 @@ Windows PowerShell の互換実行例は README の `Validation` セクション
 
 | ブランチ | 状態 | 内容 |
 | --- | --- | --- |
-| `main` | `origin/main` と同期済み。HEAD `9f62edb` | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #13 handoff同期まで反映済み |
-| `docs/sync-post-pr13-state` | 現在の作業ブランチ | PR #13 後のhandoff/backlog現状同期のみ |
+| `main` | `origin/main` と同期済み。HEAD `870b8c5` | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #14 handoff同期まで反映済み |
+| `docs/sync-post-pr14-state` | 現在の作業ブランチ | PR #14 後のhandoff/backlog現状同期のみ |
 
 ## 次にやるべき候補
 
