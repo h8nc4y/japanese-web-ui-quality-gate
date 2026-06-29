@@ -150,7 +150,7 @@ powershell -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 **各スクリプトの役割**
 - `test-public-readiness.ps1`: OSS 必須ファイルの存在と、README/各文書に必要なセクション・記述があるかを構造チェック。`README.md` に陳腐化したドラフト文言が残っていないかも検査する。
 - `test-scan-private-markers.ps1`: 下のスキャナの回帰テスト（健全な repo は緑、合成トークンや非 allowlist URL は赤、`.test-tmp` 配下や allowlist 済み URL は緑、を検証）。
-- `scan-private-markers.ps1`: ワーキングツリー全体（`.git` / `.test-tmp` / `node_modules` / `vendor` / `dist` / `build` を除く）から secret・private マーカーを検出。**untracked ファイルも走査対象**。
+- `scan-private-markers.ps1`: git worktree 内では **git-tracked ファイルを既定で走査**し、CI checkout と対象を合わせる。untracked のローカル `docs/` draft などは `git add` されるまで既定 scan 対象外。git 外で実行した場合だけ filesystem walk fallback を使う。
 
 CI（`validation.yml`）は PR と `main` への push でこの3本を windows-latest 上で実行します。**ローカルで緑にしてから push** すること。なお「scan が緑」は「公開安全」を意味するだけで、「そのファイルをコミットしてよい」を意味しません（ローカルスクラッチ等は scan 緑でもコミット対象外）。
 

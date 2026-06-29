@@ -6,3 +6,6 @@ node_modules/
 .env
 .env.*
 .test-tmp/
+# Local advisory originals are summarized in docs/advisory-review-disposition.md.
+docs/CLAUDE_CODE_REVIEW_2026-06-21.md
+docs/codex-task-scanner-hardening.md

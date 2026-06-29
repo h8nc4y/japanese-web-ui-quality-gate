@@ -15,17 +15,17 @@
 
 ## 現状サマリ
 
-- 既定ブランチは `main`。2026/06/29 21:56 JST 時点で `main` は PR #14 merge commit `870b8c5` まで `origin/main` と同期済み。現在の作業ブランチ `docs/sync-post-pr14-state` は、このhandoff/backlogの post-PR #14 現状同期だけを行う。
+- 既定ブランチは `main`。2026/06/30 02:50 JST 時点で `main` は PR #15 merge commit `9ee95a4` まで `origin/main` と同期済み。現在の作業ブランチ `docs/advisory-disposition-sync` は、未追跡 advisory docs 2件のraw非採用と短縮disposition記録だけを行う。
 - タスク棚卸し（`TASKS_BACKLOG.md` / 旧 `HANDOFF.md`）は PR #8 で `main` にマージ済み。棚卸し用ブランチ `chore-tasks-backlog-inventory` は削除済み。
 - その後、自律運用契約 `AGENTS.md` を追加（このファイルの現状反映を含む）。
 - `examples/checklist.md` に `SKILL.md` の `Design Baseline` 観点を反映しました。
 - `CHANGELOG.md` の semantic versioning 説明を、v0.1.0 後の現状に合う表現へ更新しました。
 - README、CONTRIBUTING、SECURITY、PR テンプレートの検証コマンド表記を canonical な `pwsh -NoProfile -ExecutionPolicy Bypass -File` 形へ統一しました。
 - Claude Code の `fix/claude-scanner-hardening` を `main` に fast-forward 統合し、scanner の git-tracked 既定、secret 形式追加、行番号出力、バイナリ除外、`task-scanner` slug 偽陽性修正を反映しました。
-- `TASKS_BACKLOG.md` に現在の doing タスクはありません。PR #14 までの scanner hardening / cleanup境界整理と handoff 同期は `main` に反映済み。未追跡 `docs/` の advisory docs 2件は、raw のまま採用せず、必要なら redaction 済みの短縮版を別PR候補として扱う。
+- `TASKS_BACKLOG.md` の現在の doing はありません。PR #15 までの scanner hardening / cleanup境界整理と handoff 同期は `main` に反映済み。未追跡 `docs/` の advisory docs 2件は raw のまま採用せず、`.gitignore` で誤stageを防ぎ、短縮版 `docs/advisory-review-disposition.md` だけをtrackする。
 - コード内 TODO / FIXME は実質的な未着手項目としては見つかっていません。
-- GitHub open issues は 2026/06/29 21:56 JST 時点で 0 件。open PR も 0 件。PR #14 `docs: sync post-PR13 handoff state` は `870b8c5` で merge 済み。
-- ローカル検証3本（§7）は 2026/06/29 18:38 JST に pass。`test-scan-private-markers.ps1` は sandbox で git-tracked fixture staging/cleanup が失敗したため、権限付き再実行で pass を確認。今回の post-PR #14 docs同期では、変更後に対象ファイルのdiff-checkと公開安全スキャンを再実行する。
+- GitHub open issues は 2026/06/30 02:50 JST 時点で 0 件。open PR も 0 件。PR #15 `docs: PR #14後の引き継ぎ状態を同期` は `9ee95a4` で merge 済み。
+- ローカル検証3本（§7）は 2026/06/30 02:50 JST に `pwsh` / Windows PowerShell の両方で pass。`test-scan-private-markers.ps1` は git fixture staging false negativeを避けるため権限付きで再実行した。staged secret scan / diff checkもpass。
 
 ## 完了タスク
 
@@ -43,7 +43,8 @@
 | `T010` advisory docs の採用/分割方針を明示 | done（今回PRから分離） |
 | `T011` PR #12 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #13 でマージ済み） |
 | `T012` PR #13 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #14 でマージ済み） |
-| `T013` PR #14 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（このファイル） |
+| `T013` PR #14 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #15 でマージ済み） |
+| `T014` advisory docs raw非採用と短縮disposition記録 | done（このPR） |
 
 ## 未完了 / skip タスク
 
@@ -68,6 +69,23 @@
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | pass: sandbox は git-tracked fixture staging で false negative、権限付き再実行で `Private marker scanner tests passed.` |
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | pass: `No private or secret markers found.` |
 | `gitleaks detect --no-git --redact --no-banner --source . --verbose` | pass: self-test由来のgitignored scratch削除後に no leaks found |
+
+2026/06/30 02:50 JST、T014 advisory disposition branchで追加実行:
+
+| コマンド | 結果 |
+| --- | --- |
+| `gh pr view 15 --json number,state,mergedAt,mergeCommit,title,url,headRefName,statusCheckRollup` | pass: PR #15 `MERGED` / merge commit `9ee95a4` / Validation `SUCCESS` |
+| `gh issue list --state open --limit 50 --json number,title,url` | pass: `[]` |
+| `gh pr list --state open --json number,title,url,headRefName,mergeStateStatus` | pass: `[]` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | pass |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | pass（権限付き。git fixture staging false negative回避） |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | pass: scan mode `git-tracked` |
+| `powershell -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | pass |
+| `powershell -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | pass（権限付き。git fixture staging false negative回避） |
+| `powershell -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | pass: scan mode `git-tracked` |
+| `git diff --check --cached` | pass |
+| `gitleaks git --staged --redact` | pass: no leaks found |
+
 ## セットアップ・テスト・ビルドコマンド
 
 このリポジトリは現時点で package manager や build step を持っていません。検証は PowerShell スクリプトで行います（`AGENTS.md` §7 の `check:all`）。
@@ -84,11 +102,11 @@ Windows PowerShell の互換実行例は README の `Validation` セクション
 
 | ブランチ | 状態 | 内容 |
 | --- | --- | --- |
-| `main` | `origin/main` と同期済み。HEAD `870b8c5` | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #14 handoff同期まで反映済み |
-| `docs/sync-post-pr14-state` | 現在の作業ブランチ | PR #14 後のhandoff/backlog現状同期のみ |
+| `main` | `origin/main` と同期済み。HEAD `9ee95a4` | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #15 handoff同期まで反映済み |
+| `docs/advisory-disposition-sync` | 現在の作業ブランチ | raw advisory docs 2件のignore化と短縮disposition記録のみ |
 
 ## 次にやるべき候補
 
 1. §5 の優先度ルールに従い、既存ドキュメント/挙動の不整合・陳腐化を次の1件として探す。
-2. doing は常に1件に保ち、`TASKS_BACKLOG.md` を起点に進める。現在の未追跡 `docs/` 2件は raw 採用せず、必要なら redaction 済みの短縮版だけを別PRで採用する。
+2. doing は常に1件に保ち、`TASKS_BACKLOG.md` を起点に進める。raw advisory 原本2件は `.gitignore` 対象で、必要な事実は `docs/advisory-review-disposition.md` に圧縮済み。
 3. §6 ゲート該当（release/tag・有料API・secret/実データ・製品要件変更）に当たったら停止して承認を仰ぐ。
