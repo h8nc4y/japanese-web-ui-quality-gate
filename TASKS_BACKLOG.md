@@ -5,15 +5,15 @@
 ## 棚卸しサマリー
 
 - 棚卸し日時: 2026/06/11 20:52 JST
-- 最終更新: 2026/06/30 07:10 JST
-- 対象ブランチ: `main`（PR #16 merge commit `5f6b826` まで `origin/main` と同期済み）
+- 最終更新: 2026/06/30 13:20 JST
+- 対象ブランチ: `main` の確認済みスナップショット（PR #17 merge commit `666dd6a` まで `origin/main` と同期済み）
 - タスク管理: このファイル（`TASKS_BACKLOG.md`）＋運用契約 `AGENTS.md`
 - README / docs の未完了項目: 該当なし
 - コード内 TODO / FIXME: 該当なし
 - 失敗しているローカル検証: 該当なし
 - 未コミット変更: なし（このdocs同期ブランチ着手前）。raw advisory docs 2件はignore対象。
-- GitHub open issues: 2026/06/30 02:50 JST時点0件。open PR: 2026/06/30 07:10 JST時点0件。PR #16は `5f6b826` でmerge済み
-- doing タスク: 0 件（T014 advisory disposition同期はPR #16で完了。raw advisory docs 2件は `.gitignore` で誤stageを防ぎ、短縮版のみtrackする）
+- GitHub open issues: 2026/06/30 13:20 JST時点0件。open PR: 2026/06/30 13:20 JST時点0件。PR #17は `666dd6a` でmerge済み、Validation `SUCCESS`
+- doing タスク: 0 件（T015 はこの更新で完了。確認済みスナップショットを記録するが、文書更新PR自身の番号だけを追い続ける追加同期PRは作らない）
 
 ## タスク一覧
 
@@ -33,6 +33,7 @@
 | T012 | PR #13 merge後の `HANDOFF.md` / `TASKS_BACKLOG.md` を現在状態へ同期する | 2026-06-29 Codex WIP | 高 | S | done(PR #14でマージ済み) |
 | T013 | PR #14 merge後の `HANDOFF.md` / `TASKS_BACKLOG.md` を現在状態へ同期する | 2026-06-29 Codex WIP | 高 | S | done(PR #15でマージ済み) |
 | T014 | advisory docs 2件のraw非採用と短縮dispositionを記録する | 未追跡 `docs/` advisory docs / AGENTS scanner drift | 中 | S | done(PR #16でマージ済み) |
+| T015 | PR #17後の確認済みスナップショットを同期し、自己同期PR番号の追跡ループを避ける | `HANDOFF.md` / `TASKS_BACKLOG.md` のPR #16時点表記 | 高 | S | done(この更新で完了) |
 
 ## 検証ログ
 
@@ -58,6 +59,9 @@
 | `powershell -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026/06/30 02:50 JST pass / scan mode `git-tracked` |
 | `git diff --check --cached` | 2026/06/30 02:50 JST pass |
 | `gitleaks git --staged --redact` | 2026/06/30 02:50 JST pass / no leaks found |
+| `gh issue list --state open --limit 50 --json number,title,url` | 2026/06/30 13:20 JST pass: `[]` |
+| `gh pr list --state open --json number,title,url,headRefName,mergeStateStatus` | 2026/06/30 13:20 JST pass: `[]` |
+| `gh pr view 17 --json number,state,mergedAt,mergeCommit,title,url,headRefName,statusCheckRollup` | 2026/06/30 13:20 JST pass: PR #17 `MERGED` / merge commit `666dd6a` / Validation `SUCCESS` |
 
 ## skip
 
@@ -72,3 +76,4 @@
 - 🔧 2026-06-29 Codex 同期: PR #14 `docs: sync post-PR13 handoff state` は merge commit `870b8c5` で `main` に反映済み。未追跡 advisory docs 2件のraw採用は引き続き保留し、tracked handoff/backlogだけをpost-PR #14状態へ同期する。
 - 🔧 2026-06-30 Codex 同期: PR #15 `docs: PR #14後の引き継ぎ状態を同期` は merge commit `9ee95a4` で `main` に反映済み。本T014では raw advisory 2件を ignore し、`docs/advisory-review-disposition.md` に短縮判断だけを残す。
 - 🔧 2026-06-30 Codex 同期: PR #16 `docs: advisory原本の扱いを短縮記録` は merge commit `5f6b826` で `main` に反映済み。open PR 0件、doing 0件。
+- 🔧 2026-06-30 Codex 同期: PR #17 `docs: PR #16後の引き継ぎ状態を同期` は merge commit `666dd6a` で `main` に反映済み。以後、文書更新PR自身の番号だけを追い続ける追加同期は作らず、次の実質的な不整合・陳腐化を優先する。
