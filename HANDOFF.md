@@ -13,18 +13,18 @@
 - レビューは原則セルフ（`check:all` 緑＋敵対的セルフレビュー）。必要時のみ外部レビュー（§10・§13）。
 - 4ゲートは人間承認を維持（§6）: ①デプロイ/Actions/release・tag ②課金・有料API ③secret・実素材・実データの外部送信 ④製品要件の変更。
 
-## 現状サマリ
+## 確認済みスナップショット
 
-- 既定ブランチは `main`。2026/06/30 07:10 JST 時点で `main` は PR #16 merge commit `5f6b826` まで `origin/main` と同期済み。作業ブランチはなく、GitHub open PR は 0件。
+- 既定ブランチは `main`。2026/06/30 13:20 JST 時点で、この更新ブランチ作成前の `main` は PR #17 merge commit `666dd6a` まで `origin/main` と同期済み。GitHub open issue / open PR は 0件。
 - タスク棚卸し（`TASKS_BACKLOG.md` / 旧 `HANDOFF.md`）は PR #8 で `main` にマージ済み。棚卸し用ブランチ `chore-tasks-backlog-inventory` は削除済み。
 - その後、自律運用契約 `AGENTS.md` を追加（このファイルの現状反映を含む）。
 - `examples/checklist.md` に `SKILL.md` の `Design Baseline` 観点を反映しました。
 - `CHANGELOG.md` の semantic versioning 説明を、v0.1.0 後の現状に合う表現へ更新しました。
 - README、CONTRIBUTING、SECURITY、PR テンプレートの検証コマンド表記を canonical な `pwsh -NoProfile -ExecutionPolicy Bypass -File` 形へ統一しました。
 - Claude Code の `fix/claude-scanner-hardening` を `main` に fast-forward 統合し、scanner の git-tracked 既定、secret 形式追加、行番号出力、バイナリ除外、`task-scanner` slug 偽陽性修正を反映しました。
-- `TASKS_BACKLOG.md` の現在の doing はありません。PR #16 までの scanner hardening / cleanup境界整理 / handoff同期 / advisory disposition同期は `main` に反映済み。未追跡 `docs/` の advisory docs 2件は raw のまま採用せず、`.gitignore` で誤stageを防ぎ、短縮版 `docs/advisory-review-disposition.md` だけをtrackする。
+- `TASKS_BACKLOG.md` の現在の doing はありません。PR #17 までの scanner hardening / cleanup境界整理 / handoff同期 / advisory disposition同期 / post-PR #16 handoff同期は `main` に反映済み。未追跡 `docs/` の advisory docs 2件は raw のまま採用せず、`.gitignore` で誤stageを防ぎ、短縮版 `docs/advisory-review-disposition.md` だけをtrackする。
 - コード内 TODO / FIXME は実質的な未着手項目としては見つかっていません。
-- GitHub open issues は 2026/06/30 02:50 JST 時点で 0 件。open PR は 2026/06/30 07:10 JST 時点で 0 件。PR #16 `docs: advisory原本の扱いを短縮記録` は `5f6b826` で merge 済み。
+- GitHub open issues / open PR は 2026/06/30 13:20 JST 時点で 0 件。PR #17 `docs: PR #16後の引き継ぎ状態を同期` は `666dd6a` で merge 済み、Validation は `SUCCESS`。
 - ローカル検証3本（§7）は 2026/06/30 02:50 JST に `pwsh` / Windows PowerShell の両方で pass。`test-scan-private-markers.ps1` は git fixture staging false negativeを避けるため権限付きで再実行した。staged secret scan / diff checkもpass。
 
 ## 完了タスク
@@ -45,6 +45,7 @@
 | `T012` PR #13 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #14 でマージ済み） |
 | `T013` PR #14 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #15 でマージ済み） |
 | `T014` advisory docs raw非採用と短縮disposition記録 | done（PR #16でマージ済み） |
+| `T015` PR #17 後の確認済みスナップショットを同期し、自己同期PR番号の追跡ループを避ける | done（この更新で完了） |
 
 ## 未完了 / skip タスク
 
@@ -53,7 +54,7 @@
 ## 既知の問題・残懸念
 
 - UI実装はこのリポジトリには含まれないため、ブラウザ表示確認は対象外です（`AGENTS.md` §2 の二層構造・§11 参照）。
-- 次の実装は `AGENTS.md` の自律ループ（§4・§5・§15）に従って進めます。
+- 次の実装は `AGENTS.md` の自律ループ（§4・§5・§15）に従って進めます。`HANDOFF.md` / `TASKS_BACKLOG.md` は確認時点のスナップショットとして扱い、この文書更新PR自身の番号だけを追い続けるための追加同期PRは作りません。
 
 ## 最終検証結果
 
@@ -87,6 +88,14 @@
 | `git diff --check --cached` | pass |
 | `gitleaks git --staged --redact` | pass: no leaks found |
 
+2026/06/30 13:20 JST、T015 handoff/backlog snapshot同期で追加実行:
+
+| コマンド | 結果 |
+| --- | --- |
+| `gh issue list --state open --limit 50 --json number,title,url` | pass: `[]` |
+| `gh pr list --state open --json number,title,url,headRefName,mergeStateStatus` | pass: `[]` |
+| `gh pr view 17 --json number,state,mergedAt,mergeCommit,title,url,headRefName,statusCheckRollup` | pass: PR #17 `MERGED` / merge commit `666dd6a` / Validation `SUCCESS` |
+
 ## セットアップ・テスト・ビルドコマンド
 
 このリポジトリは現時点で package manager や build step を持っていません。検証は PowerShell スクリプトで行います（`AGENTS.md` §7 の `check:all`）。
@@ -103,11 +112,11 @@ Windows PowerShell の互換実行例は README の `Validation` セクション
 
 | ブランチ | 状態 | 内容 |
 | --- | --- | --- |
-| `main` | `origin/main` と同期済み。HEAD `5f6b826` | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #16 advisory disposition同期まで反映済み |
-| なし | 作業ブランチなし | 次の改善は `AGENTS.md` §5 の優先度ルールに従って選定 |
+| `main` | 2026/06/30 13:20 JST の確認時点で `origin/main` と同期済み。HEAD `666dd6a` | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #17 handoff同期まで反映済み |
+| なし | 次の通常作業ブランチなし | 次の改善は `AGENTS.md` §5 の優先度ルールに従って選定。確認済みスナップショットの自己同期だけを目的に追加PRを作らない |
 
 ## 次にやるべき候補
 
-1. §5 の優先度ルールに従い、既存ドキュメント/挙動の不整合・陳腐化を次の1件として探す。
+1. §5 の優先度ルールに従い、既存ドキュメント/挙動の不整合・陳腐化を次の1件として探す。PR番号だけを追う自己同期は優先タスクにしない。
 2. doing は常に1件に保ち、`TASKS_BACKLOG.md` を起点に進める。raw advisory 原本2件は `.gitignore` 対象で、必要な事実は `docs/advisory-review-disposition.md` に圧縮済み。
 3. §6 ゲート該当（release/tag・有料API・secret/実データ・製品要件変更）に当たったら停止して承認を仰ぐ。
