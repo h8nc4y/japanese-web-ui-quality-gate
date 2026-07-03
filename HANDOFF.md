@@ -15,6 +15,7 @@
 
 ## 確認済みスナップショット
 
+- 既定ブランチは `main`。2026-07-03 時点で、PR #19（`docs/requirements-redefinition-v2`）が `main` にマージ済みで `docs/requirements-redefinition-2026-07.md` が追加された。本ブランチ `feat/skill-v2-evaluation-axes` で T017–T019（評価軸v2の実体化: `SKILL.md` v2 / `references/checklist.md` 新設 / `examples/checklist.md` 適用例化 / README・CHANGELOG同期）を実装した。
 - 既定ブランチは `main`。2026/06/30 13:20 JST 時点で、この更新ブランチ作成前の `main` は PR #17 merge commit `666dd6a` まで `origin/main` と同期済み。GitHub open issue / open PR は 0件。
 - タスク棚卸し（`TASKS_BACKLOG.md` / 旧 `HANDOFF.md`）は PR #8 で `main` にマージ済み。棚卸し用ブランチ `chore-tasks-backlog-inventory` は削除済み。
 - その後、自律運用契約 `AGENTS.md` を追加（このファイルの現状反映を含む）。
@@ -45,7 +46,11 @@
 | `T012` PR #13 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #14 でマージ済み） |
 | `T013` PR #14 後の `HANDOFF.md` / `TASKS_BACKLOG.md` 現状同期 | done（PR #15 でマージ済み） |
 | `T014` advisory docs raw非採用と短縮disposition記録 | done（PR #16でマージ済み） |
-| `T015` PR #17 後の確認済みスナップショットを同期し、自己同期PR番号の追跡ループを避ける | done（この更新で完了） |
+| `T015` PR #17 後の確認済みスナップショットを同期し、自己同期PR番号の追跡ループを避ける | done（PR #18でマージ済み） |
+| `T016` 要件再定義ドキュメントを追加する（市場・競合・評価軸v2・成功指標・タスク分解） | done（PR #19でマージ済み） |
+| `T017` `SKILL.md` v2: 評価軸v2（7軸構成）を反映 | done（このブランチで実装） |
+| `T018` `references/checklist.md` 新設・`examples/checklist.md` を適用例へ役割変更 | done（このブランチで実装） |
+| `T019` README / CHANGELOG を `SKILL.md` v2 に同期 | done（このブランチで実装） |
 
 ## 未完了 / skip タスク
 
@@ -112,11 +117,12 @@ Windows PowerShell の互換実行例は README の `Validation` セクション
 
 | ブランチ | 状態 | 内容 |
 | --- | --- | --- |
-| `main` | 2026/06/30 13:20 JST の確認時点で `origin/main` と同期済み。HEAD `666dd6a` | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #17 handoff同期まで反映済み |
-| なし | 次の通常作業ブランチなし | 次の改善は `AGENTS.md` §5 の優先度ルールに従って選定。確認済みスナップショットの自己同期だけを目的に追加PRを作らない |
+| `main` | PR #19（要件再定義doc）まで反映済み | v0.1.0 + タスク棚卸し + `AGENTS.md` + Claude scanner hardening / scanner cleanup境界整理 + PR #17/#18 handoff同期 + `docs/requirements-redefinition-2026-07.md` まで反映済み |
+| `feat/skill-v2-evaluation-axes` | PR 提出（CI 緑・セルフレビュー合格でマージし、マージ後にブランチ削除） | T017–T019: `SKILL.md` v2（7軸構成）、`references/checklist.md` 新設（80項目）、`examples/checklist.md` の適用例化、README/CHANGELOG/HANDOFF/TASKS_BACKLOG同期 |
 
 ## 次にやるべき候補
 
-1. §5 の優先度ルールに従い、既存ドキュメント/挙動の不整合・陳腐化を次の1件として探す。PR番号だけを追う自己同期は優先タスクにしない。
-2. doing は常に1件に保ち、`TASKS_BACKLOG.md` を起点に進める。raw advisory 原本2件は `.gitignore` 対象で、必要な事実は `docs/advisory-review-disposition.md` に圧縮済み。
-3. §6 ゲート該当（release/tag・有料API・secret/実データ・製品要件変更）に当たったら停止して承認を仰ぐ。
+1. T020: 適用例の拡充（日本語フォームの合成レビュー例をさらに追加。良いUIを不当に落とさない例を含む）。優先度は中。
+2. §5 の優先度ルールに従い、既存ドキュメント/挙動の不整合・陳腐化を次の1件として探す。PR番号だけを追う自己同期は優先タスクにしない。
+3. リリース（v0.2.0タグ等）・カタログ掲載は §6 ゲート①/Non-Goalsのため引き続きスコープ外。
+4. §6 ゲート該当（release/tag・有料API・secret/実データ・製品要件変更）に当たったら停止して承認を仰ぐ。
