@@ -5,16 +5,16 @@
 ## 棚卸しサマリー
 
 - 棚卸し日時: 2026/06/11 20:52 JST
-- 最終更新: 2026/06/30 13:20 JST
-- 対象ブランチ: `main` の確認済みスナップショット（PR #17 merge commit `666dd6a` まで `origin/main` と同期済み）
+- 最終更新: 2026-07-03
+- 対象ブランチ: `feat/skill-v2-evaluation-axes`（`main` は PR #19 merge commit まで `docs/requirements-redefinition-2026-07.md` 反映済み）
 - タスク管理: このファイル（`TASKS_BACKLOG.md`）＋運用契約 `AGENTS.md`
-- README / docs の未完了項目: 該当なし
+- README / docs の未完了項目: 該当なし（T017–T019実装分はこのブランチで反映済み）
 - コード内 TODO / FIXME: 該当なし
-- 失敗しているローカル検証: 該当なし
-- 未コミット変更: なし（このdocs同期ブランチ着手前）。raw advisory docs 2件はignore対象。
-- GitHub open issues: 2026/06/30 13:20 JST時点0件。open PR: 2026/06/30 13:20 JST時点0件。PR #17は `666dd6a` でmerge済み、Validation `SUCCESS`
-- doing タスク: 0 件（T016 はこの更新で完了。次は T017–T019 を1つのPRとして進める）
-- 2026-07-03: オーナー指示により要件を再定義（`docs/requirements-redefinition-2026-07.md`）。評価軸v2の実体化タスク T016–T020 を登録
+- 失敗しているローカル検証: 該当なし（2026-07-03 に check:all 3本 pass、`git diff --check` pass）
+- 未コミット変更: なし（T017–T019 の変更はこのPRのコミットに含めて解消）
+- GitHub open issues: 2026-07-03 時点 0件。open PR: このPR以外 0件（PR #19 はマージ済み）
+- doing タスク: 0 件（T017–T019 はこのブランチで実装完了。次は T020 が候補）
+- 2026-07-03: オーナー指示により要件を再定義（`docs/requirements-redefinition-2026-07.md`）。評価軸v2の実体化タスク T016–T020 を登録。T017–T019 を1PRとして実装。
 
 ## タスク一覧
 
@@ -36,9 +36,9 @@
 | T014 | advisory docs 2件のraw非採用と短縮dispositionを記録する | 未追跡 `docs/` advisory docs / AGENTS scanner drift | 中 | S | done(PR #16でマージ済み) |
 | T015 | PR #17後の確認済みスナップショットを同期し、自己同期PR番号の追跡ループを避ける | `HANDOFF.md` / `TASKS_BACKLOG.md` のPR #16時点表記 | 高 | S | done(この更新で完了) |
 | T016 | 要件再定義ドキュメントを追加する（市場・競合・評価軸v2・成功指標・タスク分解） | 2026-07-03 オーナー再定義指示 / `docs/requirements-redefinition-2026-07.md` | 高 | M | done(このPR) |
-| T017 | SKILL.md v2: 評価軸v2を反映（日本語表示・組版/日本のフォーム入力/WCAG 2.2観測可能集合を新設、判定フロー中心・トークン軽量） | `docs/requirements-redefinition-2026-07.md` §5 | 高 | M | todo |
-| T018 | `references/checklist.md` 新設と `examples/checklist.md` の適用例への役割変更 | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | todo(T017と同PR) |
-| T019 | README / CHANGELOG を SKILL.md v2 に同期する | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | todo(T017と同PR) |
+| T017 | SKILL.md v2: 評価軸v2を反映（日本語表示・組版/日本のフォーム入力/WCAG 2.2観測可能集合を新設、判定フロー中心・トークン軽量） | `docs/requirements-redefinition-2026-07.md` §5 | 高 | M | done(このPRで実装) |
+| T018 | `references/checklist.md` 新設と `examples/checklist.md` の適用例への役割変更 | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | done(T017と同PRで実装) |
+| T019 | README / CHANGELOG を SKILL.md v2 に同期する | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | done(T017と同PRで実装) |
 | T020 | 適用例の拡充（日本語フォームの合成レビュー例、false positive抑制例を含む） | `docs/requirements-redefinition-2026-07.md` §6 | 中 | S | todo |
 
 ## 検証ログ
@@ -68,6 +68,10 @@
 | `gh issue list --state open --limit 50 --json number,title,url` | 2026/06/30 13:20 JST pass: `[]` |
 | `gh pr list --state open --json number,title,url,headRefName,mergeStateStatus` | 2026/06/30 13:20 JST pass: `[]` |
 | `gh pr view 17 --json number,state,mergedAt,mergeCommit,title,url,headRefName,statusCheckRollup` | 2026/06/30 13:20 JST pass: PR #17 `MERGED` / merge commit `666dd6a` / Validation `SUCCESS` |
+| `pwsh -NoProfile -File scripts/test-public-readiness.ps1` | 2026-07-03 pass（T016 PR / T017–T019 PR の双方で実行） |
+| `pwsh -NoProfile -File scripts/test-scan-private-markers.ps1` | 2026-07-03 pass |
+| `pwsh -NoProfile -File scripts/scan-private-markers.ps1` | 2026-07-03 pass: `No private or secret markers found.`（git-tracked mode、新規 `references/checklist.md` はstage後に走査） |
+| `git diff --check --cached` | 2026-07-03 pass |
 
 ## skip
 
