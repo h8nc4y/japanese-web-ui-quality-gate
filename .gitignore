@@ -9,3 +9,6 @@ node_modules/
 # Local advisory originals are summarized in docs/advisory-review-disposition.md.
 docs/CLAUDE_CODE_REVIEW_2026-06-21.md
 docs/codex-task-scanner-hardening.md
+# Local handoff drafts contain private context and stay untracked.
+docs/CLAUDECODE_FABLE5_HANDOFF.md
+docs/CLAUDECODE_FABLE5_PROMPT.md
