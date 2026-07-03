@@ -13,7 +13,8 @@
 - 失敗しているローカル検証: 該当なし
 - 未コミット変更: なし（このdocs同期ブランチ着手前）。raw advisory docs 2件はignore対象。
 - GitHub open issues: 2026/06/30 13:20 JST時点0件。open PR: 2026/06/30 13:20 JST時点0件。PR #17は `666dd6a` でmerge済み、Validation `SUCCESS`
-- doing タスク: 0 件（T015 はこの更新で完了。確認済みスナップショットを記録するが、文書更新PR自身の番号だけを追い続ける追加同期PRは作らない）
+- doing タスク: 0 件（T016 はこの更新で完了。次は T017–T019 を1つのPRとして進める）
+- 2026-07-03: オーナー指示により要件を再定義（`docs/requirements-redefinition-2026-07.md`）。評価軸v2の実体化タスク T016–T020 を登録
 
 ## タスク一覧
 
@@ -34,6 +35,11 @@
 | T013 | PR #14 merge後の `HANDOFF.md` / `TASKS_BACKLOG.md` を現在状態へ同期する | 2026-06-29 Codex WIP | 高 | S | done(PR #15でマージ済み) |
 | T014 | advisory docs 2件のraw非採用と短縮dispositionを記録する | 未追跡 `docs/` advisory docs / AGENTS scanner drift | 中 | S | done(PR #16でマージ済み) |
 | T015 | PR #17後の確認済みスナップショットを同期し、自己同期PR番号の追跡ループを避ける | `HANDOFF.md` / `TASKS_BACKLOG.md` のPR #16時点表記 | 高 | S | done(この更新で完了) |
+| T016 | 要件再定義ドキュメントを追加する（市場・競合・評価軸v2・成功指標・タスク分解） | 2026-07-03 オーナー再定義指示 / `docs/requirements-redefinition-2026-07.md` | 高 | M | done(このPR) |
+| T017 | SKILL.md v2: 評価軸v2を反映（日本語表示・組版/日本のフォーム入力/WCAG 2.2観測可能集合を新設、判定フロー中心・トークン軽量） | `docs/requirements-redefinition-2026-07.md` §5 | 高 | M | todo |
+| T018 | `references/checklist.md` 新設と `examples/checklist.md` の適用例への役割変更 | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | todo(T017と同PR) |
+| T019 | README / CHANGELOG を SKILL.md v2 に同期する | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | todo(T017と同PR) |
+| T020 | 適用例の拡充（日本語フォームの合成レビュー例、false positive抑制例を含む） | `docs/requirements-redefinition-2026-07.md` §6 | 中 | S | todo |
 
 ## 検証ログ
 
