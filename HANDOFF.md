@@ -15,7 +15,7 @@
 
 ## 確認済みスナップショット
 
-- 既定ブランチは `main`。2026-07-03 時点で、PR #19（`docs/requirements-redefinition-v2`）が `main` にマージ済みで `docs/requirements-redefinition-2026-07.md` が追加された。本ブランチ `feat/skill-v2-evaluation-axes` で T017–T019（評価軸v2の実体化: `SKILL.md` v2 / `references/checklist.md` 新設 / `examples/checklist.md` 適用例化 / README・CHANGELOG同期）を実装した。
+- 既定ブランチは `main`。2026-07-03 時点で、PR #19（`docs/requirements-redefinition-v2`）が `main` にマージ済みで `docs/requirements-redefinition-2026-07.md` が追加された。PR #20（`feat/skill-v2-evaluation-axes`）で T017–T019（評価軸v2の実体化: `SKILL.md` v2 / `references/checklist.md` 新設 / `examples/checklist.md` 適用例化 / README・CHANGELOG同期）が `main` にマージ済み。本ブランチ `docs/t020-passing-example` で T020（`examples/passing-review.md` 新設・guard適用のpassing例）を実装した。
 - 既定ブランチは `main`。2026/06/30 13:20 JST 時点で、この更新ブランチ作成前の `main` は PR #17 merge commit `666dd6a` まで `origin/main` と同期済み。GitHub open issue / open PR は 0件。
 - タスク棚卸し（`TASKS_BACKLOG.md` / 旧 `HANDOFF.md`）は PR #8 で `main` にマージ済み。棚卸し用ブランチ `chore-tasks-backlog-inventory` は削除済み。
 - その後、自律運用契約 `AGENTS.md` を追加（このファイルの現状反映を含む）。
@@ -51,6 +51,7 @@
 | `T017` `SKILL.md` v2: 評価軸v2（7軸構成）を反映 | done（このブランチで実装） |
 | `T018` `references/checklist.md` 新設・`examples/checklist.md` を適用例へ役割変更 | done（このブランチで実装） |
 | `T019` README / CHANGELOG を `SKILL.md` v2 に同期 | done（このブランチで実装） |
+| `T020` 適用例の拡充（`examples/passing-review.md` 新設、guard適用のpassing例） | done（このブランチで実装） |
 
 ## 未完了 / skip タスク
 
@@ -122,7 +123,6 @@ Windows PowerShell の互換実行例は README の `Validation` セクション
 
 ## 次にやるべき候補
 
-1. T020: 適用例の拡充（日本語フォームの合成レビュー例をさらに追加。良いUIを不当に落とさない例を含む）。優先度は中。
-2. §5 の優先度ルールに従い、既存ドキュメント/挙動の不整合・陳腐化を次の1件として探す。PR番号だけを追う自己同期は優先タスクにしない。
-3. リリース（v0.2.0タグ等）・カタログ掲載は §6 ゲート①/Non-Goalsのため引き続きスコープ外。
-4. §6 ゲート該当（release/tag・有料API・secret/実データ・製品要件変更）に当たったら停止して承認を仰ぐ。
+1. §5 の優先度ルールに従い、既存ドキュメント/挙動の不整合・陳腐化を次の1件として探す。PR番号だけを追う自己同期は優先タスクにしない。
+2. リリース（v0.2.0タグ等）・カタログ掲載は §6 ゲート①/Non-Goalsのため引き続きスコープ外。
+3. §6 ゲート該当（release/tag・有料API・secret/実データ・製品要件変更）に当たったら停止して承認を仰ぐ。

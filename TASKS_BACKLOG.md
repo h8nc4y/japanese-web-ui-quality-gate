@@ -5,16 +5,17 @@
 ## 棚卸しサマリー
 
 - 棚卸し日時: 2026/06/11 20:52 JST
-- 最終更新: 2026-07-03
-- 対象ブランチ: `feat/skill-v2-evaluation-axes`（`main` は PR #19 merge commit まで `docs/requirements-redefinition-2026-07.md` 反映済み）
+- 最終更新: 2026-07-06
+- 対象ブランチ: `docs/t020-passing-example`（`main` は T017–T019 実装分まで反映済み）
 - タスク管理: このファイル（`TASKS_BACKLOG.md`）＋運用契約 `AGENTS.md`
-- README / docs の未完了項目: 該当なし（T017–T019実装分はこのブランチで反映済み）
+- README / docs の未完了項目: 該当なし（T020実装分はこのブランチで反映済み）
 - コード内 TODO / FIXME: 該当なし
-- 失敗しているローカル検証: 該当なし（2026-07-03 に check:all 3本 pass、`git diff --check` pass）
-- 未コミット変更: なし（T017–T019 の変更はこのPRのコミットに含めて解消）
-- GitHub open issues: 2026-07-03 時点 0件。open PR: このPR以外 0件（PR #19 はマージ済み）
-- doing タスク: 0 件（T017–T019 はこのブランチで実装完了。次は T020 が候補）
+- 失敗しているローカル検証: 該当なし（2026-07-06 に check:all 3本 pass、`git diff --check` pass）
+- 未コミット変更: なし（T020 の変更はこのPRのコミットに含めて解消）
+- GitHub open issues: 2026-07-06 時点 0件。open PR: このPR以外 0件（PR #19 / #20 はマージ済み）
+- doing タスク: 0 件（T020 はこのブランチで実装完了）
 - 2026-07-03: オーナー指示により要件を再定義（`docs/requirements-redefinition-2026-07.md`）。評価軸v2の実体化タスク T016–T020 を登録。T017–T019 を1PRとして実装。
+- 2026-07-06: T020（適用例拡充・guard適用のpassing例）を `examples/passing-review.md` として実装。
 
 ## タスク一覧
 
@@ -39,7 +40,7 @@
 | T017 | SKILL.md v2: 評価軸v2を反映（日本語表示・組版/日本のフォーム入力/WCAG 2.2観測可能集合を新設、判定フロー中心・トークン軽量） | `docs/requirements-redefinition-2026-07.md` §5 | 高 | M | done(このPRで実装) |
 | T018 | `references/checklist.md` 新設と `examples/checklist.md` の適用例への役割変更 | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | done(T017と同PRで実装) |
 | T019 | README / CHANGELOG を SKILL.md v2 に同期する | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | done(T017と同PRで実装) |
-| T020 | 適用例の拡充（日本語フォームの合成レビュー例、false positive抑制例を含む） | `docs/requirements-redefinition-2026-07.md` §6 | 中 | S | todo |
+| T020 | 適用例の拡充（日本語フォームの合成レビュー例、false positive抑制例を含む） | `docs/requirements-redefinition-2026-07.md` §6 | 中 | S | done(このPR) |
 
 ## 検証ログ
 
@@ -72,6 +73,10 @@
 | `pwsh -NoProfile -File scripts/test-scan-private-markers.ps1` | 2026-07-03 pass |
 | `pwsh -NoProfile -File scripts/scan-private-markers.ps1` | 2026-07-03 pass: `No private or secret markers found.`（git-tracked mode、新規 `references/checklist.md` はstage後に走査） |
 | `git diff --check --cached` | 2026-07-03 pass |
+| `pwsh -NoProfile -File scripts/test-public-readiness.ps1` | 2026-07-06 pass（T020 PR） |
+| `pwsh -NoProfile -File scripts/test-scan-private-markers.ps1` | 2026-07-06 pass |
+| `pwsh -NoProfile -File scripts/scan-private-markers.ps1` | 2026-07-06 pass: `No private or secret markers found.`（git-tracked mode、新規 `examples/passing-review.md` はstage後に走査） |
+| `git diff --check --cached` | 2026-07-06 pass |
 
 ## skip
 

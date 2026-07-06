@@ -113,6 +113,7 @@ Synthetic applied examples are in [`examples/`](examples/):
 - [`review-request.md`](examples/review-request.md) — a synthetic request for a review.
 - [`final-report-template.md`](examples/final-report-template.md) — a synthetic honest-reporting report skeleton.
 - [`checklist.md`](examples/checklist.md) — a synthetic applied example: a filled-in review of an invented Japanese member-signup form, with representative pass/fail/未確認 findings across all 7 axes.
+- [`passing-review.md`](examples/passing-review.md) — a synthetic passing review of an invented equipment-booking dashboard, showing the guard items preventing unfair failures on a sufficiently good UI.
 
 ## Limitations
 
