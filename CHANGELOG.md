@@ -11,6 +11,7 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 - `docs/requirements-redefinition-2026-07.md` recording the 2026-07 requirements redefinition (market review, evaluation axes v2, success metrics, task breakdown).
 - `references/checklist.md`: a new 80-item detailed checklist covering all 7 evaluation axes in `SKILL.md` v2, split out for progressive disclosure.
 - `AGENTS.md` documenting the autonomous agent development workflow, `check:all` verification, and the human-approval gates.
+- `examples/passing-review.md`: a synthetic passing applied example (an invented equipment-booking dashboard) showing guard items correctly applied so a sufficiently good UI is not unfairly failed, complementing the fail-heavy example in `examples/checklist.md`.
 
 ### Changed
 
