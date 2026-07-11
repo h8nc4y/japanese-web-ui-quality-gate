@@ -5,17 +5,18 @@
 ## 棚卸しサマリー
 
 - 棚卸し日時: 2026/06/11 20:52 JST
-- 最終更新: 2026-07-06
-- 対象ブランチ: `docs/t020-passing-example`（`main` は T017–T019 実装分まで反映済み）
+- 最終更新: 2026-07-11
+- 対象ブランチ: `main`（PR #23 merge commit `efa47dd` まで反映済み）
 - タスク管理: このファイル（`TASKS_BACKLOG.md`）＋運用契約 `AGENTS.md`
-- README / docs の未完了項目: 該当なし（T020実装分はこのブランチで反映済み）
+- README / docs の未完了項目: 該当なし（T021 の examples v2 同期まで `main` 反映済み）
 - コード内 TODO / FIXME: 該当なし
-- 失敗しているローカル検証: 該当なし（2026-07-06 に check:all 3本 pass、`git diff --check` pass）
-- 未コミット変更: なし（T020 の変更はこのPRのコミットに含めて解消）
-- GitHub open issues: 2026-07-06 時点 0件。open PR: このPR以外 0件（PR #19 / #20 はマージ済み）
-- doing タスク: 0 件（T020 はこのブランチで実装完了）
+- 失敗しているローカル検証: 該当なし（2026-07-11 に check:all 3本 pass、`git diff --check --cached` pass）
+- 未コミット変更: なし
+- GitHub open issues: 2026-07-11 時点 0件。open PR: 0件（PR #23 マージ済み）
+- doing タスク: 0 件
 - 2026-07-03: オーナー指示により要件を再定義（`docs/requirements-redefinition-2026-07.md`）。評価軸v2の実体化タスク T016–T020 を登録。T017–T019 を1PRとして実装。
 - 2026-07-06: T020（適用例拡充・guard適用のpassing例）を `examples/passing-review.md` として実装。
+- 2026-07-11: T021（examples 残り2件の v2 同期）を PR #23 で実装・マージ。次エージェント向けに T022–T025 を受け入れ条件つきで登録（下記「未完了タスクの受け入れ条件」）。
 
 ## タスク一覧
 
@@ -40,7 +41,41 @@
 | T017 | SKILL.md v2: 評価軸v2を反映（日本語表示・組版/日本のフォーム入力/WCAG 2.2観測可能集合を新設、判定フロー中心・トークン軽量） | `docs/requirements-redefinition-2026-07.md` §5 | 高 | M | done(このPRで実装) |
 | T018 | `references/checklist.md` 新設と `examples/checklist.md` の適用例への役割変更 | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | done(T017と同PRで実装) |
 | T019 | README / CHANGELOG を SKILL.md v2 に同期する | `docs/requirements-redefinition-2026-07.md` §8 | 高 | S | done(T017と同PRで実装) |
-| T020 | 適用例の拡充（日本語フォームの合成レビュー例、false positive抑制例を含む） | `docs/requirements-redefinition-2026-07.md` §6 | 中 | S | done(このPR) |
+| T020 | 適用例の拡充（日本語フォームの合成レビュー例、false positive抑制例を含む） | `docs/requirements-redefinition-2026-07.md` §6 | 中 | S | done(PR #22でマージ済み) |
+| T021 | `examples/review-request.md` / `examples/final-report-template.md` を SKILL.md v2 の7軸へ同期する | 整合性（v2化からの examples 同期漏れ） | 高 | S | done(PR #23でマージ済み) |
+| T022 | `scripts/test-public-readiness.ps1` にチェックリスト項目数のドリフト検出を追加する | 整合性の恒久化（README「80 checks / 7 axes」表記の陳腐化防止） | 高 | S | todo |
+| T023 | 要件再定義 §4 の反証条件ウォッチ（競合 skill の日本語対応動向の時点付き再調査） | `docs/requirements-redefinition-2026-07.md` §4 | 中 | S | todo |
+| T024 | v0.2.0 リリース準備（CHANGELOG整理・リリースノート案・承認依頼文の作成まで） | `CHANGELOG.md` `[Unreleased]` の蓄積 | 中 | S | todo（タグ発行はゲート①のため停止） |
+| T025 | 旧引き継ぎ文書2件に「歴史的スナップショット」注記を追加する | 陳腐化解消（`docs/CLAUDECODE_FABLE5_*.md` が旧状態を記載） | 高 | S | todo |
+
+## 未完了タスクの受け入れ条件
+
+着手順は `AGENTS.md` §5 の優先度ルールに従い **T025 → T022 → T023 → T024** を推奨。doing は常に1件、1 PR = 1 改善。
+
+### T025（陳腐化解消・規模S）
+
+- `docs/CLAUDECODE_FABLE5_HANDOFF.md` と `docs/CLAUDECODE_FABLE5_PROMPT.md` の冒頭に、「2026-07-02 時点の歴史的スナップショットであり、現状の正本は `HANDOFF.md` / `TASKS_BACKLOG.md`」という趣旨の注記を追加する。
+- 本文の書き換え・削除はしない（履歴資料として保存）。
+- check:all 3本緑。
+
+### T022（scripts 堅牢化・規模S）
+
+- `scripts/test-public-readiness.ps1` に、`references/checklist.md` の `- [ ]` 項目数（現在80）と `## ` 節数（現在7）を実測し、`README.md` 内の項目数・軸数の記載と一致しない場合に fail するチェックを追加する。
+- 数値そのものをスクリプトへハードコードせず、checklist 実測値と README 記載値の**相互比較**にする（項目追加時に両方更新すれば緑になる形）。
+- `scripts/test-scan-private-markers.ps1` の対象（marker 判定ロジック）には触れない。触れる場合は `AGENTS.md` §10 の外部レビュー基準に該当する。
+- 意図的に README の数を壊した場合に fail することをローカルで確認してから戻す（確認結果を PR に実値で記録）。
+
+### T023（調査・記録・規模S）
+
+- 汎用競合 skill（web-design-guidelines 等の UI レビュー系）が日本語組版・日本のフォーム慣行を取り込んでいないかを Web で再調査し、反証条件（`docs/requirements-redefinition-2026-07.md` §4）への該当有無を判断する。
+- 結果は `docs/requirements-redefinition-2026-07.md` への追記または時点付きの新規 docs として記録。出典は `AGENTS.md` §8 に従い**非 GitHub URL と名称のみ**。未確認は `未確認` と明記。
+- 反証条件に該当する動きが見つかった場合は、対応方針の変更が §6 ゲート④（製品要件の変更）に当たるため、記録までで停止して承認を仰ぐ。
+
+### T024（リリース準備・ゲート①手前まで）
+
+- `CHANGELOG.md` `[Unreleased]` を v0.2.0 セクション案として整理し、リリースノート案を作成する。
+- `AGENTS.md` §6 のフォーマットでタグ発行（`v0.2.0`）の承認依頼文を用意する。
+- **タグ発行・GitHub release 作成・publish 系 Actions 追加は実行しない**（ゲート①）。承認依頼を出して停止する。
 
 ## 検証ログ
 
@@ -77,6 +112,12 @@
 | `pwsh -NoProfile -File scripts/test-scan-private-markers.ps1` | 2026-07-06 pass |
 | `pwsh -NoProfile -File scripts/scan-private-markers.ps1` | 2026-07-06 pass: `No private or secret markers found.`（git-tracked mode、新規 `examples/passing-review.md` はstage後に走査） |
 | `git diff --check --cached` | 2026-07-06 pass |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-11 pass（ベースライン確認とT021 PRの双方で実行） |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-11 pass |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-11 pass: `No private or secret markers found.`（git-tracked mode） |
+| `git diff --check --cached` | 2026-07-11 pass |
+| `gh pr list --state open` / `gh issue list --state open` | 2026-07-11 いずれも `[]` |
+| PR #23 CI（Validation） | 2026-07-11 `SUCCESS`、merge commit `efa47dd` |
 
 ## skip
 
