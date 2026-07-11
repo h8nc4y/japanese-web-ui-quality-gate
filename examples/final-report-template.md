@@ -5,6 +5,7 @@
 - Tooling used: 未確認
 - Viewports checked: 未確認
 - Pages or states checked: 未確認
+- Axes covered (of the 7 in `SKILL.md`): 未確認
 
 ## Findings
 
