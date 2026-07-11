@@ -1,10 +1,12 @@
 # 要件再定義 2026-07: japanese-web-ui-quality-gate
 
-作成日: 2026-07-03 JST
-状態: ドラフト → 外部レビュー（別の AI アシスタントによる敵対的レビュー）反映済み → 実装待ち
+作成日: 2026-07-03 JST（状態更新: 2026-07-12）
+状態: ドラフト → 外部レビュー（別の AI アシスタントによる敵対的レビュー）反映済み → **実装済み**（§8 のタスク分解は PR #19〜#22 で `main` 反映。後続の examples 同期 T021 は PR #23）
 位置づけ: 本書は**既存ミッション（日本の非プログラマー向け Web UI 品質ゲート）配下の v2 要件案**である。skill の目的・対象ユーザー・公開方針は変更しない。オーナーの再定義指示（2026-07-03）に基づき、市場・利用者・価値仮説・成功指標から要件を洗い直した。利用者向けの正本は引き続き `SKILL.md` / `README.md` であり、本書は要件判断の記録である。
 
-## 1. 既存資料マップ（確認済み事実）
+## 1. 既存資料マップ（再定義時点 2026-07-03 の状態記録）
+
+> 本節は再定義判断の前提を保存した歴史的記録である。現状の資料マップは `HANDOFF.md` を正とする。
 
 | 資料 | 役割 | 状態 |
 | --- | --- | --- |
@@ -112,11 +114,13 @@
 
 | ID | タスク | 成果物 | 状態 |
 | --- | --- | --- | --- |
-| T016 | 要件再定義ドキュメントの追加（本書） | `docs/requirements-redefinition-2026-07.md` | 本 PR |
-| T017 | SKILL.md v2: 評価軸 v2 を反映（B/C/D 新設、A/E 強化、F/G 維持。判定フロー中心・トークン軽量） | `SKILL.md` | 後続 PR |
-| T018 | `references/checklist.md` 新設（軸別詳細チェックリスト）＋ `examples/checklist.md` を適用例へ役割変更 | `references/` / `examples/` | T017 と同 PR |
-| T019 | README / CHANGELOG 同期(What It Enforces、インストール手順に references を含める、Unreleased 記載) | `README.md` / `CHANGELOG.md` | T017 と同 PR |
-| T020 | 適用例の拡充（日本語フォームの合成レビュー例。良い UI を不当に落とさない例を含む） | `examples/` | 任意・後続 |
+| T016 | 要件再定義ドキュメントの追加（本書） | `docs/requirements-redefinition-2026-07.md` | done（PR #19） |
+| T017 | SKILL.md v2: 評価軸 v2 を反映（B/C/D 新設、A/E 強化、F/G 維持。判定フロー中心・トークン軽量） | `SKILL.md` | done（PR #20） |
+| T018 | `references/checklist.md` 新設（軸別詳細チェックリスト）＋ `examples/checklist.md` を適用例へ役割変更 | `references/` / `examples/` | done（PR #20） |
+| T019 | README / CHANGELOG 同期(What It Enforces、インストール手順に references を含める、Unreleased 記載) | `README.md` / `CHANGELOG.md` | done（PR #20） |
+| T020 | 適用例の拡充（日本語フォームの合成レビュー例。良い UI を不当に落とさない例を含む） | `examples/` | done（PR #22） |
+
+本表のタスクはすべて実装済み。後続タスク（T021 以降）の台帳は `TASKS_BACKLOG.md` で管理する。
 
 ## 9. 未確認事項と gate
 
