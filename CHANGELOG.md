@@ -11,7 +11,7 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 - `docs/requirements-redefinition-2026-07.md` recording the 2026-07 requirements redefinition (market review, evaluation axes v2, success metrics, task breakdown).
 - `references/checklist.md`: a new 80-item detailed checklist covering all 7 evaluation axes in `SKILL.md` v2, split out for progressive disclosure.
 - `AGENTS.md` documenting the autonomous agent development workflow, `check:all` verification, and the human-approval gates.
-- `docs/CODEX_PROMPT_2026-07-11.md`: a dated handoff prompt for the next autonomous agent session, covering the remaining backlog tasks (T022–T025) with their acceptance criteria recorded in `TASKS_BACKLOG.md`.
+- `docs/CODEX_PROMPT_2026-07-12.md`: a dated handoff prompt for the next autonomous agent session, covering the remaining backlog tasks (T022–T024) with their acceptance criteria recorded in `TASKS_BACKLOG.md` (supersedes the 2026-07-11 version).
 - `examples/passing-review.md`: a synthetic passing applied example (an invented equipment-booking dashboard) showing guard items correctly applied so a sufficiently good UI is not unfairly failed, complementing the fail-heavy example in `examples/checklist.md`.
 
 ### Changed
@@ -23,7 +23,11 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 - The private-marker scanner now defaults to git-tracked files, skips binary-like files, reports line numbers, adds AWS/GCP/Slack/Stripe/PEM coverage, and avoids treating `task-scanner`-style slugs as OpenAI-style tokens.
 - Validation command examples now use the same `pwsh -NoProfile -ExecutionPolicy Bypass -File` form across README, contribution, security, and pull request guidance.
 - `CHANGELOG.md` now describes semantic versioning as active for versioned releases.
-- `HANDOFF.md` and `TASKS_BACKLOG.md` updated to reflect the merged task inventory and the autonomous operating model.
+- `HANDOFF.md` and `TASKS_BACKLOG.md` updated to reflect the merged task inventory and the autonomous operating model, then streamlined in the 2026-07-12 documentation cleanup: `HANDOFF.md` gained a document map pointing to each source of truth, `TASKS_BACKLOG.md` moved historical verification logs and sync narratives to git history, and `docs/requirements-redefinition-2026-07.md` now records its implemented status per task.
+
+### Removed
+
+- Stale tracked documents, superseded by current sources of truth (dispositions recorded in `docs/advisory-review-disposition.md`, contents preserved in git history): `NOTES_CLAUDE.md` (scanner-hardening work notes absorbed into `scripts/`, `SECURITY.md`, and this changelog), `docs/CLAUDECODE_HANDOFF.md` (generic handoff consolidated into `AGENTS.md` and `HANDOFF.md`), and `docs/CODEX_PROMPT_2026-07-11.md` (replaced by the 2026-07-12 prompt).
 
 ## [0.1.0] - 2026-06-06
 

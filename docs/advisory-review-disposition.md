@@ -1,6 +1,6 @@
 # Advisory review disposition
 
-確認日: 2026-06-30 JST
+確認日: 2026-06-30 JST（追記: 2026-07-12 文書整理）
 
 ## 結論
 
@@ -24,6 +24,18 @@
 | cleanup失敗が検証結果を隠す問題 | 対応済み。PR #12で cleanup境界を整理し、tracked-marker assertion は fail-fast のまま保持 | `TASKS_BACKLOG.md` T009, `HANDOFF.md` |
 | 本レビュー追加後の `check:all` 再実行 | 対応済み。PR #15までの検証履歴に加え、本disposition PRでも再検証する | `HANDOFF.md` / `TASKS_BACKLOG.md` の検証ログ |
 | GitHub private vulnerability reporting のrepo設定 | 未確認。GitHub repository settings側の状態であり、docs更新PRでは変更しない | `SECURITY.md` はprivate reportingが使える場合の導線とpublic fallbackを記載済み |
+
+## 2026-07-12 文書整理
+
+オーナー指示による docs 全体整理として、tracked の陳腐化文書3件を削除した。内容は git 履歴に保存されており、必要な事実は下表の反映先に残っている。
+
+| 削除ファイル | 理由 / 反映先 |
+| --- | --- |
+| `NOTES_CLAUDE.md` | scanner hardening 実装スライスの作業メモ。実装内容は `scripts/` と `SECURITY.md`、判断記録は本書と `CHANGELOG.md` に反映済み |
+| `docs/CLAUDECODE_HANDOFF.md` | 世代交代用の汎用引き継ぎ文書。運用契約は `AGENTS.md`、現況スナップショットは `HANDOFF.md` に一本化 |
+| `docs/CODEX_PROMPT_2026-07-11.md` | `docs/CODEX_PROMPT_2026-07-12.md` へ置き換え（残タスクの変化を反映） |
+
+未追跡・ignore 済みのローカル原本（本書「原本の扱い」の2件、および旧引き継ぎドラフト2件）の扱いは従来どおり変更しない（track しない・raw 採用しない）。
 
 ## 今後の扱い
 
