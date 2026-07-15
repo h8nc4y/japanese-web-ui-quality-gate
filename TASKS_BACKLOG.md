@@ -70,7 +70,7 @@
 
 ## 外部レビュー指摘の台帳（2026-07-15 maxエフォート横断レビュー）
 
-読取専用レビュー（実行検証なし）の指摘。採否と実装は次担当が判断する。完了時は行頭を [x] にし、対応PRを追記する。
+読取専用レビュー（実行検証なし）の指摘。採否と実装は次担当が判断する。完了時は行頭を [x] にし、対応PRを追記する。4件とも PR #28 で対応済み。
 
 - [x] scan-private-markers.ps1:77-80 — fallback(walk)モードの除外にdocsが入っているが本repoのdocs/は追跡済み(git不在環境で検査ギャップ)。最小修正: 除外からdocsを外すかコメント修正。confidence高（除外からdocsを外し、コメントを実態へ修正。walkモードでdocs/配下のmarkerを検出する自己テスト追加）
 - [x] 同:241-244 — ErrorActionPreference=Stop下のWrite-Errorはthrowし、& 呼び出し元セッションを巻き添え終了。最小修正: Write-Host+exit 1。confidence高/実害低（Write-Host+exit 1へ変更）
