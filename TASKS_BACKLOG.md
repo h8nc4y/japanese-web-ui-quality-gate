@@ -70,9 +70,9 @@
 
 ## 外部レビュー指摘の台帳（2026-07-15 maxエフォート横断レビュー）
 
-読取専用レビュー（実行検証なし）の指摘。採否と実装は次担当が判断する。完了時は行頭を [x] にし、対応PRを追記する。
+読取専用レビュー（実行検証なし）の指摘。採否と実装は次担当が判断する。完了時は行頭を [x] にし、対応PRを追記する。4件とも PR #28 で対応済み。
 
-- [ ] scan-private-markers.ps1:77-80 — fallback(walk)モードの除外にdocsが入っているが本repoのdocs/は追跡済み(git不在環境で検査ギャップ)。最小修正: 除外からdocsを外すかコメント修正。confidence高
-- [ ] 同:241-244 — ErrorActionPreference=Stop下のWrite-Errorはthrowし、& 呼び出し元セッションを巻き添え終了。最小修正: Write-Host+exit 1。confidence高/実害低
-- [ ] 同:198 — Get-Contentにエンコーディング指定なし(PS5.1でBOMなしUTF-8日本語のCJK検出劣化)。最小修正: -Encoding UTF8。confidence中
-- [ ] 同:46-47 — (ドライブ文字+Users)型パスが2ルール二重ヒットし報告重複。confidence高
+- [x] scan-private-markers.ps1:77-80 — fallback(walk)モードの除外にdocsが入っているが本repoのdocs/は追跡済み(git不在環境で検査ギャップ)。最小修正: 除外からdocsを外すかコメント修正。confidence高（除外からdocsを外し、コメントを実態へ修正。walkモードでdocs/配下のmarkerを検出する自己テスト追加）
+- [x] 同:241-244 — ErrorActionPreference=Stop下のWrite-Errorはthrowし、& 呼び出し元セッションを巻き添え終了。最小修正: Write-Host+exit 1。confidence高/実害低（Write-Host+exit 1へ変更）
+- [x] 同:198 — Get-Contentにエンコーディング指定なし(PS5.1でBOMなしUTF-8日本語のCJK検出劣化)。最小修正: -Encoding UTF8。confidence中（-Encoding UTF8を明示）
+- [x] 同:46-47 — (ドライブ文字+Users)型パスが2ルール二重ヒットし報告重複。confidence高（汎用ルールに`(?!Users\\)`の除外を追加し専用ルールのみが報告。二重ヒット解消＋非Usersパス検出維持の自己テスト追加）
