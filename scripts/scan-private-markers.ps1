@@ -44,7 +44,9 @@ $patterns = @(
     @{ Name = "Authorization token header"; Pattern = "Bear" + "er\s+[A-Za-z0-9._~+/-]{8,}=*" },
     @{ Name = "Private key block"; Pattern = "BEGIN" + " (RSA |EC |OPENSSH |ENCRYPTED |DSA |)?PRIVATE KEY" },
     @{ Name = "Windows user absolute path"; Pattern = "[A-Za-z]:\\Users\\" },
-    @{ Name = "Windows absolute path"; Pattern = "[A-Za-z]:\\[A-Za-z0-9_. -]+\\[A-Za-z0-9_. -]+" },
+    # The generic rule excludes X:\Users\... so a user-profile path is reported once by the
+    # dedicated rule above instead of twice (matching is IgnoreCase, so users\ is covered too).
+    @{ Name = "Windows absolute path"; Pattern = "[A-Za-z]:\\(?!Users\\)[A-Za-z0-9_. -]+\\[A-Za-z0-9_. -]+" },
     @{ Name = "Unix home absolute path"; Pattern = "/(Users|home)/[^/\s]+" },
     @{ Name = "Email address"; Pattern = "\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b" }
 )
@@ -74,10 +76,11 @@ $githubRepositoryUrlPattern = "https?://github\.com/([^/\s?#]+)/([^/\s?#]+)"
 
 # Directory exclusions used only by the filesystem-walk fallback. When git-tracked
 # enumeration is used these are redundant (git already excludes ignored paths), but they
-# keep the fallback aligned with .gitignore intent (docs/.claude/.codex are untracked work
-# areas that must not trip the scan when git is unavailable).
+# keep the fallback aligned with .gitignore intent (.claude/.codex are untracked work
+# areas that must not trip the scan when git is unavailable). docs/ is tracked content in
+# this repository, so the fallback walk must scan it like any other published directory.
 $excludedDirectories = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-@(".git", ".test-tmp", "node_modules", "vendor", "dist", "build", ".claude", ".codex", "docs") | ForEach-Object { [void]$excludedDirectories.Add($_) }
+@(".git", ".test-tmp", "node_modules", "vendor", "dist", "build", ".claude", ".codex") | ForEach-Object { [void]$excludedDirectories.Add($_) }
 
 # Restrict scanning to text-like files. Binary assets (images/fonts/archives) are skipped to
 # avoid byte-noise false positives and wasted IO. Unknown/no-extension files fall through to
@@ -195,7 +198,9 @@ $hits = @()
 foreach ($file in $files) {
     # Read line-by-line (not -Raw) so we can report line numbers and a redacted excerpt,
     # cutting the cost of triaging a hit.
-    $lines = Get-Content -LiteralPath $file.FullName -ErrorAction SilentlyContinue
+    # Explicit UTF-8 so Windows PowerShell-style ANSI fallbacks never misread BOM-less
+    # Japanese text (repo convention: UTF-8 without BOM).
+    $lines = Get-Content -LiteralPath $file.FullName -Encoding UTF8 -ErrorAction SilentlyContinue
     if ($null -eq $lines) { continue }
 
     $relativeFile = Get-PathRelativeToScanRoot -TargetPath $file.FullName
@@ -240,7 +245,9 @@ Write-Host "Scan mode: $($script:ScanMode) (git-tracked = only files committed/s
 
 if ($hits.Count -gt 0) {
     $hits | Sort-Object File, Line, Marker | Format-Table -AutoSize File, Line, Marker
-    Write-Error "Potential private or secret markers found. Review and remove or explicitly justify each hit before publishing."
+    # Under ErrorActionPreference=Stop, Write-Error would become terminating and never
+    # reach `exit 1`; report via Write-Host and exit explicitly for a stable exit code.
+    Write-Host "Potential private or secret markers found. Review and remove or explicitly justify each hit before publishing."
     exit 1
 }
 

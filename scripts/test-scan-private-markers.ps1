@@ -240,6 +240,57 @@ finally {
     Remove-TestDirectory -Directory $openAiBoundaryDirectory
 }
 
+# --- Double-hit suppression: a (drive letter + Users) path must be reported once by the
+#     dedicated "Windows user absolute path" rule only, not also by the generic
+#     "Windows absolute path" rule. The fixture path is assembled at runtime so this test
+#     file itself does not carry a literal Windows absolute path that the repo scan would flag. ---
+$windowsUserPathDirectory = New-TestDirectory
+try {
+    $windowsUserPath = "C:" + "\" + "Users" + "\" + "someone" + "\" + "notes.txt"
+    Set-Content -LiteralPath (Join-Path $windowsUserPathDirectory "doc.md") -Value ("Path: " + $windowsUserPath) -Encoding UTF8
+    $windowsUserPathResult = Invoke-Scanner -ScanPath $windowsUserPathDirectory -NoGit
+    Assert-ExitCode -Result $windowsUserPathResult -Expected 1 -Description "Windows user absolute path"
+    Assert-OutputContains -Result $windowsUserPathResult -Pattern "Windows user absolute path" -Description "Windows user absolute path"
+    # Single-rule guarantee: the generic marker name must not appear for the same path.
+    # ("Windows absolute path" is not a substring of "Windows user absolute path".)
+    if ([regex]::IsMatch($windowsUserPathResult.Output, "Windows absolute path", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
+        Add-Failure "Windows user absolute path was double-reported by the generic Windows absolute path rule."
+    }
+}
+finally {
+    Remove-TestDirectory -Directory $windowsUserPathDirectory
+}
+
+# --- Generic Windows absolute path rule still fires for non-Users paths (the Users
+#     exclusion must not silence unrelated absolute paths). ---
+$windowsGenericPathDirectory = New-TestDirectory
+try {
+    $windowsGenericPath = "D:" + "\" + "Work" + "\" + "notes.txt"
+    Set-Content -LiteralPath (Join-Path $windowsGenericPathDirectory "doc.md") -Value ("Path: " + $windowsGenericPath) -Encoding UTF8
+    $windowsGenericPathResult = Invoke-Scanner -ScanPath $windowsGenericPathDirectory -NoGit
+    Assert-ExitCode -Result $windowsGenericPathResult -Expected 1 -Description "generic Windows absolute path"
+    Assert-OutputContains -Result $windowsGenericPathResult -Pattern "Windows absolute path" -Description "generic Windows absolute path"
+}
+finally {
+    Remove-TestDirectory -Directory $windowsGenericPathDirectory
+}
+
+# --- Fallback walk scans docs/: docs is tracked content in this repository, so a private
+#     marker under docs/ must be detected even in walk (-NoGit) mode. ---
+$docsWalkDirectory = New-TestDirectory
+try {
+    $docsSubdirectory = Join-Path $docsWalkDirectory "docs"
+    New-Item -ItemType Directory -Force -Path $docsSubdirectory | Out-Null
+    $docsToken = ("s" + "k-" + "docsWalkMarker1234567890")
+    Set-Content -LiteralPath (Join-Path $docsSubdirectory "note.md") -Value ("Token: " + $docsToken) -Encoding UTF8
+    $docsWalkResult = Invoke-Scanner -ScanPath $docsWalkDirectory -NoGit
+    Assert-ExitCode -Result $docsWalkResult -Expected 1 -Description "walk mode scans docs directory"
+    Assert-OutputContains -Result $docsWalkResult -Pattern "OpenAI-style token" -Description "walk mode scans docs directory"
+}
+finally {
+    Remove-TestDirectory -Directory $docsWalkDirectory
+}
+
 # --- Binary files are skipped (NUL-byte detection): a synthetic token inside a binary blob
 #     must not be read/flagged. ---
 $binaryDirectory = New-TestDirectory
