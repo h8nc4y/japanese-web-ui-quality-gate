@@ -6,23 +6,16 @@
 
 - 対象ブランチ: `main`
 - doing タスク: 0件。GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）: 2026-07-22 pass。直近の `main` CI（`validation.yml`）: 緑
+- check:all 3本（`AGENTS.md` §7）: 2026-07-22 pass。T022 merge 後の `main` CI（`validation.yml`）: 緑
 - コード内 TODO / FIXME・失敗中の検証・未コミット変更: なし
 
 ## 未完了タスク
 
-着手順は `AGENTS.md` §5 の優先度ルールに従い **T023 → T024** を推奨。
+次は **T024** を進める。
 
 | ID | タスク | 出典 | 優先度 | 規模 |
 | --- | --- | --- | --- | --- |
-| T023 | 要件再定義 §4 の反証条件ウォッチ（競合 skill の日本語対応動向の時点付き再調査） | `docs/requirements-redefinition-2026-07.md` §4 | 中 | S |
 | T024 | v0.2.0 リリース準備（CHANGELOG 整理・リリースノート案・承認依頼文の作成まで） | `CHANGELOG.md` `[Unreleased]` の蓄積 | 中 | S |
-
-### T023 受け入れ条件（調査・記録）
-
-- 汎用競合 skill（web-design-guidelines 等の UI レビュー系）が日本語組版・日本のフォーム慣行を取り込んでいないかを Web で再調査し、反証条件（`docs/requirements-redefinition-2026-07.md` §4)への該当有無を判断する。
-- 結果は `docs/requirements-redefinition-2026-07.md` への追記または時点付きの新規 docs として記録。出典は `AGENTS.md` §8 に従い**非 GitHub URL と名称のみ**。未確認は `未確認` と明記。
-- 反証条件に該当する動きが見つかった場合は、対応方針の変更が §6 ゲート④（製品要件の変更）に当たるため、記録までで停止して承認を仰ぐ。
 
 ### T024 受け入れ条件（リリース準備・ゲート①手前まで）
 
@@ -45,6 +38,7 @@
 | T020 | guard 適用の passing 適用例 `examples/passing-review.md` 新設 | PR #22 |
 | T021 | `examples/review-request.md` / `examples/final-report-template.md` の v2 7軸同期 | PR #23 |
 | T022 | public-readiness に、checklist から得た実項目数と軸数を README の数値表記と相互比較するドリフト検出を追加。README の件数を 81、軸数を 8 に一時変更し、いずれも期待どおり exit 1 を実測後に復元 | 2026-07-22 |
+| T023 | 汎用 UI review skill 2件と日本語 UI の隣接資料を 2026-07-22 時点の公開一次情報で再調査。汎用上位 skill に日本語組版と日本固有フォームの本格採用は確認できず、反証条件には非該当。JIS X 8341-3 改正も検討段階と記録 | 2026-07-22 |
 | T025 | 旧引き継ぎ文書の整理。当初の「未追跡ファイルへの注記追加」は PR 化不可能な欠陥定義だったため、「tracked の陳腐化文書3件の削除」に是正して解消（`docs/advisory-review-disposition.md` に記録） | 2026-07-12 文書整理 PR |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
@@ -56,7 +50,7 @@
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-22 pass: `No private or secret markers found.`（git-tracked mode） |
 | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-22 pass（Windows PowerShell 5.1 互換） |
 | `git diff --check --cached` | 2026-07-22 pass |
-| `gh pr list --state open` / `gh issue list --state open` | 2026-07-22 ベースラインはいずれも 0件 |
+| `gh pr list --state open` / `gh issue list --state open` | 2026-07-22 T023 着手時点はいずれも 0件 |
 
 ## skip
 
