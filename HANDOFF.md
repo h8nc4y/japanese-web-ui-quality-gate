@@ -26,21 +26,20 @@
 - 4ゲートのみ人間承認（§6）: ①デプロイ/Actions/release・tag ②課金・有料API ③secret・実素材・実データの外部送信 ④製品要件の変更。
 - 検証していない主張は書かず `未確認` と明記（§1・§8）。
 
-## 確認済みスナップショット（2026-07-12 JST 実測）
+## 確認済みスナップショット（2026-07-22 JST 実測）
 
-- 既定ブランチ `main`。T001–T021 と T025 が完了済み（PR #24 merge commit `a98bc65` ＋ 本文書整理 PR）。
+- 既定ブランチ `main`。T001–T022 と T025 が完了済み。T022 では checklist 実項目数と軸数を README の数値表記と固定値なしで相互比較する public-readiness 検証を追加。
 - open issue / open PR: 0件。doing タスク: 0件。
 - `references/checklist.md` は実測80項目・7節で README の表記と一致。
-- check:all 3本（§7）は 2026-07-12 に pass。CI（`validation.yml`）緑。
+- check:all 3本（§7）は 2026-07-22 に pass。直近の `main` CI（`validation.yml`）緑。
 - 2026-07-12 に文書整理を実施: 陳腐化した tracked 文書3件を削除し（判断は `docs/advisory-review-disposition.md`）、台帳と本文書をスリム化。
 
 ## 未完了タスク（次の担当エージェントへの引き継ぎ）
 
 受け入れ条件は `TASKS_BACKLOG.md` が正本。`AGENTS.md` §5 の優先度ルールに沿った着手順:
 
-1. **T022**: `scripts/test-public-readiness.ps1` に `references/checklist.md` の実項目数と README の項目数表記（80 checks / 7 axes）のドリフト検出を追加。
-2. **T023**: 要件再定義 §4 の反証条件ウォッチ（汎用競合 skill の日本語対応動向を時点付きで再調査・記録。出典は §8 に従い非 GitHub URL と名称のみ）。
-3. **T024**: v0.2.0 リリース準備（CHANGELOG `[Unreleased]` の整理・リリースノート案・§6 形式の承認依頼文の作成まで）。**タグ発行・release 作成はゲート①のため実行せず停止**。
+1. **T023**: 要件再定義 §4 の反証条件ウォッチ（汎用競合 skill の日本語対応動向を時点付きで再調査・記録。出典は §8 に従い非 GitHub URL と名称のみ）。
+2. **T024**: v0.2.0 リリース準備（CHANGELOG `[Unreleased]` の整理・リリースノート案・§6 形式の承認依頼文の作成まで）。**タグ発行・release 作成はゲート①のため実行せず停止**。
 
 ## 既知の問題・残懸念
 
@@ -63,5 +62,5 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 ## 次にやるべきこと
 
 1. `AGENTS.md` §15 の kickoff チェックリストに従いベースラインを実測で取り直す（本文書のスナップショットを信用しすぎない）。
-2. 未完了タスクを T022 → T023 → T024 の順に、doing 1件ずつ・1 PR = 1 改善で進める。
+2. 未完了タスクを T023 → T024 の順に、doing 1件ずつ・1 PR = 1 改善で進める。
 3. §6 ゲート該当（T024 のタグ発行など）に当たったら停止して承認を仰ぐ。

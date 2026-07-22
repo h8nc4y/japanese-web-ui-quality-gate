@@ -1,9 +1,10 @@
 # Codex 引き継ぎプロンプト（2026-07-12）
 
 作成日: 2026-07-12 JST
+状態更新: 2026-07-22 JST
 対象モデル: Codex（GPT-5.6 Sol）
-対象タスク: T022–T024（受け入れ条件の正本は `TASKS_BACKLOG.md`）
-現状の正本: `HANDOFF.md`（2026-07-12 文書整理後に同期済み）
+対象タスク: T023–T024（受け入れ条件の正本は `TASKS_BACKLOG.md`）
+現状の正本: `HANDOFF.md`（T022 完了後の 2026-07-22 状態へ同期済み）
 
 ## 使い方
 
@@ -15,12 +16,12 @@
 
 ```text
 Goal
-公開OSSリポジトリ japanese-web-ui-quality-gate の主開発者として開発を引き継ぎ、TASKS_BACKLOG.md の未完了タスク T022 → T023 → T024 を AGENTS.md の自律ループに従って完了させてください。報告の冒頭には現在の日本時間を YYYY/MM/DD HH:MM:SS で付けてください。
+公開OSSリポジトリ japanese-web-ui-quality-gate の主開発者として開発を引き継ぎ、TASKS_BACKLOG.md の未完了タスク T023 → T024 を AGENTS.md の自律ループに従って完了させてください。報告の冒頭には現在の日本時間を YYYY/MM/DD HH:MM:SS で付けてください。
 
 Context
 - 最初に AGENTS.md（運用契約）を読む。次に HANDOFF.md（資料マップと現況）→ TASKS_BACKLOG.md（受け入れ条件の正本）→ README.md → SKILL.md → docs/requirements-redefinition-2026-07.md の順。
-- 2026-07-12 時点: SKILL.md は v2（7軸構成）、references/checklist.md は80項目・7節で README の表記と一致（実測済み）。T001–T021・T025 done。文書整理済みで、docs の正本は HANDOFF.md の資料マップに一覧化されている。
-- 残タスク要約: T022=test-public-readiness.ps1 にチェックリスト実項目数と README 記載数のドリフト検出を追加（数値ハードコード禁止・相互比較方式・fail することの実証をPRに記録）、T023=汎用競合skillの日本語対応動向を再調査し反証条件（要件再定義 §4）への該当有無を時点付きで記録、T024=v0.2.0 リリース準備（CHANGELOG整理・リリースノート案・§6形式の承認依頼文の作成まで）。
+- 2026-07-22 時点: SKILL.md は v2（7軸構成）、references/checklist.md は80項目・7節で README の表記と一致（実測済み）。T001–T022 と T025 は done。T022 で、checklist の実項目数と軸数を README の数値表記と固定値なしで相互比較する public-readiness 検証を追加済み。
+- 残タスク要約: T023=汎用競合skillの日本語対応動向を再調査し反証条件（要件再定義 §4）への該当有無を時点付きで記録、T024=v0.2.0 リリース準備（CHANGELOG整理・リリースノート案・§6形式の承認依頼文の作成まで）。
 
 Autonomy policy
 AGENTS.md §4–§10 に従い、タスク選定 → 実装 → check:all → 敵対的セルフレビュー → 日本語コミット → PR → CI緑でマージ → ブランチ削除まで承認なしで自走する。doing は常に1件、1 PR = 1 改善。HANDOFF.md / TASKS_BACKLOG.md の更新も承認不要。
@@ -48,7 +49,7 @@ Work loop
 6. TASKS_BACKLOG.md を done に更新し、区切りで HANDOFF.md を更新して次のタスクへ進む。
 
 Done when
-- T022・T023 が main にマージ済みで、それぞれの受け入れ条件を満たしている。
+- T023 が main にマージ済みで、受け入れ条件を満たしている。
 - T024 のリリースノート案と §6 形式の承認依頼文が用意され、タグ発行の承認待ちで停止している。
 - TASKS_BACKLOG.md / HANDOFF.md が最新状態に同期され、check:all 3本と CI が緑、open PR 0件である。
 ```

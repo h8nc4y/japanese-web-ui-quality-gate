@@ -68,6 +68,65 @@ function Assert-NotContains {
     }
 }
 
+function Assert-ChecklistSummaryMatchesReadme {
+    param(
+        [string]$ChecklistPath,
+        [string]$ReadmePath
+    )
+
+    $checklistFile = Get-RepoFile $ChecklistPath
+    $readmeFile = Get-RepoFile $ReadmePath
+
+    # Missing files are also reported by the required-file checks; stop this comparison safely.
+    if (-not (Test-Path -LiteralPath $checklistFile -PathType Leaf)) {
+        Add-Failure "Cannot count missing file: $ChecklistPath"
+        return
+    }
+    if (-not (Test-Path -LiteralPath $readmeFile -PathType Leaf)) {
+        Add-Failure "Cannot compare missing file: $ReadmePath"
+        return
+    }
+
+    # Derive both counts from the checklist so this test does not need fixed expected numbers.
+    $checklistContent = Get-Content -LiteralPath $checklistFile -Raw -Encoding UTF8
+    $checkCount = [regex]::Matches($checklistContent, '(?m)^- \[ \] ').Count
+    $axisCount = [regex]::Matches($checklistContent, '(?m)^##\s+').Count
+
+    if ($checkCount -eq 0) {
+        Add-Failure "$ChecklistPath contains no unchecked checklist items."
+    }
+    if ($axisCount -eq 0) {
+        Add-Failure "$ChecklistPath contains no level-two axis sections."
+    }
+
+    # Compare every related numeric README claim so a partially stale summary also fails.
+    $readmeContent = Get-Content -LiteralPath $readmeFile -Raw -Encoding UTF8
+    $readmeCheckClaimPattern = '\b(?<count>\d+)(?:\s+detailed\s+checks\b|\s+checks\s+total\b|-item\s+checklist\b)'
+    $readmeAxisClaimPattern = '\b(?:(?<count>\d+)(?:\s+evidence-based)?\s+evaluation\s+axes|all\s+(?<count>\d+)\s+axes)\b'
+    $checkClaims = [regex]::Matches($readmeContent, $readmeCheckClaimPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $axisClaims = [regex]::Matches($readmeContent, $readmeAxisClaimPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+
+    if ($checkClaims.Count -eq 0) {
+        Add-Failure "$ReadmePath does not contain a numeric checklist count claim."
+    }
+    foreach ($claim in $checkClaims) {
+        $claimedCount = [int]$claim.Groups['count'].Value
+        if ($claimedCount -ne $checkCount) {
+            Add-Failure "$ReadmePath checklist count claim ($claimedCount) does not match $ChecklistPath ($checkCount)."
+        }
+    }
+
+    if ($axisClaims.Count -eq 0) {
+        Add-Failure "$ReadmePath does not contain a numeric axis count claim."
+    }
+    foreach ($claim in $axisClaims) {
+        $claimedCount = [int]$claim.Groups['count'].Value
+        if ($claimedCount -ne $axisCount) {
+            Add-Failure "$ReadmePath axis count claim ($claimedCount) does not match $ChecklistPath ($axisCount)."
+        }
+    }
+}
+
 @(
     "README.md",
     "LICENSE",
@@ -76,6 +135,7 @@ function Assert-NotContains {
     "CONTRIBUTING.md",
     "SECURITY.md",
     "CHANGELOG.md",
+    "references/checklist.md",
     ".github/workflows/validation.yml",
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/ISSUE_TEMPLATE/config.yml",
@@ -96,6 +156,7 @@ Assert-Contains "README.md" "## Updating an Existing Install" "existing install 
 Assert-Contains "README.md" "Compare-Object" "installed skill comparison guidance"
 Assert-Contains "README.md" "Copy-Item" "installed skill update command"
 Assert-NotContains "README.md" "license draft|before public release" "stale draft-release language"
+Assert-ChecklistSummaryMatchesReadme "references/checklist.md" "README.md"
 
 Assert-Contains "CODE_OF_CONDUCT.md" "harassment" "conduct expectations"
 Assert-Contains "CONTRIBUTING.md" "scripts/scan-private-markers\.ps1" "private marker scan command"
