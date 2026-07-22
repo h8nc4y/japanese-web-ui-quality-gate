@@ -2,29 +2,21 @@
 
 > 自律エージェント（例: Codex）のタスク台帳。運用ルールは [`AGENTS.md`](AGENTS.md)（§4 ループ / §5 選定 / §14 記録）を参照。doing は常に1件のみ。2026-07-11 以前の詳細な検証ログと同期経緯は、git 履歴にある本ファイルの旧版を参照。
 
-## 現在のスナップショット（2026-07-12 JST 実測）
+## 現在のスナップショット（2026-07-22 JST 実測）
 
 - 対象ブランチ: `main`
 - doing タスク: 0件。GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）: pass。CI（`validation.yml`）: 緑
+- check:all 3本（`AGENTS.md` §7）: 2026-07-22 pass。直近の `main` CI（`validation.yml`）: 緑
 - コード内 TODO / FIXME・失敗中の検証・未コミット変更: なし
 
 ## 未完了タスク
 
-着手順は `AGENTS.md` §5 の優先度ルールに従い **T022 → T023 → T024** を推奨。
+着手順は `AGENTS.md` §5 の優先度ルールに従い **T023 → T024** を推奨。
 
 | ID | タスク | 出典 | 優先度 | 規模 |
 | --- | --- | --- | --- | --- |
-| T022 | `scripts/test-public-readiness.ps1` にチェックリスト項目数のドリフト検出を追加する | 整合性の恒久化（README「80 checks / 7 axes」表記の陳腐化防止） | 高 | S |
 | T023 | 要件再定義 §4 の反証条件ウォッチ（競合 skill の日本語対応動向の時点付き再調査） | `docs/requirements-redefinition-2026-07.md` §4 | 中 | S |
 | T024 | v0.2.0 リリース準備（CHANGELOG 整理・リリースノート案・承認依頼文の作成まで） | `CHANGELOG.md` `[Unreleased]` の蓄積 | 中 | S |
-
-### T022 受け入れ条件（scripts 堅牢化）
-
-- `scripts/test-public-readiness.ps1` に、`references/checklist.md` の `- [ ]` 項目数（現在80）と `## ` 節数（現在7）を実測し、`README.md` 内の項目数・軸数の記載と一致しない場合に fail するチェックを追加する。
-- 数値そのものをスクリプトへハードコードせず、checklist 実測値と README 記載値の**相互比較**にする（項目追加時に両方更新すれば緑になる形）。
-- `scripts/scan-private-markers.ps1` / `scripts/test-scan-private-markers.ps1` の marker 判定ロジックには触れない。触れる場合は `AGENTS.md` §10 の外部レビュー基準に該当する。
-- 意図的に README の数を壊した場合に fail することをローカルで確認してから戻す（確認結果を PR に実値で記録）。
 
 ### T023 受け入れ条件（調査・記録）
 
@@ -52,17 +44,19 @@
 | T017–T019 | `SKILL.md` v2（7軸構成）・`references/checklist.md` 新設（80項目）・README/CHANGELOG 同期 | PR #20 |
 | T020 | guard 適用の passing 適用例 `examples/passing-review.md` 新設 | PR #22 |
 | T021 | `examples/review-request.md` / `examples/final-report-template.md` の v2 7軸同期 | PR #23 |
+| T022 | public-readiness に、checklist から得た実項目数と軸数を README の数値表記と相互比較するドリフト検出を追加。README の件数を 81、軸数を 8 に一時変更し、いずれも期待どおり exit 1 を実測後に復元 | 2026-07-22 |
 | T025 | 旧引き継ぎ文書の整理。当初の「未追跡ファイルへの注記追加」は PR 化不可能な欠陥定義だったため、「tracked の陳腐化文書3件の削除」に是正して解消（`docs/advisory-review-disposition.md` に記録） | 2026-07-12 文書整理 PR |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-12 pass |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-12 pass |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-12 pass: `No private or secret markers found.`（git-tracked mode、変更ファイル stage 後に走査） |
-| `git diff --check --cached` | 2026-07-12 pass |
-| `gh pr list --state open` / `gh issue list --state open` | 2026-07-12 いずれも 0件 |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-22 pass。README 件数 81 対 checklist 80、README 軸数 8 対 checklist 7 の一時的不一致はいずれも期待どおり exit 1 |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-22 pass |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-22 pass: `No private or secret markers found.`（git-tracked mode） |
+| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-22 pass（Windows PowerShell 5.1 互換） |
+| `git diff --check --cached` | 2026-07-22 pass |
+| `gh pr list --state open` / `gh issue list --state open` | 2026-07-22 ベースラインはいずれも 0件 |
 
 ## skip
 
