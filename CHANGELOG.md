@@ -11,7 +11,7 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 - `docs/requirements-redefinition-2026-07.md` recording the 2026-07 requirements redefinition (market review, evaluation axes v2, success metrics, task breakdown).
 - `references/checklist.md`: a new 80-item detailed checklist covering all 7 evaluation axes in `SKILL.md` v2, split out for progressive disclosure.
 - `AGENTS.md` documenting the autonomous agent development workflow, `check:all` verification, and the human-approval gates.
-- `docs/CODEX_PROMPT_2026-07-12.md`: a dated handoff prompt for the next autonomous agent session, updated after T022 to cover the remaining backlog tasks (T023–T024) whose acceptance criteria are recorded in `TASKS_BACKLOG.md` (supersedes the 2026-07-11 version).
+- `docs/CODEX_PROMPT_2026-07-12.md`: a dated handoff prompt for the next autonomous agent session, updated after T023 to cover the remaining backlog task T024 whose acceptance criteria are recorded in `TASKS_BACKLOG.md` (supersedes the 2026-07-11 version).
 - `examples/passing-review.md`: a synthetic passing applied example (an invented equipment-booking dashboard) showing guard items correctly applied so a sufficiently good UI is not unfairly failed, complementing the fail-heavy example in `examples/checklist.md`.
 
 ### Changed
@@ -23,6 +23,7 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 - The private-marker scanner now defaults to git-tracked files, skips binary-like files, reports line numbers, adds AWS/GCP/Slack/Stripe/PEM coverage, and avoids treating `task-scanner`-style slugs as OpenAI-style tokens.
 - Private-marker scanner hardening (2026-07-15 external-review ledger): the filesystem-walk fallback no longer excludes `docs/` (tracked content must stay in scope when git is unavailable), a user-profile Windows path is reported once by the dedicated rule instead of also hitting the generic Windows-path rule, file reads pin `-Encoding UTF8`, and the failure path reports via `Write-Host` + explicit `exit 1` instead of `Write-Error` under `ErrorActionPreference=Stop`.
 - Public-readiness validation now derives the checklist item and axis counts from `references/checklist.md` and fails when any numeric README count claim drifts, without hard-coded expected counts.
+- `docs/requirements-redefinition-2026-07.md` now records the 2026-07-22 counter-evidence watch: generic UI review skills still show no confirmed adoption of Japanese typesetting and Japan-specific form rules, an adjacent Japanese typography resource has emerged, and the JIS X 8341-3 revision remains under consideration rather than finalized.
 - Validation command examples now use the same `pwsh -NoProfile -ExecutionPolicy Bypass -File` form across README, contribution, security, and pull request guidance.
 - `CHANGELOG.md` now describes semantic versioning as active for versioned releases.
 - `HANDOFF.md` and `TASKS_BACKLOG.md` updated to reflect the merged task inventory and the autonomous operating model, then streamlined in the 2026-07-12 documentation cleanup: `HANDOFF.md` gained a document map pointing to each source of truth, `TASKS_BACKLOG.md` moved historical verification logs and sync narratives to git history, and `docs/requirements-redefinition-2026-07.md` now records its implemented status per task.

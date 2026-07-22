@@ -28,7 +28,9 @@
 
 ## 確認済みスナップショット（2026-07-22 JST 実測）
 
-- 既定ブランチ `main`。T001–T022 と T025 が完了済み。T022 では checklist 実項目数と軸数を README の数値表記と固定値なしで相互比較する public-readiness 検証を追加。
+- 既定ブランチ `main`。T001–T023 と T025 が完了済み。T022 では checklist 実項目数と軸数を README の数値表記と固定値なしで相互比較する public-readiness 検証を追加。
+- T023 の 2026-07-22 再調査では、汎用 UI review skill に日本語組版と日本固有フォームの本格採用を確認できず、反証条件は非該当。
+  日本語タイポグラフィの隣接資料は増えているため、既存方針どおり合否、フォーム、検証証拠、正直な報告の組み合わせを差別化の中心に維持。
 - open issue / open PR: 0件。doing タスク: 0件。
 - `references/checklist.md` は実測80項目・7節で README の表記と一致。
 - check:all 3本（§7）は 2026-07-22 に pass。直近の `main` CI（`validation.yml`）緑。
@@ -38,14 +40,13 @@
 
 受け入れ条件は `TASKS_BACKLOG.md` が正本。`AGENTS.md` §5 の優先度ルールに沿った着手順:
 
-1. **T023**: 要件再定義 §4 の反証条件ウォッチ（汎用競合 skill の日本語対応動向を時点付きで再調査・記録。出典は §8 に従い非 GitHub URL と名称のみ）。
-2. **T024**: v0.2.0 リリース準備（CHANGELOG `[Unreleased]` の整理・リリースノート案・§6 形式の承認依頼文の作成まで）。**タグ発行・release 作成はゲート①のため実行せず停止**。
+1. **T024**: v0.2.0 リリース準備（CHANGELOG `[Unreleased]` の整理・リリースノート案・§6 形式の承認依頼文の作成まで）。**タグ発行・release 作成はゲート①のため実行せず停止**。
 
 ## 既知の問題・残懸念
 
 - 本リポジトリに UI ソースは無いため、ブラウザ表示確認は通常対象外。ただし `AGENTS.md` §2 の二層構造に注意: skill が「適用される対象」には日本向け Web UI が含まれるため、`SKILL.md` 内の UI 検証観点を「対象外」と誤判断しない。
 - `HANDOFF.md` / `TASKS_BACKLOG.md` は確認時点のスナップショット。PR番号だけを追う自己同期 PR は作らない。
-- JIS X 8341-3 改正の確定内容は未確認（`docs/requirements-redefinition-2026-07.md` §9。T023 の調査対象）。
+- JIS X 8341-3 改正後の確定内容は未確認。WAIC の 2026-06-08 公開情報でも改正は検討段階（`docs/requirements-redefinition-2026-07.md` §4.1 / §9）。
 
 ## 検証コマンド
 
@@ -62,5 +63,5 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 ## 次にやるべきこと
 
 1. `AGENTS.md` §15 の kickoff チェックリストに従いベースラインを実測で取り直す（本文書のスナップショットを信用しすぎない）。
-2. 未完了タスクを T023 → T024 の順に、doing 1件ずつ・1 PR = 1 改善で進める。
+2. T024 を 1 PR = 1 改善で進める。
 3. §6 ゲート該当（T024 のタグ発行など）に当たったら停止して承認を仰ぐ。
