@@ -6,13 +6,16 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 
 ## [Unreleased]
 
+> v0.2.0 candidate. The `v0.2.0` tag and GitHub Release do not exist yet. Keep this section unreleased until gate ① approval, final verification, and release finalization.
+
 ### Added
 
 - `docs/requirements-redefinition-2026-07.md` recording the 2026-07 requirements redefinition (market review, evaluation axes v2, success metrics, task breakdown).
 - `references/checklist.md`: a new 80-item detailed checklist covering all 7 evaluation axes in `SKILL.md` v2, split out for progressive disclosure.
 - `AGENTS.md` documenting the autonomous agent development workflow, `check:all` verification, and the human-approval gates.
-- `docs/CODEX_PROMPT_2026-07-12.md`: a dated handoff prompt for the next autonomous agent session, updated after T023 to cover the remaining backlog task T024 whose acceptance criteria are recorded in `TASKS_BACKLOG.md` (supersedes the 2026-07-11 version).
+- `docs/CODEX_PROMPT_2026-07-12.md`: a dated handoff prompt for the next autonomous agent session, updated after T024 to require explicit gate ① approval before v0.2.0 release finalization (supersedes the 2026-07-11 version).
 - `examples/passing-review.md`: a synthetic passing applied example (an invented equipment-booking dashboard) showing guard items correctly applied so a sufficiently good UI is not unfairly failed, complementing the fail-heavy example in `examples/checklist.md`.
+- `docs/release-v0.2.0-preparation.md`: the release-note draft, finalization checklist, and gate ① approval request for v0.2.0. No tag or GitHub Release is created by this preparation document.
 
 ### Changed
 

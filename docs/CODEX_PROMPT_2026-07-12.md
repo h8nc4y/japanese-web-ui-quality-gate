@@ -3,10 +3,13 @@
 作成日: 2026-07-12 JST
 状態更新: 2026-07-22 JST
 対象モデル: Codex（GPT-5.6 Sol）
-対象タスク: T024（受け入れ条件の正本は `TASKS_BACKLOG.md`）
-現状の正本: `HANDOFF.md`（T023 完了後の 2026-07-22 状態へ同期済み）
+対象タスク: v0.2.0 リリース最終化（ゲート①の明示承認後のみ）
+現状の正本: `HANDOFF.md`（T024 完了後の 2026-07-22 状態へ同期済み）
 
 ## 使い方
+
+インテリジェンス：高
+Codexのチャット：新規チャット欄を作成
 
 1. Codex アプリで**新規チャット**を作成する（新しい長期作業単位のため）。
 2. インテリジェンス（reasoning）は **高** を選ぶ。
@@ -16,18 +19,19 @@
 
 ```text
 Goal
-公開OSSリポジトリ japanese-web-ui-quality-gate の主開発者として開発を引き継ぎ、TASKS_BACKLOG.md の未完了タスク T024 を AGENTS.md の自律ループに従って完了させてください。報告の冒頭には現在の日本時間を YYYY/MM/DD HH:MM:SS で付けてください。
+公開OSSリポジトリ japanese-web-ui-quality-gate の主開発者として開発を引き継いでください。v0.2.0 のリリース最終化は、現在のユーザーが AGENTS.md §6 のゲート①を明示承認した場合だけ実行してください。報告の冒頭には現在の日本時間を YYYY/MM/DD HH:MM:SS で付けてください。
 
 Context
 - 最初に AGENTS.md（運用契約）を読む。次に HANDOFF.md（資料マップと現況）→ TASKS_BACKLOG.md（受け入れ条件の正本）→ README.md → SKILL.md → docs/requirements-redefinition-2026-07.md の順。
-- 2026-07-22 時点: SKILL.md は v2（7軸構成）、references/checklist.md は80項目・7節で README の表記と一致（実測済み）。T001–T023 と T025 は done。T023 の反証条件ウォッチは非該当で、既存要件を維持。
-- 残タスク要約: T024=v0.2.0 リリース準備（CHANGELOG整理・リリースノート案・§6形式の承認依頼文の作成まで）。
+- 2026-07-22 時点: SKILL.md は v2（7軸構成）、references/checklist.md は80項目・7節で README の表記と一致（実測済み）。T001–T025 は done。T023 の反証条件ウォッチは非該当で、既存要件を維持。
+- T024 で `CHANGELOG.md` の v0.2.0 candidate、リリースノート案、最終化手順、ゲート①承認依頼を準備済み。正本は `docs/release-v0.2.0-preparation.md`。
+- 最新の tag と GitHub Release は `v0.1.0`。`v0.2.0` の tag と GitHub Release は未作成。
 
 Autonomy policy
 AGENTS.md §4–§10 に従い、タスク選定 → 実装 → check:all → 敵対的セルフレビュー → 日本語コミット → PR → CI緑でマージ → ブランチ削除まで承認なしで自走する。doing は常に1件、1 PR = 1 改善。HANDOFF.md / TASKS_BACKLOG.md の更新も承認不要。
 
 Stop only when
-AGENTS.md §6 の4ゲートに該当するときだけ停止する: ①release/tag発行・deploy/publish系Actions・workflow権限変更 ②課金・有料API ③secret/実素材/実データの外部送信 ④製品要件の変更。T024 はリリースノート案と承認依頼文を用意した時点で停止し、§6 のフォーマットで承認を仰ぐ（タグ発行・release 作成は実行しない）。同一の失敗が3回改善しないときも停止して報告する。
+AGENTS.md §6 の4ゲートに該当するときだけ停止する: ①release/tag発行・deploy/publish系Actions・workflow権限変更 ②課金・有料API ③secret/実素材/実データの外部送信 ④製品要件の変更。v0.2.0 の tag 発行と GitHub Release 作成はゲート①である。現在のユーザーによる明示承認がなければ、`docs/release-v0.2.0-preparation.md` の承認依頼を報告し、tag と Release を作成せず停止する。同一の失敗が3回改善しないときも停止して報告する。
 
 Do not stop for
 通常のコミット・push・PR作成・マージ・ブランチ削除、TASKS_BACKLOG.md / HANDOFF.md / CHANGELOG.md の更新、docs・examples・scripts のローカル改善、ローカル検証、Webでの無償の情報調査。
@@ -42,13 +46,14 @@ Constraints
 
 Work loop
 1. git pull で main を最新化し、gh pr list / gh issue list / check:all 3本でベースラインを実測する（AGENTS.md §15）。文書のスナップショットより実測を正とする。
-2. TASKS_BACKLOG.md から §5 の優先度ルールに従いタスクを1件選び、doing として記録する。
-3. type/short-kebab のブランチを切り、受け入れ条件を満たす最小の変更を実装する。挙動やユーザー向け案内が変わるときは README.md / SKILL.md / examples / CHANGELOG.md をセットで更新する。
+2. 現在のユーザーがゲート①を明示承認したか確認する。承認がなければ承認依頼を報告し、tag と Release を作成せず停止する。
+3. 承認済みなら `docs/release-v0.2.0-preparation.md` の最終化手順に従い、release finalization branch で changelog とリリースノートを最終化する。
 4. check:all 3本を緑にし、AGENTS.md §10 の敵対的セルフレビューを行う。
 5. 日本語コミット → PRテンプレートに実測の検証結果を記入 → CI緑・セルフレビュー合格でマージ → ブランチ削除。
-6. TASKS_BACKLOG.md を done に更新し、区切りで HANDOFF.md を更新して次のタスクへ進む。
+6. clean な `main` へ annotated tag を作成して push し、GitHub Release を公開する。tag、Release、CI、worktree、remote branch を実測で再確認する。
 
 Done when
-- T024 のリリースノート案と §6 形式の承認依頼文が用意され、タグ発行の承認待ちで停止している。
+- ゲート①が未承認なら、承認依頼を報告し、`v0.2.0` の tag と GitHub Release を作成せず停止している。
+- ゲート①が承認済みなら、v0.2.0 の最終化、tag 発行、GitHub Release 公開、事後検証が完了している。
 - TASKS_BACKLOG.md / HANDOFF.md が最新状態に同期され、check:all 3本と CI が緑、open PR 0件である。
 ```
