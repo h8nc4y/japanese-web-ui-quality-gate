@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$Path = "."
 )
 
@@ -44,7 +44,8 @@ function Assert-Contains {
         return
     }
 
-    $content = Get-Content -LiteralPath $file -Raw
+    # PS 5.1 の既定 ANSI 読みで、日本語を含む公開文書の判定が runtime 間でずれないよう UTF-8 を固定する。
+    $content = Get-Content -LiteralPath $file -Raw -Encoding UTF8
     if (-not [regex]::IsMatch($content, $Pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
         Add-Failure "$RelativePath does not contain expected content: $Description"
     }
@@ -62,9 +63,89 @@ function Assert-NotContains {
         return
     }
 
-    $content = Get-Content -LiteralPath $file -Raw
+    # 禁止表現の検査も同じ decoding 契約へ揃え、文字コード差による見逃しを防ぐ。
+    $content = Get-Content -LiteralPath $file -Raw -Encoding UTF8
     if ([regex]::IsMatch($content, $Pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
         Add-Failure "$RelativePath contains disallowed content: $Description"
+    }
+}
+
+function Get-ChecklistAxisCount {
+    param([string]$Content)
+
+    # 補足用の H2 を軸へ誤算入しないよう、checklist の「番号. タイトル」形式だけを数える。
+    $axisHeadingPattern = '^[ ]{0,3}##[ \t]+[0-9]+\.[ \t]+\S'
+    $fencePattern = '^[ \t]{0,3}(?<marker>`{3,}|~{3,})(?<suffix>.*)$'
+    $axisCount = 0
+    $activeFenceCharacter = $null
+    $activeFenceLength = 0
+
+    foreach ($line in ($Content -split '\r?\n')) {
+        # コード例に含まれる見出し風テキストは、実際の checklist 軸ではないため除外する。
+        $fenceMatch = [regex]::Match($line, $fencePattern)
+        if ($fenceMatch.Success) {
+            $marker = $fenceMatch.Groups['marker'].Value
+            $suffix = $fenceMatch.Groups['suffix'].Value
+
+            if ($null -eq $activeFenceCharacter) {
+                # CommonMark では backtick を含む info string は opener にならないため、通常行として扱う。
+                if (($marker[0] -eq [char]'`') -and $suffix.Contains('`')) {
+                    continue
+                }
+                $activeFenceCharacter = $marker[0]
+                $activeFenceLength = $marker.Length
+            }
+            elseif (
+                ($marker[0] -eq $activeFenceCharacter) -and
+                ($marker.Length -ge $activeFenceLength) -and
+                [string]::IsNullOrWhiteSpace($suffix)
+            ) {
+                $activeFenceCharacter = $null
+                $activeFenceLength = 0
+            }
+            continue
+        }
+
+        if (($null -eq $activeFenceCharacter) -and [regex]::IsMatch($line, $axisHeadingPattern)) {
+            $axisCount++
+        }
+    }
+
+    return $axisCount
+}
+
+function Assert-ChecklistAxisParser {
+    # 補足 H2 とコード例が増えても、README の軸数ドリフト判定が false positive にならないことを固定する。
+    $syntheticChecklist = @(
+        '# Synthetic checklist',
+        '',
+        '## 1. First Axis',
+        '',
+        '## Notes',
+        '',
+        '## 1) Parenthesis Style',
+        '## １. Full-width Digit',
+        '##　3. Full-width Space',
+        '    ## 4. Indented Code Block',
+        '',
+        '```markdown',
+        '## 99. Example Heading',
+        '```',
+        '',
+        '~~~text',
+        '## 98. Another Example Heading',
+        '~~~~',
+        '',
+        '  ## 2. Second Axis ###',
+        '',
+        '```bad`info',
+        '',
+        '## 3. Third Axis'
+    ) -join "`n"
+
+    $actualCount = Get-ChecklistAxisCount -Content $syntheticChecklist
+    if ($actualCount -ne 3) {
+        Add-Failure "Internal checklist axis parser expected 3 numbered axes but found $actualCount."
     }
 }
 
@@ -90,7 +171,7 @@ function Assert-ChecklistSummaryMatchesReadme {
     # Derive both counts from the checklist so this test does not need fixed expected numbers.
     $checklistContent = Get-Content -LiteralPath $checklistFile -Raw -Encoding UTF8
     $checkCount = [regex]::Matches($checklistContent, '(?m)^- \[ \] ').Count
-    $axisCount = [regex]::Matches($checklistContent, '(?m)^##\s+').Count
+    $axisCount = Get-ChecklistAxisCount -Content $checklistContent
 
     if ($checkCount -eq 0) {
         Add-Failure "$ChecklistPath contains no unchecked checklist items."
@@ -156,6 +237,7 @@ Assert-Contains "README.md" "## Updating an Existing Install" "existing install 
 Assert-Contains "README.md" "Compare-Object" "installed skill comparison guidance"
 Assert-Contains "README.md" "Copy-Item" "installed skill update command"
 Assert-NotContains "README.md" "license draft|before public release" "stale draft-release language"
+Assert-ChecklistAxisParser
 Assert-ChecklistSummaryMatchesReadme "references/checklist.md" "README.md"
 
 Assert-Contains "CODE_OF_CONDUCT.md" "harassment" "conduct expectations"

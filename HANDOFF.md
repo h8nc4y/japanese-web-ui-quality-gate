@@ -27,17 +27,18 @@
 - 4ゲートのみ人間承認（§6）: ①デプロイ/Actions/release・tag ②課金・有料API ③secret・実素材・実データの外部送信 ④製品要件の変更。
 - 検証していない主張は書かず `未確認` と明記（§1・§8）。
 
-## 確認済みスナップショット（2026-07-22 JST 実測）
+## 確認済みスナップショット（2026-07-25 JST 実測）
 
-- 既定ブランチ `main`。T001–T025 が完了済み。T022 では checklist 実項目数と軸数を README の数値表記と固定値なしで相互比較する public-readiness 検証を追加。
+- 既定ブランチ `main`。T001–T026 が完了済み。T022 では checklist 実項目数と軸数を README の数値表記と固定値なしで相互比較する public-readiness 検証を追加。
+- T026 では軸数抽出を `## 1. ...` 形式の番号付き H2 に限定し、補助 H2 とコードフェンス内の見出し風テキストを除外。公開文書の読み取りを UTF-8 に固定し、PowerShell 7 / Windows PowerShell 5.1 の判定を一致させた。
 - T023 の 2026-07-22 再調査では、汎用 UI review skill に日本語組版と日本固有フォームの本格採用を確認できず、反証条件は非該当。
   日本語タイポグラフィの隣接資料は増えているため、既存方針どおり合否、フォーム、検証証拠、正直な報告の組み合わせを差別化の中心に維持。
 - T024 では `CHANGELOG.md` の `[Unreleased]` を v0.2.0 candidate として明示し、リリースノート案、最終化手順、ゲート①承認依頼を `docs/release-v0.2.0-preparation.md` に整理。
   `v0.2.0` の tag と GitHub Release は作成していない。
-- open issue / open PR: 0件。doing タスク: 0件。
+- T026 着手時の open issue / open PR: 0件。doing タスク: 0件。
 - 最新の tag と GitHub Release は `v0.1.0`。
 - `references/checklist.md` は実測80項目・7節で README の表記と一致。
-- check:all 3本（§7）は 2026-07-22 に pass。直近の `main` CI（`validation.yml`）緑。
+- check:all 3本（§7）と Windows PowerShell 5.1 互換実行は 2026-07-25 に pass。直近の `main` CI（`validation.yml`、commit `3b744ce`）も緑。
 - 2026-07-12 に文書整理を実施: 陳腐化した tracked 文書3件を削除し（判断は `docs/advisory-review-disposition.md`）、台帳と本文書をスリム化。
 
 ## 承認待ち（次の担当エージェントへの引き継ぎ）
@@ -54,6 +55,7 @@
 - `HANDOFF.md` / `TASKS_BACKLOG.md` は確認時点のスナップショット。PR番号だけを追う自己同期 PR は作らない。
 - JIS X 8341-3 改正後の確定内容は未確認。WAIC の 2026-06-08 公開情報でも改正は検討段階（`docs/requirements-redefinition-2026-07.md` §4.1 / §9）。
 - v0.2.0 の公開日は未確定。ゲート①承認前に changelog の日付、tag、GitHub Release を確定しない。
+- `scripts/test-public-readiness.ps1` は PS 5.1 で日本語コメントを正しく解釈させるため UTF-8 BOM 付き。ほかのテキストを一括で BOM 付きへ変換しない。
 
 ## 検証コマンド
 

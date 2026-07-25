@@ -2,12 +2,12 @@
 
 > 自律エージェント（例: Codex）のタスク台帳。運用ルールは [`AGENTS.md`](AGENTS.md)（§4 ループ / §5 選定 / §14 記録）を参照。doing は常に1件のみ。2026-07-11 以前の詳細な検証ログと同期経緯は、git 履歴にある本ファイルの旧版を参照。
 
-## 現在のスナップショット（2026-07-22 JST 実測）
+## 現在のスナップショット（2026-07-25 JST 実測）
 
 - 対象ブランチ: `main`
-- doing タスク: 0件。GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）: 2026-07-22 pass。T023 merge 後の `main` CI（`validation.yml`）: 緑
-- コード内 TODO / FIXME・失敗中の検証・未コミット変更: なし
+- doing タスク: 0件。T026 着手時の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-25 pass
+- コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
@@ -38,17 +38,19 @@
 | T023 | 汎用 UI review skill 2件と日本語 UI の隣接資料を 2026-07-22 時点の公開一次情報で再調査。汎用上位 skill に日本語組版と日本固有フォームの本格採用は確認できず、反証条件には非該当。JIS X 8341-3 改正も検討段階と記録 | 2026-07-22 |
 | T024 | `CHANGELOG.md` の `[Unreleased]` を v0.2.0 candidate として整理。リリースノート案、最終化手順、ゲート①承認依頼を作成し、tag と GitHub Release は未作成のまま停止 | 2026-07-22 |
 | T025 | 旧引き継ぎ文書の整理。当初の「未追跡ファイルへの注記追加」は PR 化不可能な欠陥定義だったため、「tracked の陳腐化文書3件の削除」に是正して解消（`docs/advisory-review-disposition.md` に記録） | 2026-07-12 文書整理 PR |
+| T026 | public-readiness の軸数抽出を番号付き H2 に限定し、補助 H2・コードフェンス内の見出しを除外。公開文書の読み取りを UTF-8 に固定し、PowerShell 7 / Windows PowerShell 5.1 の判定を一致 | 2026-07-25 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-22 T024 pass: `Public readiness checks passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-22 T024 pass: `Private marker scanner tests passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-22 T024 pass: `No private or secret markers found.`（新規文書を含む git-tracked mode） |
-| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-22 pass（Windows PowerShell 5.1 互換） |
-| `git diff --check --cached` | 2026-07-22 pass |
-| `gh pr list --state open` / `gh issue list --state open` | 2026-07-22 T023 着手時点はいずれも 0件 |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-25 T026 pass: `Public readiness checks passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-25 T026 pass: `Private marker scanner tests passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-25 T026 pass: `No private or secret markers found.`（変更ファイルを stage 後に git-tracked mode で実行） |
+| Windows PowerShell 5.1 による check:all 3本 | 2026-07-25 T026 pass（互換実行） |
+| 合成 parser fixture（補助 H2、backtick / tilde code fence、ATX 末尾 `#`、`1)`・全角数字/空白・4-space code block の除外） | 2026-07-25 PowerShell 7 / Windows PowerShell 5.1 とも pass |
+| `git diff --check` / `git diff --cached --check` | 2026-07-25 pass |
+| `gh pr list --state open` / `gh issue list --state open` | 2026-07-25 T026 着手時点はいずれも 0件 |
 
 ## skip
 
