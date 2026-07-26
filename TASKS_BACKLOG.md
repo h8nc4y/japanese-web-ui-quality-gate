@@ -2,11 +2,11 @@
 
 > 自律エージェント（例: Codex）のタスク台帳。運用ルールは [`AGENTS.md`](AGENTS.md)（§4 ループ / §5 選定 / §14 記録）を参照。doing は常に1件のみ。2026-07-11 以前の詳細な検証ログと同期経緯は、git 履歴にある本ファイルの旧版を参照。
 
-## 現在のスナップショット（2026-07-26 JST 実測）
+## 現在のスナップショット（2026-07-27 JST 実測）
 
-- 対象ブランチ: `main`（T027 の統合先）
-- doing タスク: 0件。T027 着手時の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-26 T027 pass
+- 対象ブランチ: `main`（T028 の統合先）
+- doing タスク: 0件。T028 着手時の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-27 T028 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
@@ -40,18 +40,19 @@
 | T025 | 旧引き継ぎ文書の整理。当初の「未追跡ファイルへの注記追加」は PR 化不可能な欠陥定義だったため、「tracked の陳腐化文書3件の削除」に是正して解消（`docs/advisory-review-disposition.md` に記録） | 2026-07-12 文書整理 PR |
 | T026 | public-readiness の軸数抽出を番号付き H2 に限定し、補助 H2・コードフェンス内の見出しを除外。公開文書の読み取りを UTF-8 に固定し、PowerShell 7 / Windows PowerShell 5.1 の判定を一致 | 2026-07-25 |
 | T027 | public-readiness の項目数抽出を top-level 番号付き軸内の未チェック hyphen 項目（marker後1–4列）へ限定。親itemのcontent columnからnested checkboxとlist内paragraph / Setext / Type 7を識別し、0–3-space fenceとlabelが999文字以内の安全に証明できる単行link reference subsetを受理。active axis内の非canonical container、複数行link reference、未確定indented leafだけを固定エラー + 0件へ fail closed。top-levelと証明したSetextだけをscope境界にし、軸数と項目数を同じ構造解析から導出 | 2026-07-26 |
+| T028 | 日付付き起動プロンプトから固定の完了タスク範囲・検証日・tag/Release状態を除去。新しいセッションが living SSOT と check:all / Git / GitHub の実測から現在値を得る契約へ変更 | 2026-07-27 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-26 T027 pass: `Public readiness checks passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-26 T027 pass: `Private marker scanner tests passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-26 T027 pass: `No private or secret markers found.` |
-| Windows PowerShell 5.1 による check:all 3本 | 2026-07-26 T027 pass（互換実行） |
-| 合成 parser fixture（軸外 / proven top-level Setext scope、blank後list内Setext、nested canonical checkbox、list paragraph内Type 7、単行 / 複数行link referenceとlabel 999 / 1000文字境界、post-marker 1–4列とindented-code境界、0–3-space / backtick / tilde / invalid-info / NBSP fence、HTML Type 1 / Type 4 uppercase・lowercase / Type 6 / Type 7、quoted angle、unquoted TAB、ATX / thematic / code leaf を含む list / blockquote container、space+TAB tab-stop fail-closed） | 2026-07-26 PowerShell 7 / Windows PowerShell 5.1 とも RED→GREEN。相殺不能な独立 case で検証 |
-| `git diff --check` / `git diff --cached --check` | 2026-07-26 pass |
-| `gh pr list --state open` / `gh issue list --state open` | 2026-07-26 T027 着手時点はいずれも 0件 |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-27 T028 pass: `Public readiness checks passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-27 T028 pass: `Private marker scanner tests passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-27 T028 pass: `No private or secret markers found.` |
+| Windows PowerShell 5.1 による check:all 3本 | 2026-07-27 T028 pass（互換実行） |
+| 起動プロンプト固定スナップショット検査（旧 `T001–T025` / `T024 完了後` / 固定tag記述の不在と、living SSOT / GitHub実測契約の存在） | 2026-07-27 pass |
+| `git diff --check` / `git diff --cached --check` | 2026-07-27 pass |
+| `gh pr list --state open` / `gh issue list --state open` | 2026-07-27 T028 着手時点はいずれも 0件 |
 
 ## skip
 

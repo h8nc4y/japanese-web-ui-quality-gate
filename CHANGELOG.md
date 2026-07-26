@@ -29,6 +29,7 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 - `docs/requirements-redefinition-2026-07.md` now records the 2026-07-22 counter-evidence watch: generic UI review skills still show no confirmed adoption of Japanese typesetting and Japan-specific form rules, an adjacent Japanese typography resource has emerged, and the JIS X 8341-3 revision remains under consideration rather than finalized.
 - Validation command examples now use the same `pwsh -NoProfile -ExecutionPolicy Bypass -File` form across README, contribution, security, and pull request guidance.
 - `CHANGELOG.md` now describes semantic versioning as active for versioned releases.
+- The dated Codex handoff prompt no longer duplicates a fixed completed-task range, verification date, or tag/Release state. It now requires each new session to read the living sources of truth and remeasure Git/GitHub state before acting.
 - `HANDOFF.md` and `TASKS_BACKLOG.md` updated to reflect the merged task inventory and the autonomous operating model, then streamlined in the 2026-07-12 documentation cleanup: `HANDOFF.md` gained a document map pointing to each source of truth, `TASKS_BACKLOG.md` moved historical verification logs and sync narratives to git history, and `docs/requirements-redefinition-2026-07.md` now records its implemented status per task.
 
 ### Removed
