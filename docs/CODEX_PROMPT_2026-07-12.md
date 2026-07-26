@@ -1,10 +1,10 @@
 # Codex 引き継ぎプロンプト（2026-07-12）
 
 作成日: 2026-07-12 JST
-状態更新: 2026-07-22 JST
+状態更新: 2026-07-27 JST
 対象モデル: Codex（GPT-5.6 Sol）
 対象タスク: v0.2.0 リリース最終化（ゲート①の明示承認後のみ）
-現状の正本: `HANDOFF.md`（T024 完了後の 2026-07-22 状態へ同期済み）
+現状の正本: `HANDOFF.md` と `TASKS_BACKLOG.md`（本プロンプトには完了タスク範囲や検証日のスナップショットを重複保持しない）
 
 ## 使い方
 
@@ -23,9 +23,9 @@ Goal
 
 Context
 - 最初に AGENTS.md（運用契約）を読む。次に HANDOFF.md（資料マップと現況）→ TASKS_BACKLOG.md（受け入れ条件の正本）→ README.md → SKILL.md → docs/requirements-redefinition-2026-07.md の順。
-- 2026-07-22 時点: SKILL.md は v2（7軸構成）、references/checklist.md は80項目・7節で README の表記と一致（実測済み）。T001–T025 は done。T023 の反証条件ウォッチは非該当で、既存要件を維持。
-- T024 で `CHANGELOG.md` の v0.2.0 candidate、リリースノート案、最終化手順、ゲート①承認依頼を準備済み。正本は `docs/release-v0.2.0-preparation.md`。
-- 最新の tag と GitHub Release は `v0.1.0`。`v0.2.0` の tag と GitHub Release は未作成。
+- SKILL.md は v2（7軸構成）。checklist の実項目数・軸数、完了タスク範囲、直近検証日は、起動時の `HANDOFF.md` / `TASKS_BACKLOG.md` と check:all の実測から取得する。この日付付きプロンプトの過去スナップショットを現在値として使わない。
+- `CHANGELOG.md` には v0.2.0 candidate があり、リリースノート案、最終化手順、ゲート①承認依頼の正本は `docs/release-v0.2.0-preparation.md`。内容と承認状態は起動時に読み直す。
+- 最新の tag / GitHub Release と `v0.2.0` の有無は、`git tag` / `gh release list` で実測する。本文中の作成日や過去の記録だけで未作成と断定しない。
 
 Autonomy policy
 AGENTS.md §4–§10 に従い、タスク選定 → 実装 → check:all → 敵対的セルフレビュー → 日本語コミット → PR → CI緑でマージ → ブランチ削除まで承認なしで自走する。doing は常に1件、1 PR = 1 改善。HANDOFF.md / TASKS_BACKLOG.md の更新も承認不要。
