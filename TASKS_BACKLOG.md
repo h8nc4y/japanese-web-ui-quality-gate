@@ -2,17 +2,27 @@
 
 > 自律エージェント（例: Codex）のタスク台帳。運用ルールは [`AGENTS.md`](AGENTS.md)（§4 ループ / §5 選定 / §14 記録）を参照。doing は常に1件のみ。2026-07-11 以前の詳細な検証ログと同期経緯は、git 履歴にある本ファイルの旧版を参照。
 
-## 現在のスナップショット（2026-07-28 JST 実測）
+## 現在のスナップショット（2026-07-29 JST 実測）
 
-- 対象ブランチ: `main`（T031 は PR #39 で統合済み）
-- doing タスク: 0件。T031 統合後の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T031 pass
+- 対象ブランチ: `fix/scanner-self-scan`（`origin/main` の T031 統合後 commit から分離）
+- doing タスク: T032 の1件。着手時の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-29 T032 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
-現在選定済みの実装タスクはない。
-ゲート①未承認の間も、コード・検証・文書の不整合から次のローカル安全な改善を選定できる。
+### T032 — scanner 自身の blanket 除外を廃止する
+
+- 出典: `scripts/scan-private-markers.ps1` は marker 文字列を分割して保持し「blanket self-exemption は不要」と説明する一方、実装では実行中の scanner file を走査対象から常時除外している。
+- 優先度 / 規模 / 状態: high / Class M / doing
+- 目的: scanner file に誤って混入した実 marker 候補も、ほかの公開対象と同じ規則で検出し、自己除外による silent skip をなくす。
+- 影響: private-marker の fail-closed 判定を強化する。検出規則、allowlist、走査モード、出力の redaction 契約は変えない。
+- 受け入れ条件:
+  - [x] scratch root 内へ scanner をコピーし、runtime で組み立てた合成 marker をそのコピーへ追記して、コピー自身を `-Path` の走査 root として実行する回帰 fixture を追加する。
+  - [x] 修正前は fixture が exit 0 となる RED、修正後は固定 marker 名を伴う exit 1 となる GREEN を実測する。
+  - [x] scanner 出力へ合成 marker の値を反射しない。
+  - [x] 通常 repository scan と既存回帰を PowerShell 7 / Windows PowerShell 5.1 の双方で通す。
+  - [ ] security 判定ロジックの変更として、exact diff freeze を別レビュアーが確認してから commit / push / PR / merge へ進む。
 
 ### ゲート①承認待ち
 
@@ -49,13 +59,14 @@
 
 | コマンド | 結果 |
 | --- | --- |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-28 T031 pass: `Public readiness checks passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-28 T031 pass: `Private marker scanner tests passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-28 T031 pass: `No private or secret markers found.` |
-| Windows PowerShell 5.1 による check:all 3本 | 2026-07-28 T031 pass（scanner childも5.1実行） |
+| T032 修正前 RED | scanner copy 自身へ runtime 合成 marker を追記した fixture が exit 0 となり、期待 exit 1 / marker 名不在の2 assertionで test harness は exit 1 |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-29 T032 pass: `Public readiness checks passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-29 T032 pass: `Private marker scanner tests passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-29 T032 pass: `No private or secret markers found.` |
+| Windows PowerShell 5.1 による check:all 3本 | 2026-07-29 T032 pass（scanner childも5.1実行） |
 | T031 exact staged freeze 独立レビュー | tree `9bd2c6c48a4f651829298965381b324fa0f0733a`、P0/P1/P2/P3 = 0、CLEARANCE YES |
 | PR #39 / `main` Validation | PR run `30334786553`、merge commit run `30334831847` ともに success |
-| `git diff --check` / `git diff --cached --check` | 2026-07-28 T031 pass |
+| `git diff --check` / `git diff --cached --check` | 2026-07-29 T032 pass |
 | `gh pr list --state open` / `gh issue list --state open` | 2026-07-28 T031 統合後はいずれも 0件 |
 
 ## skip

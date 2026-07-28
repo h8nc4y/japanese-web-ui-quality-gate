@@ -10,7 +10,6 @@ $ErrorActionPreference = "Stop"
 
 $root = Resolve-Path -LiteralPath $Path
 $rootPath = $root.Path
-$scriptPath = $MyInvocation.MyCommand.Path
 
 function Get-PathRelativeToScanRoot {
     param([string]$TargetPath)
@@ -44,8 +43,8 @@ $patterns = @(
     @{ Name = "Authorization token header"; Pattern = "Bear" + "er\s+[A-Za-z0-9._~+/-]{8,}=*" },
     @{ Name = "Private key block"; Pattern = "BEGIN" + " (RSA |EC |OPENSSH |ENCRYPTED |DSA |)?PRIVATE KEY" },
     @{ Name = "Windows user absolute path"; Pattern = "[A-Za-z]:\\Users\\" },
-    # The generic rule excludes X:\Users\... so a user-profile path is reported once by the
-    # dedicated rule above instead of twice (matching is IgnoreCase, so users\ is covered too).
+    # The generic rule excludes user-profile paths so the dedicated rule above reports each
+    # one only once (matching is IgnoreCase, so differently cased directory names are covered).
     @{ Name = "Windows absolute path"; Pattern = "[A-Za-z]:\\(?!Users\\)[A-Za-z0-9_. -]+\\[A-Za-z0-9_. -]+" },
     @{ Name = "Unix home absolute path"; Pattern = "/(Users|home)/[^/\s]+" },
     @{ Name = "Email address"; Pattern = "\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b" }
@@ -201,10 +200,6 @@ $script:ScanMode = "working-tree"
 $candidateFiles = Get-ScanTargetFiles
 
 $files = $candidateFiles | Where-Object {
-    # Always skip the scanner file itself (its concatenated prefixes are not secrets).
-    if ($scriptPath -and ((Resolve-Path -LiteralPath $_.FullName).Path -eq (Resolve-Path -LiteralPath $scriptPath).Path)) {
-        return $false
-    }
     if ($binaryExtensions.Contains($_.Extension)) { return $false }
     if (Test-LooksBinary -FullPath $_.FullName) { return $false }
     return $true
