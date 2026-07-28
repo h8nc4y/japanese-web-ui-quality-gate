@@ -147,8 +147,24 @@ function Get-ScanTargetFiles {
         # -z = NUL-delimited to survive unusual filenames; tracked files only.
         $previousErrorActionPreference = $ErrorActionPreference
         $ErrorActionPreference = "Continue"
-        $rawList = & git -C $rootPath ls-files -z 2>$null
-        $ErrorActionPreference = $previousErrorActionPreference
+        $rawList = $null
+        $gitListSucceeded = $false
+        try {
+            $rawList = & git -C $rootPath ls-files -z 2>$null
+            # Combine the native exit code with `$?` so a stale zero cannot turn a
+            # command-resolution failure into success. No file list means no proven scan scope.
+            $gitListSucceeded = ($? -and ($LASTEXITCODE -eq 0))
+        }
+        catch {
+            $gitListSucceeded = $false
+        }
+        finally {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+        if (-not $gitListSucceeded) {
+            Write-Host "Failed to enumerate git-tracked scan targets; scan aborted."
+            exit 1
+        }
         $relativePaths = ($rawList -join "") -split "`0" | Where-Object { $_ -ne "" }
         $result = foreach ($rel in $relativePaths) {
             $full = Join-Path $rootPath $rel

@@ -7,6 +7,8 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path -LiteralPath $Path).Path
 $scannerPath = Join-Path $repoRoot "scripts/scan-private-markers.ps1"
 $scratchRoot = Join-Path $repoRoot ".test-tmp/scan-private-markers"
+$powerShellExecutable = (Get-Process -Id $PID).Path
+$isWindowsHost = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
 $failures = [System.Collections.Generic.List[string]]::new()
 $cleanupWarningWritten = $false
 
@@ -30,7 +32,9 @@ function Invoke-Scanner {
         $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $scannerPath, "-Path", $ScanPath, "-AllowedGitHubRepositories")
         $arguments += $AllowedGitHubRepositories
         if ($NoGit) { $arguments += "-NoGit" }
-        $output = & pwsh @arguments 2>&1
+        # Reuse the current host executable so a Windows PowerShell 5.1 test does
+        # not silently delegate the scanner invocation to PowerShell 7.
+        $output = & $powerShellExecutable @arguments 2>&1
         $exitCode = $LASTEXITCODE
     }
     finally {
@@ -368,6 +372,57 @@ if ($gitCommand) {
 }
 else {
     Write-Host "git not available; skipping git-tracked enumeration test (未確認)."
+}
+
+# --- A tracked-file enumeration failure must not become a successful zero-file scan. ---
+$gitFailureDirectory = New-TestDirectory
+try {
+    $fakeGitBin = Join-Path $gitFailureDirectory "fake-git-bin"
+    New-Item -ItemType Directory -Force -Path $fakeGitBin | Out-Null
+    if ($isWindowsHost) {
+        $fakeGitPath = Join-Path $fakeGitBin "git.cmd"
+        @(
+            '@echo off',
+            'if "%~3"=="rev-parse" (',
+            '  echo true',
+            '  exit /b 0',
+            ')',
+            'echo synthetic git enumeration failure 1>&2',
+            'exit /b 42'
+        ) | Set-Content -LiteralPath $fakeGitPath -Encoding ASCII
+    }
+    else {
+        $fakeGitPath = Join-Path $fakeGitBin "git"
+        @(
+            '#!/bin/sh',
+            'if [ "$3" = "rev-parse" ]; then',
+            '  echo true',
+            '  exit 0',
+            'fi',
+            'echo synthetic git enumeration failure >&2',
+            'exit 42'
+        ) | Set-Content -LiteralPath $fakeGitPath -Encoding ASCII
+        & chmod +x -- $fakeGitPath
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not make the fake git fixture executable."
+        }
+    }
+
+    $previousPath = $env:PATH
+    try {
+        # Only the child scanner resolves fake git first; earlier real-git fixtures stay isolated.
+        $env:PATH = $fakeGitBin + [System.IO.Path]::PathSeparator + $previousPath
+        $gitFailureResult = Invoke-Scanner -ScanPath $gitFailureDirectory
+    }
+    finally {
+        $env:PATH = $previousPath
+    }
+
+    Assert-ExitCode -Result $gitFailureResult -Expected 1 -Description "git tracked-file enumeration failure"
+    Assert-OutputContains -Result $gitFailureResult -Pattern "Failed to enumerate git-tracked scan targets" -Description "git tracked-file enumeration failure"
+}
+finally {
+    Remove-TestDirectory -Directory $gitFailureDirectory
 }
 
 if ($failures.Count -gt 0) {
