@@ -376,6 +376,14 @@ if ($gitCommand) {
             $trackedResult = Invoke-Scanner -ScanPath $gitFixtureRoot
             Assert-ExitCode -Result $trackedResult -Expected 1 -Description "git-tracked scan detects tracked private marker"
             Assert-OutputContains -Result $trackedResult -Pattern "OpenAI-style token" -Description "git-tracked scan detects tracked private marker"
+
+            # Keep the index entry but remove only the working-tree file. The scanner must
+            # not silently turn an uninspected tracked target into a successful empty scan.
+            Remove-Item -LiteralPath (Join-Path $gitFixtureRoot "untracked.md") -Force
+            $missingTrackedResult = Invoke-Scanner -ScanPath $gitFixtureRoot
+            Assert-ExitCode -Result $missingTrackedResult -Expected 1 -Description "missing git-tracked scan target"
+            Assert-OutputContains -Result $missingTrackedResult -Pattern "A git-tracked scan target is missing; scan aborted" -Description "missing git-tracked scan target"
+            Assert-OutputNotContains -Result $missingTrackedResult -Pattern "untracked\.md" -Description "missing git-tracked scan target redacts the path"
         }
     }
     finally {
