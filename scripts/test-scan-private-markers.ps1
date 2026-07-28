@@ -71,6 +71,18 @@ function Assert-OutputContains {
     }
 }
 
+function Assert-OutputNotContains {
+    param(
+        [object]$Result,
+        [string]$Pattern,
+        [string]$Description
+    )
+
+    if ([regex]::IsMatch($Result.Output, $Pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
+        Add-Failure "$Description unexpectedly contained pattern '$Pattern'. Output: $($Result.Output)"
+    }
+}
+
 function New-TestDirectory {
     New-Item -ItemType Directory -Force -Path $scratchRoot | Out-Null
     $directory = Join-Path $scratchRoot ([guid]::NewGuid().ToString("N"))
@@ -420,6 +432,7 @@ try {
 
     Assert-ExitCode -Result $gitFailureResult -Expected 1 -Description "git tracked-file enumeration failure"
     Assert-OutputContains -Result $gitFailureResult -Pattern "Failed to enumerate git-tracked scan targets" -Description "git tracked-file enumeration failure"
+    Assert-OutputNotContains -Result $gitFailureResult -Pattern "synthetic git enumeration failure" -Description "git tracked-file enumeration failure redacts native stderr"
 }
 finally {
     Remove-TestDirectory -Directory $gitFailureDirectory
