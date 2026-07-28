@@ -4,15 +4,21 @@
 
 ## 現在のスナップショット（2026-07-28 JST 実測）
 
-- 対象ブランチ: `main`（T030 は PR #37 で統合済み）
-- doing タスク: 0件。T030 統合後の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T030 pass
+- 対象ブランチ: `fix/scanner-missing-tracked-target`（T031）
+- doing タスク: T031。着手時の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T031 着手前 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
-現在選定済みの実装タスクはない。
-ゲート①未承認の間も、コード・検証・文書の不整合から次のローカル安全な改善を選定できる。
+### T031: 欠落した git-tracked scan target の fail-closed 化（doing / Class M）
+
+- 目的: indexではtrackedのままworking treeから欠落したfileを黙って除外し、未検査の公開対象が残ってもprivate-marker scannerが成功し得るfail-open経路を解消する。
+- 影響範囲: `scripts/scan-private-markers.ps1` のgit-tracked target解決と `scripts/test-scan-private-markers.ps1` のactual git fixture。marker pattern、allowlist、binary判定、workflow、公開成果物は変更しない。
+- 受け入れ条件:
+  - actual git fixtureでfileをindexへ追加後、working treeだけから削除するとscannerが固定のredactedエラーとexit 1を返す。
+  - 通常 / 空のgit-tracked mode、列挙失敗、`-NoGit` working-tree mode、既存marker検出 / allowlist / binary除外に退行がない。
+  - check:all 3本と同じ3本のWindows PowerShell 5.1互換実行、`git diff --check`、公開安全スキャン、exact staged freeze独立レビューが成功する。
 
 ### ゲート①承認待ち
 
