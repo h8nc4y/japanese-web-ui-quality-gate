@@ -158,6 +158,7 @@ function Get-ChecklistSummary {
     $completeHtmlClosingTagPattern = '^[ ]{0,3}</[A-Za-z][A-Za-z0-9-]*[ \t]*>[ \t]*$'
     $ambiguousIndentedFenceOrHtmlPattern = '^(?: {4,}| {0,3}\t)(?:(?:`{3,}|~{3,})|<(?:!--|\?|!\[CDATA\[|![A-Za-z]|/?[A-Za-z]))'
     $indentedCodePattern = '^(?: {4,}| {0,3}\t)'
+    $thematicBreakPattern = '^[ ]{0,3}(?:(?:\*[ \t]*){3,}|(?:_[ \t]*){3,}|(?:-[ \t]*){3,})$'
     $thematicOrSetextPattern = '^[ ]{0,3}(?:(?:\*[ \t]*){3,}|(?:_[ \t]*){3,}|(?:-[ \t]*){1,}|(?:=[ \t]*){1,})$'
     $setextUnderlinePattern = '^[ ]{0,3}(?<marker>=+|-+)[ \t]*$'
     $genericContainerMarkerPattern = '^[ ]{0,3}(?:>|[-+*](?:[ \t]+|$)|[0-9]{1,9}[.)](?:[ \t]+|$))'
@@ -220,6 +221,7 @@ function Get-ChecklistSummary {
         $lineIndentColumns = Get-LeadingIndentColumns -Line $line
         $checklistItemInfo = Get-ChecklistItemLineInfo -Line $line
         $isChecklistItem = $null -ne $checklistItemInfo
+        $isThematicBreakLine = [regex]::IsMatch($line, $thematicBreakPattern)
         $lineIsIndentedWithinActiveChecklist = (
             ($null -ne $activeTopLevelChecklistContentColumn) -and
             ($lineIndentColumns -ge $activeTopLevelChecklistContentColumn)
@@ -227,7 +229,10 @@ function Get-ChecklistSummary {
         $hasUnsupportedContainer = (
             $insideNumberedAxis -and
             [regex]::IsMatch($line, $genericContainerMarkerPattern) -and
-            (-not $isChecklistItem)
+            (-not $isChecklistItem) -and
+            # `- - -` / `* * *` はlist marker風でもCommonMark thematic break。
+            # 通常の非canonical containerだけをfail closed対象に残す。
+            (-not $isThematicBreakLine)
         )
 
         # 4列以上またはTAB開始のfence/HTMLはindented codeとの境界を簡易parserで
@@ -592,6 +597,16 @@ function Assert-ChecklistAxisParser {
             ) -join "`n"
         },
         [pscustomobject]@{
+            Label = 'spaced-thematic-breaks'
+            ExpectedCount = 2
+            Content = @(
+                '## 1. First Axis',
+                '- - -',
+                '* * *',
+                '## 2. Second Axis'
+            ) -join "`n"
+        },
+        [pscustomobject]@{
             Label = 'backtick-fence'
             ExpectedCount = 2
             Content = @(
@@ -711,6 +726,37 @@ function Assert-ChecklistItemParser {
                 '   - [ ] Third item',
                 '## 1) Not an axis',
                 '- [ ] Invalid-axis decoy'
+            ) -join "`n"
+        },
+        [pscustomobject]@{
+            Label = 'hyphen-thematic-break-with-spaces'
+            ExpectedCount = 2
+            Content = @(
+                '## 1. First Axis',
+                '- [ ] First item',
+                '- - -',
+                '- [ ] Second item'
+            ) -join "`n"
+        },
+        [pscustomobject]@{
+            Label = 'asterisk-thematic-break-with-spaces'
+            ExpectedCount = 2
+            Content = @(
+                '## 1. First Axis',
+                '- [ ] First item',
+                '* * *',
+                '- [ ] Second item'
+            ) -join "`n"
+        },
+        [pscustomobject]@{
+            Label = 'thematic-break-tabs-and-leading-indent'
+            ExpectedCount = 2
+            Content = @(
+                '## 1. First Axis',
+                '- [ ] First item',
+                ([string]::Concat('   -', [char]9, '-', [char]9, '-')),
+                ([string]::Concat('*', [char]9, '*', [char]9, '*')),
+                '- [ ] Second item'
             ) -join "`n"
         },
         [pscustomobject]@{
@@ -1151,6 +1197,22 @@ function Assert-UnsupportedChecklistParser {
                 '## 1. First Axis',
                 '***',
                 '<custom-element>',
+                '- [ ] Ambiguous item'
+            ) -join "`n"
+        },
+        [pscustomobject]@{
+            Label = 'hyphen-thematic-break-too-short'
+            Content = @(
+                '## 1. First Axis',
+                '- -',
+                '- [ ] Ambiguous item'
+            ) -join "`n"
+        },
+        [pscustomobject]@{
+            Label = 'asterisk-thematic-break-trailing-content'
+            Content = @(
+                '## 1. First Axis',
+                '* * * trailing content',
                 '- [ ] Ambiguous item'
             ) -join "`n"
         },
