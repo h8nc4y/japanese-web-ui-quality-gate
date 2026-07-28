@@ -168,9 +168,20 @@ function Get-ScanTargetFiles {
         $relativePaths = ($rawList -join "") -split "`0" | Where-Object { $_ -ne "" }
         $result = foreach ($rel in $relativePaths) {
             $full = Join-Path $rootPath $rel
-            if (Test-Path -LiteralPath $full -PathType Leaf) {
-                Get-Item -LiteralPath $full
+            $targetFile = $null
+            try {
+                if (Test-Path -LiteralPath $full -PathType Leaf) {
+                    $targetFile = Get-Item -LiteralPath $full -ErrorAction Stop
+                }
             }
+            catch {
+                $targetFile = $null
+            }
+            if ($null -eq $targetFile) {
+                Write-Host "A git-tracked scan target is missing; scan aborted."
+                exit 1
+            }
+            $targetFile
         }
         return @($result)
     }
