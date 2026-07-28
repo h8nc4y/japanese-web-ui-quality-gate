@@ -20,6 +20,7 @@ function Add-Failure {
 function Invoke-Scanner {
     param(
         [Parameter(Mandatory = $true)][string]$ScanPath,
+        [string]$ScannerScriptPath = $scannerPath,
         [string[]]$AllowedGitHubRepositories = @("h8nc4y/japanese-web-ui-quality-gate"),
         # Synthetic fixtures live under .test-tmp (untracked); force the filesystem walk so
         # they are actually read instead of being skipped by git-tracked enumeration.
@@ -29,7 +30,7 @@ function Invoke-Scanner {
     $previousErrorActionPreference = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
-        $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $scannerPath, "-Path", $ScanPath, "-AllowedGitHubRepositories")
+        $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $ScannerScriptPath, "-Path", $ScanPath, "-AllowedGitHubRepositories")
         $arguments += $AllowedGitHubRepositories
         if ($NoGit) { $arguments += "-NoGit" }
         # Reuse the current host executable so a Windows PowerShell 5.1 test does
@@ -125,6 +126,31 @@ function Remove-TestDirectory {
 $cleanRepoResult = Invoke-Scanner -ScanPath $repoRoot
 Assert-ExitCode -Result $cleanRepoResult -Expected 0 -Description "repository scan"
 Assert-OutputContains -Result $cleanRepoResult -Pattern "No private or secret markers found" -Description "repository scan"
+
+# --- The scanner source is a published scan target too. A copied scanner carrying a
+#     runtime-assembled marker must fail closed without reflecting the marker value. ---
+$scannerSelfScanDirectory = New-TestDirectory
+try {
+    $scannerSelfScanPath = Join-Path $scannerSelfScanDirectory "scan-private-markers.ps1"
+    Copy-Item -LiteralPath $scannerPath -Destination $scannerSelfScanPath
+    $scannerSelfScanToken = ("s" + "k-" + "scannerSelfScanMarker1234567890")
+    $utf8WithoutBom = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::AppendAllText(
+        $scannerSelfScanPath,
+        ("`n# Synthetic self-scan fixture: " + $scannerSelfScanToken + "`n"),
+        $utf8WithoutBom
+    )
+
+    $scannerSelfScanResult = Invoke-Scanner -ScannerScriptPath $scannerSelfScanPath -ScanPath $scannerSelfScanDirectory -NoGit
+    Assert-ExitCode -Result $scannerSelfScanResult -Expected 1 -Description "scanner source is not blanket-exempt"
+    Assert-OutputContains -Result $scannerSelfScanResult -Pattern "OpenAI-style token" -Description "scanner source marker detection"
+    if ([regex]::IsMatch($scannerSelfScanResult.Output, [regex]::Escape($scannerSelfScanToken))) {
+        Add-Failure "scanner source marker detection leaked the raw synthetic marker into scanner output."
+    }
+}
+finally {
+    Remove-TestDirectory -Directory $scannerSelfScanDirectory
+}
 
 $ignoredScratchDirectory = New-TestDirectory
 try {
