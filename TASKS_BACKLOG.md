@@ -4,21 +4,15 @@
 
 ## 現在のスナップショット（2026-07-28 JST 実測）
 
-- 対象ブランチ: `fix/thematic-break-parser`（T029）
-- doing タスク: T029。着手時の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T029 着手前 pass
+- 対象ブランチ: `main`（T029 は PR #35 で統合済み）
+- doing タスク: 0件。T029 統合後の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T029 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
-### T029: 空白区切り thematic break の誤検出修正（doing / Class M）
-
-- 目的: 番号付き評価軸内の有効な `- - -` / `* * *` thematic break を、非対応 list container と誤判定して固定エラーへ倒す false positive を解消する。
-- 影響範囲: `scripts/test-public-readiness.ps1` の checklist Markdown parser と内部回帰 fixture。中核 skill、checklist 項目、README 件数、公開 API は変更しない。
-- 受け入れ条件:
-  - 空白区切りの hyphen / asterisk thematic break を含む canonical checklist が、軸数・項目数を維持して成功する。
-  - checked / 空項目、alternate marker、通常の非canonical list / blockquote container は従来どおり固定エラー + 0件へ fail closed する。
-  - check:all 3本と同じ3本の Windows PowerShell 5.1 互換実行、`git diff --check`、公開安全スキャン、独立レビューが成功する。
+現在選定済みの実装タスクはない。
+ゲート①未承認の間も、コード・検証・文書の不整合から次のローカル安全な改善を選定できる。
 
 ### ゲート①承認待ち
 
@@ -47,18 +41,20 @@
 | T026 | public-readiness の軸数抽出を番号付き H2 に限定し、補助 H2・コードフェンス内の見出しを除外。公開文書の読み取りを UTF-8 に固定し、PowerShell 7 / Windows PowerShell 5.1 の判定を一致 | 2026-07-25 |
 | T027 | public-readiness の項目数抽出を top-level 番号付き軸内の未チェック hyphen 項目（marker後1–4列）へ限定。親itemのcontent columnからnested checkboxとlist内paragraph / Setext / Type 7を識別し、0–3-space fenceとlabelが999文字以内の安全に証明できる単行link reference subsetを受理。active axis内の非canonical container、複数行link reference、未確定indented leafだけを固定エラー + 0件へ fail closed。top-levelと証明したSetextだけをscope境界にし、軸数と項目数を同じ構造解析から導出 | 2026-07-26 |
 | T028 | 日付付き起動プロンプトから固定の完了タスク範囲・検証日・tag/Release状態を除去。新しいセッションが living SSOT と check:all / Git / GitHub の実測から現在値を得る契約へ変更 | 2026-07-27 |
+| T029 | 番号付き軸内の有効な space / tab 区切り hyphen / asterisk thematic break を非対応 container の fail-closed 判定から除外。正例と、3個未満・末尾文字付きの負例 fixture で境界を固定 | 2026-07-28 / PR #35 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-27 T028 pass: `Public readiness checks passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-27 T028 pass: `Private marker scanner tests passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-27 T028 pass: `No private or secret markers found.` |
-| Windows PowerShell 5.1 による check:all 3本 | 2026-07-27 T028 pass（互換実行） |
-| 起動プロンプト固定スナップショット検査（旧 `T001–T025` / `T024 完了後` / 固定tag記述の不在と、living SSOT / GitHub実測契約の存在） | 2026-07-27 pass |
-| `git diff --check` / `git diff --cached --check` | 2026-07-27 pass |
-| `gh pr list --state open` / `gh issue list --state open` | 2026-07-27 T028 着手時点はいずれも 0件 |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-28 T029 pass: `Public readiness checks passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-28 T029 pass: `Private marker scanner tests passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-28 T029 pass: `No private or secret markers found.` |
+| Windows PowerShell 5.1 による check:all 3本 | 2026-07-28 T029 pass（互換実行） |
+| T029 exact-freeze 独立レビュー | tree `26944ad46b20fbde2c7159285db6405bc5e650f8`、P0/P1/P2/P3 = 0、CLEARANCE YES |
+| PR #35 / `main` Validation | PR run `30332539634`、merge commit run `30332583942` ともに success |
+| `git diff --check` / `git diff --cached --check` | 2026-07-28 T029 pass |
+| `gh pr list --state open` / `gh issue list --state open` | 2026-07-28 T029 統合後はいずれも 0件 |
 
 ## skip
 
