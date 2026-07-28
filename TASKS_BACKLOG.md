@@ -4,25 +4,15 @@
 
 ## 現在のスナップショット（2026-07-29 JST 実測）
 
-- 対象ブランチ: `fix/scanner-self-scan`（`origin/main` の T031 統合後 commit から分離）
-- doing タスク: T032 の1件。着手時の GitHub open issue / open PR: 0件
+- 対象ブランチ: `main`（T032 は PR #41 / merge commit `0843f2d` で統合済み）
+- doing タスク: 0件。T032 統合後の GitHub open issue / open PR: 0件
 - check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-29 T032 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
-### T032 — scanner 自身の blanket 除外を廃止する
-
-- 出典: `scripts/scan-private-markers.ps1` は marker 文字列を分割して保持し「blanket self-exemption は不要」と説明する一方、実装では実行中の scanner file を走査対象から常時除外している。
-- 優先度 / 規模 / 状態: high / Class M / doing
-- 目的: scanner file に誤って混入した実 marker 候補も、ほかの公開対象と同じ規則で検出し、自己除外による silent skip をなくす。
-- 影響: private-marker の fail-closed 判定を強化する。検出規則、allowlist、走査モード、出力の redaction 契約は変えない。
-- 受け入れ条件:
-  - [x] scratch root 内へ scanner をコピーし、runtime で組み立てた合成 marker をそのコピーへ追記して、コピー自身を `-Path` の走査 root として実行する回帰 fixture を追加する。
-  - [x] 修正前は fixture が exit 0 となる RED、修正後は固定 marker 名を伴う exit 1 となる GREEN を実測する。
-  - [x] scanner 出力へ合成 marker の値を反射しない。
-  - [x] 通常 repository scan と既存回帰を PowerShell 7 / Windows PowerShell 5.1 の双方で通す。
-  - [ ] security 判定ロジックの変更として、exact diff freeze を別レビュアーが確認してから commit / push / PR / merge へ進む。
+現在選定済みの実装タスクはない。
+ゲート①未承認の間も、コード・検証・文書の不整合から次のローカル安全な改善を選定できる。
 
 ### ゲート①承認待ち
 
@@ -54,6 +44,7 @@
 | T029 | 番号付き軸内の有効な space / tab 区切り hyphen / asterisk thematic break を非対応 container の fail-closed 判定から除外。正例と、3個未満・末尾文字付きの負例 fixture で境界を固定 | 2026-07-28 / PR #35 |
 | T030 | `git ls-files -z` 失敗時の検査対象0件成功を防ぎ、固定のredactedエラー + exit 1へ fail closed。fake gitのWindows / Unix fixture、PATH復元、native stderr非出力、現在のPowerShell host再利用を回帰検証 | 2026-07-28 / PR #37 |
 | T031 | indexには残るがworking treeから欠落したtracked targetを固定のredactedエラー + exit 1へ fail closed。actual git fixtureでworking fileだけを削除し、path非出力を回帰検証 | 2026-07-28 / PR #39 |
+| T032 | scanner 自身の blanket self-exemption を廃止。scratch copy 自身へ runtime 合成 marker を置く回帰で修正前 RED、値非反射、通常 scan、PowerShell 7 / Windows PowerShell 5.1 を確認 | 2026-07-29 / PR #41 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
@@ -64,10 +55,11 @@
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-29 T032 pass: `Private marker scanner tests passed.` |
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-29 T032 pass: `No private or secret markers found.` |
 | Windows PowerShell 5.1 による check:all 3本 | 2026-07-29 T032 pass（scanner childも5.1実行） |
-| T031 exact staged freeze 独立レビュー | tree `9bd2c6c48a4f651829298965381b324fa0f0733a`、P0/P1/P2/P3 = 0、CLEARANCE YES |
-| PR #39 / `main` Validation | PR run `30334786553`、merge commit run `30334831847` ともに success |
+| T032 exact diff 独立レビュー | diff SHA-256 `4e9087ea8b59b25e18656bbc0a914a1e2083c1a3581c55b12a5144f555866114`、P0/P1/P2/P3 = 0、CLEARANCE YES |
+| staged security checks | Gitleaks pass（no leaks）、changed-scope Semgrep exit 0（対象拡張子0）、global hook pass |
+| PR #41 / `main` Validation | PR run `30392159972`、merge commit run `30392277496` ともに success |
 | `git diff --check` / `git diff --cached --check` | 2026-07-29 T032 pass |
-| `gh pr list --state open` / `gh issue list --state open` | 2026-07-28 T031 統合後はいずれも 0件 |
+| `gh pr list --state open` / `gh issue list --state open` | 2026-07-29 T032 統合後はいずれも 0件 |
 
 ## skip
 
