@@ -4,15 +4,21 @@
 
 ## 現在のスナップショット（2026-07-28 JST 実測）
 
-- 対象ブランチ: `main`（T029 は PR #35 で統合済み）
-- doing タスク: 0件。T029 統合後の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T029 pass
+- 対象ブランチ: `fix/scanner-git-enumeration-fail-closed`（T030）
+- doing タスク: T030。着手時の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T030 着手前 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
-現在選定済みの実装タスクはない。
-ゲート①未承認の間も、コード・検証・文書の不整合から次のローカル安全な改善を選定できる。
+### T030: git tracked-file 列挙失敗の fail-closed 化（doing / Class M）
+
+- 目的: git worktree と判定した後の `git ls-files -z` 失敗を無視し、検査対象0件で成功し得る private-marker scanner の fail-open 経路を解消する。
+- 影響範囲: `scripts/scan-private-markers.ps1` の git-tracked 列挙と `scripts/test-scan-private-markers.ps1` の合成 fixture。marker pattern、allowlist、公開成果物は変更しない。
+- 受け入れ条件:
+  - `rev-parse --is-inside-work-tree` は成功し、`ls-files -z` だけが非0終了する fake git fixture で scanner が固定のredactedエラーと exit 1を返す。
+  - 通常の git-tracked mode、`-NoGit` working-tree mode、既存の marker 検出 / allowlist / binary 除外に退行がない。
+  - check:all 3本と同じ3本の Windows PowerShell 5.1 互換実行、`git diff --check`、公開安全スキャン、独立レビューが成功する。
 
 ### ゲート①承認待ち
 
