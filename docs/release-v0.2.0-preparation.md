@@ -32,7 +32,7 @@
 
 - private-marker scanner は git-tracked file を既定の対象にし、行番号、binary-like file の除外、主要な credential marker の検出を追加しました。
 - scanner の filesystem fallback、UTF-8 読み取り、重複報告、失敗時の終了処理を修正しました。
-- public-readiness は top-level の番号付き評価軸と、marker 後 indent が tab-stop 換算1–4列の未チェック hyphen 項目だけを構造的に数えて README の数値表記と比較します。親項目の content column 以深にあるnested checkbox、fence / HTML block 内の例示、list item 内のparagraph / Setext / Type 7をtop-level件数へ含めません。0–3-space fenceとlabelがCommonMark上限の999文字以内で安全に証明できる単行link reference subsetは受理し、active axis内の非canonical container、複数行link reference、4列/TAB開始leafなど安全に確定できない構造だけを固定エラーと0件へ fail closed します。Setext heading は直前paragraphが top-level と証明できる場合だけ軸scopeを終了します。
+- public-readiness は top-level の番号付き評価軸と、marker 後 indent が tab-stop 換算1–4列の未チェック hyphen 項目だけを構造的に数えて README の数値表記と比較します。親項目の content column 以深にあるnested checkbox、fence / HTML block 内の例示、list item 内のparagraph / Setext / Type 7をtop-level件数へ含めません。0–3-space fence、labelがCommonMark上限の999文字以内で安全に証明できる単行link reference subset、space / tab 区切りの hyphen / asterisk thematic break は受理し、active axis内の非canonical container、複数行link reference、4列/TAB開始leafなど安全に確定できない構造だけを固定エラーと0件へ fail closed します。Setext heading は直前paragraphが top-level と証明できる場合だけ軸scopeを終了します。
 
 ### 利用者向け補足
 
