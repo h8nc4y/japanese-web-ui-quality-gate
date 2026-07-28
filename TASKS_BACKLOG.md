@@ -2,17 +2,23 @@
 
 > 自律エージェント（例: Codex）のタスク台帳。運用ルールは [`AGENTS.md`](AGENTS.md)（§4 ループ / §5 選定 / §14 記録）を参照。doing は常に1件のみ。2026-07-11 以前の詳細な検証ログと同期経緯は、git 履歴にある本ファイルの旧版を参照。
 
-## 現在のスナップショット（2026-07-27 JST 実測）
+## 現在のスナップショット（2026-07-28 JST 実測）
 
-- 対象ブランチ: `main`（T028 の統合先）
-- doing タスク: 0件。T028 着手時の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-27 T028 pass
+- 対象ブランチ: `fix/thematic-break-parser`（T029）
+- doing タスク: T029。着手時の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T029 着手前 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
-実装タスクはない。
-次の操作はゲート①の承認待ちであり、通常の doing には移さない。
+### T029: 空白区切り thematic break の誤検出修正（doing / Class M）
+
+- 目的: 番号付き評価軸内の有効な `- - -` / `* * *` thematic break を、非対応 list container と誤判定して固定エラーへ倒す false positive を解消する。
+- 影響範囲: `scripts/test-public-readiness.ps1` の checklist Markdown parser と内部回帰 fixture。中核 skill、checklist 項目、README 件数、公開 API は変更しない。
+- 受け入れ条件:
+  - 空白区切りの hyphen / asterisk thematic break を含む canonical checklist が、軸数・項目数を維持して成功する。
+  - checked / 空項目、alternate marker、通常の非canonical list / blockquote container は従来どおり固定エラー + 0件へ fail closed する。
+  - check:all 3本と同じ3本の Windows PowerShell 5.1 互換実行、`git diff --check`、公開安全スキャン、独立レビューが成功する。
 
 ### ゲート①承認待ち
 
