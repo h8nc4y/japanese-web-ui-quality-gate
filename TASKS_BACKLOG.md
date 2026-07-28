@@ -4,21 +4,15 @@
 
 ## 現在のスナップショット（2026-07-28 JST 実測）
 
-- 対象ブランチ: `fix/scanner-git-enumeration-fail-closed`（T030）
-- doing タスク: T030。着手時の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T030 着手前 pass
+- 対象ブランチ: `main`（T030 は PR #37 で統合済み）
+- doing タスク: 0件。T030 統合後の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-28 T030 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
-### T030: git tracked-file 列挙失敗の fail-closed 化（doing / Class M）
-
-- 目的: git worktree と判定した後の `git ls-files -z` 失敗を無視し、検査対象0件で成功し得る private-marker scanner の fail-open 経路を解消する。
-- 影響範囲: `scripts/scan-private-markers.ps1` の git-tracked 列挙と `scripts/test-scan-private-markers.ps1` の合成 fixture。marker pattern、allowlist、公開成果物は変更しない。
-- 受け入れ条件:
-  - `rev-parse --is-inside-work-tree` は成功し、`ls-files -z` だけが非0終了する fake git fixture で scanner が固定のredactedエラーと exit 1を返す。
-  - 通常の git-tracked mode、`-NoGit` working-tree mode、既存の marker 検出 / allowlist / binary 除外に退行がない。
-  - check:all 3本と同じ3本の Windows PowerShell 5.1 互換実行、`git diff --check`、公開安全スキャン、独立レビューが成功する。
+現在選定済みの実装タスクはない。
+ゲート①未承認の間も、コード・検証・文書の不整合から次のローカル安全な改善を選定できる。
 
 ### ゲート①承認待ち
 
@@ -48,19 +42,20 @@
 | T027 | public-readiness の項目数抽出を top-level 番号付き軸内の未チェック hyphen 項目（marker後1–4列）へ限定。親itemのcontent columnからnested checkboxとlist内paragraph / Setext / Type 7を識別し、0–3-space fenceとlabelが999文字以内の安全に証明できる単行link reference subsetを受理。active axis内の非canonical container、複数行link reference、未確定indented leafだけを固定エラー + 0件へ fail closed。top-levelと証明したSetextだけをscope境界にし、軸数と項目数を同じ構造解析から導出 | 2026-07-26 |
 | T028 | 日付付き起動プロンプトから固定の完了タスク範囲・検証日・tag/Release状態を除去。新しいセッションが living SSOT と check:all / Git / GitHub の実測から現在値を得る契約へ変更 | 2026-07-27 |
 | T029 | 番号付き軸内の有効な space / tab 区切り hyphen / asterisk thematic break を非対応 container の fail-closed 判定から除外。正例と、3個未満・末尾文字付きの負例 fixture で境界を固定 | 2026-07-28 / PR #35 |
+| T030 | `git ls-files -z` 失敗時の検査対象0件成功を防ぎ、固定のredactedエラー + exit 1へ fail closed。fake gitのWindows / Unix fixture、PATH復元、native stderr非出力、現在のPowerShell host再利用を回帰検証 | 2026-07-28 / PR #37 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-28 T029 pass: `Public readiness checks passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-28 T029 pass: `Private marker scanner tests passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-28 T029 pass: `No private or secret markers found.` |
-| Windows PowerShell 5.1 による check:all 3本 | 2026-07-28 T029 pass（互換実行） |
-| T029 exact-freeze 独立レビュー | tree `26944ad46b20fbde2c7159285db6405bc5e650f8`、P0/P1/P2/P3 = 0、CLEARANCE YES |
-| PR #35 / `main` Validation | PR run `30332539634`、merge commit run `30332583942` ともに success |
-| `git diff --check` / `git diff --cached --check` | 2026-07-28 T029 pass |
-| `gh pr list --state open` / `gh issue list --state open` | 2026-07-28 T029 統合後はいずれも 0件 |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-28 T030 pass: `Public readiness checks passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-28 T030 pass: `Private marker scanner tests passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-28 T030 pass: `No private or secret markers found.` |
+| Windows PowerShell 5.1 による check:all 3本 | 2026-07-28 T030 pass（scanner childも5.1実行） |
+| T030 exact-freeze 独立レビュー | tree `628a165f0b8d32aa20f23754632128100784ee30`、P0/P1/P2/P3 = 0、CLEARANCE YES |
+| PR #37 / `main` Validation | final PR run `30333742378`、merge commit run `30333853319` ともに success |
+| `git diff --check` / `git diff --cached --check` | 2026-07-28 T030 pass |
+| `gh pr list --state open` / `gh issue list --state open` | 2026-07-28 T030 統合後はいずれも 0件 |
 
 ## skip
 
