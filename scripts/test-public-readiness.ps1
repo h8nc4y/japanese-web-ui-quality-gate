@@ -1767,6 +1767,8 @@ jobs:
         shell: pwsh
         run: ./scripts/scan-private-markers.ps1
 '@
+    # checkoutのEOL変換に左右されないよう、負例生成前のin-memory fixtureをLFへ正規化する。
+    $canonicalWorkflow = $canonicalWorkflow -replace "`r`n", "`n"
     $commentDecoy = @("<!--", $expectedReadmeCheckAllHeading, '```powershell', "decoy", '```', "-->") -join "`n"
     $inlineCommentDecoy = @("visible prefix <!--", $expectedReadmeCheckAllHeading, '```powershell', "decoy", '```', "-->") -join "`n"
     $htmlDecoy = @("<div>", $expectedReadmeCheckAllHeading, '```powershell', "decoy", '```', "</div>", "") -join "`n"
@@ -1778,6 +1780,7 @@ jobs:
 
     $cases = @(
         [pscustomobject]@{ Label = "canonical"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow; ExpectedFailure = $null },
+        [pscustomobject]@{ Label = "canonical CRLF"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("`n", "`r`n"); ExpectedFailure = $null },
         [pscustomobject]@{ Label = "HTML comment decoy"; Readme = $commentDecoy + "`n" + $canonicalReadme; Workflow = $canonicalWorkflow; ExpectedFailure = $null },
         [pscustomobject]@{ Label = "inline HTML comment decoy"; Readme = $inlineCommentDecoy + "`n" + $canonicalReadme; Workflow = $canonicalWorkflow; ExpectedFailure = $null },
         [pscustomobject]@{ Label = "raw HTML decoy"; Readme = $htmlDecoy + $canonicalReadme; Workflow = $canonicalWorkflow; ExpectedFailure = $null },
