@@ -4,19 +4,12 @@
 
 ## 現在のスナップショット（2026-07-30 JST 実測）
 
-- 対象ブランチ: `ci/harden-validation-actions`（`origin/main` の `d5d27ed` から分岐）
-- doing タスク: T035 の1件。着手前の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）: 2026-07-29 T034 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
+- 対象ブランチ: `main`（T035 feature merge `78e789e` まで確認済み）
+- doing タスク: 0件。T035 feature merge直後の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）: 2026-07-30 T035 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
-
-### T035: Validation workflow の依存・権限・実行時間境界を固定
-
-- Class M。`.github/workflows/validation.yml` の checkout を v4.4.0 の完全SHAへ固定し、`persist-credentials: false` と `timeout-minutes: 10` を設定する。
-- trigger / permission / job / runner / step / commandは維持し、public-readiness のcanonical contractとnegative fixtureでmutable ref、SHA drift、timeout欠落・重複、credentials保持・入力driftをfail closedにする。
-- PR #47で進行中。初回run `30484328603` はCRLFで2件の負例生成がno-opになるfixture harnessの問題によりfailure。LF正規化とCRLF正常系追加後、PowerShell 7 / Windows PowerShell 5.1のcheck:all 6コマンドはpassした。actionlintは既知の実行ポリシー拒否により未確認（再試行・代替取得なし）。修正差分の独立レビュー、commit、push、新commit CI、mergeは未確認。
-- 完了条件: PowerShell 7 / Windows PowerShell 5.1のcheck:all、security checks、独立レビュー、PR CIを実測し、PRをmerge後にmainと作業treeの状態を確認する。
 
 ### ゲート①承認待ち
 
@@ -51,12 +44,15 @@
 | T032 | scanner 自身の blanket self-exemption を廃止。scratch copy 自身へ runtime 合成 marker を置く回帰で修正前 RED、値非反射、通常 scan、PowerShell 7 / Windows PowerShell 5.1 を確認 | 2026-07-29 / PR #41 |
 | T033 | 資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約。`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ寄せ、public-readiness に順序と参照の drift 検査を追加 | 2026-07-29 / PR #43 |
 | T034 | README / AGENTS のvisible heading＋最初のPowerShell fence/bodyと、CI `validate` job / 4 steps / 3 exact runを構造照合。production正常系1件＋table-driven 21件をfailure 0で確認し、PowerShell 7 / Windows PowerShell 5.1のcheck:allもpass | 2026-07-29 |
+| T035 | checkoutを公式v4.4.0の完全SHAへ固定し、credentials非保持・10分timeout・exact contractを追加。CRLF fixture harnessをLF正規化し、PR / main CI成功後にfeature branchをlocal / remoteから削除、feature worktreeを通常remove 1回で削除 | 2026-07-30 / PR #47 / feature merge `78e789e` |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
 | PR #47 初回 Validation | run `30484328603` failure: CRLFで`missing timeout` / `missing checkout credentials block`の負例生成がno-op。production parserのfailureではない |
+| PR #47 更新 / `main` Validation | corrective run `30485126958`、feature merge `78e789e` のmain run `30485204225` ともに success |
+| T035 feature cleanup | feature branchはlocal / remoteともに不存在、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除 |
 | T035 check:all contract focused assertion | production正常系1件＋LF / CRLFを含むtable-driven 34件がpass、failure 0 |
 | T035 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |
 | T035 workflow不変条件比較 | trigger / permission / job / runner / 4 steps / 3 commandsの維持と、timeout / checkout pin / credentials無効化だけの追加を確認 |
