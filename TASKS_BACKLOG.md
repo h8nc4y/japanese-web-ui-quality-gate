@@ -4,8 +4,8 @@
 
 ## 現在のスナップショット（2026-07-29 JST 実測）
 
-- 対象ブランチ: `test/readme-checkall-contract`（`main` の `ddce5bc` から開始）
-- doing タスク: 0件。T034 はローカル実装・検証を完了。着手時の GitHub open issue / open PR: 0件
+- 対象ブランチ: `main`（`f89f943`、T034 統合済み）
+- doing タスク: 0件。現在の GitHub open issue / open PR: 0件
 - check:all 3本（`AGENTS.md` §7）: 2026-07-29 T034 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
 - コード内 TODO / FIXME・失敗中の検証: なし
 
