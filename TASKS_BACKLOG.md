@@ -5,13 +5,17 @@
 ## 現在のスナップショット（2026-07-29 JST 実測）
 
 - 対象ブランチ: `main`（T032 は PR #41 / merge commit `0843f2d` で統合済み）
-- doing タスク: 0件。T032 統合後の GitHub open issue / open PR: 0件
+- doing タスク: T033（正本の資料読み順を一元化し、参照元の再 drift を防ぐ）
+- T032 統合後の GitHub open issue / open PR: 0件
 - check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-29 T032 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
-現在選定済みの実装タスクはない。
+T033 を実施中。
+
+- 目的: `CODEX_START_HERE.md` / `AGENTS.md` / 日付付き起動プロンプトで不一致だった資料読み順を、入口文書の単一の正本へ統一する。
+- 受け入れ条件: `AGENTS.md` を先頭とする読み順が1箇所だけに列挙され、ほかの運用文書はその正本を参照する。既存 public-readiness 検証が正本と参照の欠落を検出する。release / tag / GitHub Release / 機能 / UI / production は変更しない。
 ゲート①未承認の間も、コード・検証・文書の不整合から次のローカル安全な改善を選定できる。
 
 ### ゲート①承認待ち

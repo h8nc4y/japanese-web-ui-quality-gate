@@ -316,7 +316,7 @@ UI のビジュアル設計が必要になったとき、**エージェントは
 
 1. `git pull`（`main` 最新化）／ `git log --oneline -5` ／ `gh pr list` ／ `gh issue list` で現状確認。
 2. `check:all`（§7 の3本）を実行し、3本とも緑であることをベースラインとして確認。
-3. `SKILL.md` → `README.md` → `TASKS_BACKLOG.md` → `HANDOFF.md` を読み、リポジトリの意図を把握。
+3. `CODEX_START_HERE.md` の「読み順（唯一の正本）」に従って資料を読み、リポジトリの意図を把握する。この節には順序を重複記載しない。
 4. §5 の優先度ルールに従い **改善タスクを1件** 選び、`TASKS_BACKLOG.md` に doing として記録（doing は1件のみ）。
 5. `type/short-kebab` ブランチを切る。
 6. 実装 →（必要なら関連文書をセット更新）→ `check:all` 緑 → 敵対的セルフレビュー（§10）。

@@ -21,7 +21,7 @@
 
 ## 運用モデル
 
-自律エージェント（例: Codex）が主開発者。**最初に [`AGENTS.md`](AGENTS.md) を読むこと。** 要点:
+自律エージェント（例: Codex）が主開発者。資料読み順の唯一の正本は [`CODEX_START_HERE.md`](CODEX_START_HERE.md) であり、その先頭に従って **最初に [`AGENTS.md`](AGENTS.md) を読むこと。** 要点:
 
 - タスク選定 → 実装 → check:all → 敵対的セルフレビュー → 日本語コミット → PR → マージまで承認なしで自走（§4）。
 - 4ゲートのみ人間承認（§6）: ①デプロイ/Actions/release・tag ②課金・有料API ③secret・実素材・実データの外部送信 ④製品要件の変更。
