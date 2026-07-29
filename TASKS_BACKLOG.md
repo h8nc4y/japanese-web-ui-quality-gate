@@ -4,15 +4,12 @@
 
 ## 現在のスナップショット（2026-07-29 JST 実測）
 
-- 対象ブランチ: `main`（T033 は PR #43 / merge commit `bfdb2fb` で統合済み）
-- doing タスク: 0件。T033 統合後の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-29 T033 pass
+- 対象ブランチ: `test/readme-checkall-contract`（`main` の `ddce5bc` から開始）
+- doing タスク: 0件。T034 はローカル実装・検証を完了。着手時の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）: 2026-07-29 T034 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
-
-現在選定済みの実装タスクはない。
-ゲート①未承認の間も、コード・検証・文書の不整合から次のローカル安全な改善を選定できる。
 
 ### ゲート①承認待ち
 
@@ -46,19 +43,20 @@
 | T031 | indexには残るがworking treeから欠落したtracked targetを固定のredactedエラー + exit 1へ fail closed。actual git fixtureでworking fileだけを削除し、path非出力を回帰検証 | 2026-07-28 / PR #39 |
 | T032 | scanner 自身の blanket self-exemption を廃止。scratch copy 自身へ runtime 合成 marker を置く回帰で修正前 RED、値非反射、通常 scan、PowerShell 7 / Windows PowerShell 5.1 を確認 | 2026-07-29 / PR #41 |
 | T033 | 資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約。`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ寄せ、public-readiness に順序と参照の drift 検査を追加 | 2026-07-29 / PR #43 |
+| T034 | README / AGENTS のvisible heading＋最初のPowerShell fence/bodyと、CI `validate` job / 4 steps / 3 exact runを構造照合。production正常系1件＋table-driven 21件をfailure 0で確認し、PowerShell 7 / Windows PowerShell 5.1のcheck:allもpass | 2026-07-29 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
-| T033 読み順 drift 検査 | 正本は match、HANDOFF / TASKS_BACKLOG の順序交換は no match |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-29 T033 pass: `Public readiness checks passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-29 T033 pass: `Private marker scanner tests passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-29 T033 pass: `No private or secret markers found.` |
-| Windows PowerShell 5.1 による check:all 3本 | 2026-07-29 T033 pass（6コマンドすべて exit 0） |
-| staged security checks | Gitleaks pass（no leaks）、Semgrep skip（対象拡張子なし）、global hook pass |
+| T034 check:all contract focused assertion | production正常系1件＋table-driven 21件がpass、failure 0 |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-29 T034 pass: `Public readiness checks passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-29 T034 pass: `Private marker scanner tests passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-29 T034 pass: `No private or secret markers found.` |
+| Windows PowerShell 5.1 による check:all 3本 | 2026-07-29 T034 pass（PowerShell 7と合わせた6コマンドすべて exit 0） |
+| T033 staged security checks | Gitleaks pass（no leaks）、Semgrep skip（対象拡張子なし）、global hook pass |
 | PR #43 / `main` Validation | PR run `30424681772`、merge commit run `30424727678` ともに success |
-| `git diff --check` / `git diff --cached --check` | 2026-07-29 T033 pass |
+| T033 `git diff --check` / `git diff --cached --check` | 2026-07-29 pass |
 | `gh pr list --state open` / `gh issue list --state open` | 2026-07-29 T033 統合後はいずれも 0件 |
 
 ## skip
