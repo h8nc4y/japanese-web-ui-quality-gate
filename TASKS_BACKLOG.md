@@ -4,18 +4,14 @@
 
 ## 現在のスナップショット（2026-07-29 JST 実測）
 
-- 対象ブランチ: `main`（T032 は PR #41 / merge commit `0843f2d` で統合済み）
-- doing タスク: T033（正本の資料読み順を一元化し、参照元の再 drift を防ぐ）
-- T032 統合後の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-29 T032 pass
+- 対象ブランチ: `main`（T033 は PR #43 / merge commit `bfdb2fb` で統合済み）
+- doing タスク: 0件。T033 統合後の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）と Windows PowerShell 5.1 互換実行: 2026-07-29 T033 pass
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
-T033 を実施中。
-
-- 目的: `CODEX_START_HERE.md` / `AGENTS.md` / 日付付き起動プロンプトで不一致だった資料読み順を、入口文書の単一の正本へ統一する。
-- 受け入れ条件: `AGENTS.md` を先頭とする読み順が1箇所だけに列挙され、ほかの運用文書はその正本を参照する。既存 public-readiness 検証が正本と参照の欠落を検出する。release / tag / GitHub Release / 機能 / UI / production は変更しない。
+現在選定済みの実装タスクはない。
 ゲート①未承認の間も、コード・検証・文書の不整合から次のローカル安全な改善を選定できる。
 
 ### ゲート①承認待ち
@@ -49,21 +45,21 @@ T033 を実施中。
 | T030 | `git ls-files -z` 失敗時の検査対象0件成功を防ぎ、固定のredactedエラー + exit 1へ fail closed。fake gitのWindows / Unix fixture、PATH復元、native stderr非出力、現在のPowerShell host再利用を回帰検証 | 2026-07-28 / PR #37 |
 | T031 | indexには残るがworking treeから欠落したtracked targetを固定のredactedエラー + exit 1へ fail closed。actual git fixtureでworking fileだけを削除し、path非出力を回帰検証 | 2026-07-28 / PR #39 |
 | T032 | scanner 自身の blanket self-exemption を廃止。scratch copy 自身へ runtime 合成 marker を置く回帰で修正前 RED、値非反射、通常 scan、PowerShell 7 / Windows PowerShell 5.1 を確認 | 2026-07-29 / PR #41 |
+| T033 | 資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約。`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ寄せ、public-readiness に順序と参照の drift 検査を追加 | 2026-07-29 / PR #43 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
-| T032 修正前 RED | scanner copy 自身へ runtime 合成 marker を追記した fixture が exit 0 となり、期待 exit 1 / marker 名不在の2 assertionで test harness は exit 1 |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-29 T032 pass: `Public readiness checks passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-29 T032 pass: `Private marker scanner tests passed.` |
-| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-29 T032 pass: `No private or secret markers found.` |
-| Windows PowerShell 5.1 による check:all 3本 | 2026-07-29 T032 pass（scanner childも5.1実行） |
-| T032 exact diff 独立レビュー | diff SHA-256 `4e9087ea8b59b25e18656bbc0a914a1e2083c1a3581c55b12a5144f555866114`、P0/P1/P2/P3 = 0、CLEARANCE YES |
-| staged security checks | Gitleaks pass（no leaks）、changed-scope Semgrep exit 0（対象拡張子0）、global hook pass |
-| PR #41 / `main` Validation | PR run `30392159972`、merge commit run `30392277496` ともに success |
-| `git diff --check` / `git diff --cached --check` | 2026-07-29 T032 pass |
-| `gh pr list --state open` / `gh issue list --state open` | 2026-07-29 T032 統合後はいずれも 0件 |
+| T033 読み順 drift 検査 | 正本は match、HANDOFF / TASKS_BACKLOG の順序交換は no match |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-29 T033 pass: `Public readiness checks passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-29 T033 pass: `Private marker scanner tests passed.` |
+| `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1` | 2026-07-29 T033 pass: `No private or secret markers found.` |
+| Windows PowerShell 5.1 による check:all 3本 | 2026-07-29 T033 pass（6コマンドすべて exit 0） |
+| staged security checks | Gitleaks pass（no leaks）、Semgrep skip（対象拡張子なし）、global hook pass |
+| PR #43 / `main` Validation | PR run `30424681772`、merge commit run `30424727678` ともに success |
+| `git diff --check` / `git diff --cached --check` | 2026-07-29 T033 pass |
+| `gh pr list --state open` / `gh issue list --state open` | 2026-07-29 T033 統合後はいずれも 0件 |
 
 ## skip
 
