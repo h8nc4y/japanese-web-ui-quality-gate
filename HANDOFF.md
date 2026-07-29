@@ -29,8 +29,8 @@
 
 ## 確認済みスナップショット（2026-07-30 JST 実測）
 
-- 既定ブランチ `main` は `d5d27ed`。T001–T034 は統合済みで、着手前の open issue / open PR は0件。
-- T035（Class M）は `ci/harden-validation-actions` で doing。Validation workflow の checkout を `actions/checkout` v4.4.0 の完全SHAへ固定し、認証情報を保持せず、job timeoutを10分へ制限する。trigger / permission / job / runner / step / commandは変更しない。public-readiness のexact contractとLF / CRLFを含む34件のtable-driven fixtureも同時更新した。PR #47の初回run `30484328603` はCRLFで負例生成がno-opになるfixture harnessの問題によりfailure。LF正規化とCRLF正常系追加後、PowerShell 7 / Windows PowerShell 5.1のcheck:all 6コマンドはpassした。actionlintは既知の実行ポリシー拒否により未確認（再試行・代替取得なし）。更新CIとmergeは未確認。
+- 既定ブランチ `main` は T035 feature merge `78e789e` まで確認済み。T001–T035 は統合済みで、feature merge直後の open issue / open PR は0件。
+- T035（Class M）では、Validation workflow の checkout を `actions/checkout` v4.4.0 の完全SHAへ固定し、認証情報を保持せず、job timeoutを10分へ制限した。trigger / permission / job / runner / step / commandは変更していない。public-readiness のexact contractとLF / CRLFを含む34件のtable-driven fixtureも同期した。PR #47の初回run `30484328603` はCRLFで負例生成がno-opになるfixture harnessの問題によりfailure。LF正規化とCRLF正常系を追加したcommit `0acebcb` 後、PR run `30485126958` とmain run `30485204225` はsuccess。PowerShell 7 / Windows PowerShell 5.1のcheck:all 6コマンド、Gitleaks、Semgrep、独立レビューもpassした。actionlintは既知の実行ポリシー拒否により未確認（再試行・代替取得なし）。feature branchはlocal / remoteともに削除し、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除済み。
 - T034（Class M）では、README `Validation` 節と `AGENTS.md` §7のvisible heading＋最初のPowerShell fence/bodyをexact copy-paste契約として結び、CI `validate` job / 4 steps / 3 runも構造照合する。HTML comment/raw HTML/fence decoy、case/長いfence、無効化、余分なrun、block scalar等を含むproduction正常系1件＋table-driven 21件はfailure 0。PowerShell 7 / Windows PowerShell 5.1のcheck:all 3本も各hostでpassした。workflow、release、tag、スキル本体の挙動は変えていない。
 - T033 では、資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約し、`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ変更した。public-readiness は正本の順序と各参照元を検査し、PowerShell 7 / Windows PowerShell 5.1 の両方で pass した。
 - T032 では、実行中の scanner file を常時走査対象外にする blanket self-exemption を廃止し、scanner 自身へ混入した marker 候補も fail closed に検出するようにした。scratch copy 自身を走査する合成回帰で修正前 RED、値非反射、PowerShell 7 / Windows PowerShell 5.1、通常 repository scanを確認した。
@@ -50,12 +50,12 @@
 - T031 は PR #39（merge commit `132913f`）で統合済み。統合後の open issue / open PR: 0件。doing タスク: 0件。
 - 最新の tag と GitHub Release は `v0.1.0`。
 - `references/checklist.md` は実測80項目・7節で README の表記と一致。
-- check:all 3本（§7）は 2026-07-29 T034 で PowerShell 7 / Windows PowerShell 5.1 ともにpass（6コマンドすべてexit 0）。直前のT033ではPR CI（run `30424681772`）とmerge commit `bfdb2fb` の `main` CI（run `30424727678`）もsuccess。
+- check:all 3本（§7）は 2026-07-30 T035 で PowerShell 7 / Windows PowerShell 5.1 ともにpass（6コマンドすべてexit 0）。PR CI（run `30485126958`）とfeature merge `78e789e` のmain CI（run `30485204225`）もsuccess。
 - 2026-07-12 に文書整理を実施: 陳腐化した tracked 文書3件を削除し（判断は `docs/advisory-review-disposition.md`）、台帳と本文書をスリム化。
 
 ## 承認待ち（次の担当エージェントへの引き継ぎ）
 
-通常実装タスク T035 は PR #47 で進行中。初回CIのCRLF fixture harness failureを修正してローカル再検証済み。修正差分の独立レビュー、commit、push、新commit CI、mergeは未確認。
+通常実装タスク T035 は PR #47（feature merge `78e789e`）で統合済み。doing は0件。次の通常タスクはGit/GitHubの現在値を再確認して選定する。
 次のリリース操作は `AGENTS.md` §6 のゲート①に該当する。
 
 1. **v0.2.0 リリース最終化**: 人間がゲート①を明示承認した場合だけ、`docs/release-v0.2.0-preparation.md` の手順に従って最終化 PR、tag 発行、GitHub Release 作成を進める。
@@ -83,5 +83,5 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 
 ## 次にやるべきこと
 
-1. T035 のCRLF修正差分を独立レビューし、exact stage、global hook、commit、push、新commit CI、merge、main確認を完了する。
+1. Git/GitHubの現在値と未完了タスクを実測し、次の安全な通常タスクを選定する。
 2. ゲート①未承認の間は v0.2.0 のtag / GitHub Releaseを作成しない。
