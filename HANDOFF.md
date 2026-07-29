@@ -27,9 +27,10 @@
 - 4ゲートのみ人間承認（§6）: ①デプロイ/Actions/release・tag ②課金・有料API ③secret・実素材・実データの外部送信 ④製品要件の変更。
 - 検証していない主張は書かず `未確認` と明記（§1・§8）。
 
-## 確認済みスナップショット（2026-07-29 JST 実測）
+## 確認済みスナップショット（2026-07-30 JST 実測）
 
-- 既定ブランチ `main`。T001–T034 は `f89f943` までに統合済みで、doing は0件。現在の open issue / open PR は0件。
+- 既定ブランチ `main` は `d5d27ed`。T001–T034 は統合済みで、着手前の open issue / open PR は0件。
+- T035（Class M）は `ci/harden-validation-actions` で doing。Validation workflow の checkout を `actions/checkout` v4.4.0 の完全SHAへ固定し、認証情報を保持せず、job timeoutを10分へ制限する。trigger / permission / job / runner / step / commandは変更しない。public-readiness のexact contractと33件のtable-driven fixtureも同時更新した。PowerShell 7 / Windows PowerShell 5.1のcheck:all 6コマンド、workflow不変条件比較、Gitleaks、Semgrepはpass。actionlintは既知の実行ポリシー拒否により未確認（再試行・代替取得なし）。commit、push、PRは未実行。
 - T034（Class M）では、README `Validation` 節と `AGENTS.md` §7のvisible heading＋最初のPowerShell fence/bodyをexact copy-paste契約として結び、CI `validate` job / 4 steps / 3 runも構造照合する。HTML comment/raw HTML/fence decoy、case/長いfence、無効化、余分なrun、block scalar等を含むproduction正常系1件＋table-driven 21件はfailure 0。PowerShell 7 / Windows PowerShell 5.1のcheck:all 3本も各hostでpassした。workflow、release、tag、スキル本体の挙動は変えていない。
 - T033 では、資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約し、`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ変更した。public-readiness は正本の順序と各参照元を検査し、PowerShell 7 / Windows PowerShell 5.1 の両方で pass した。
 - T032 では、実行中の scanner file を常時走査対象外にする blanket self-exemption を廃止し、scanner 自身へ混入した marker 候補も fail closed に検出するようにした。scratch copy 自身を走査する合成回帰で修正前 RED、値非反射、PowerShell 7 / Windows PowerShell 5.1、通常 repository scanを確認した。
@@ -54,7 +55,7 @@
 
 ## 承認待ち（次の担当エージェントへの引き継ぎ）
 
-通常実装タスク T034 は `main` の `f89f943` へ統合済み。次の通常タスクはGit/GitHubの現在値を再確認して選定する。
+通常実装タスク T035 は `ci/harden-validation-actions` で進行中。4ファイルの測定済み差分をfreezeして独立レビューへ渡し、commit、push、PRはレビュー後に行う。
 次のリリース操作は `AGENTS.md` §6 のゲート①に該当する。
 
 1. **v0.2.0 リリース最終化**: 人間がゲート①を明示承認した場合だけ、`docs/release-v0.2.0-preparation.md` の手順に従って最終化 PR、tag 発行、GitHub Release 作成を進める。
@@ -82,5 +83,5 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 
 ## 次にやるべきこと
 
-1. Git/GitHubの現在値と未完了タスクを実測し、次の安全な通常タスクを選定する。
+1. T035 の独立レビュー指摘を反映し、exact stage、global hook、commit、PR CI、merge、main確認を完了する。
 2. ゲート①未承認の間は v0.2.0 のtag / GitHub Releaseを作成しない。

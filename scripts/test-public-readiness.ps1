@@ -14,8 +14,11 @@ $expectedCheckAllCommands = @(
 )
 $expectedReadmeCheckAllHeading = "## Validation"
 $expectedAgentsCheckAllHeading = '## §7. 検証 ＝ `check:all` の定義と合格基準'
+$expectedValidationTimeoutMinutes = "10"
+$expectedCheckoutUses = "actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0"
+$expectedCheckoutPersistCredentials = "false"
 $expectedWorkflowSteps = @(
-    [ordered]@{ Name = "Check out repository"; Uses = "actions/checkout@v4"; Shell = $null; Run = $null },
+    [ordered]@{ Name = "Check out repository"; Uses = $expectedCheckoutUses; Shell = $null; Run = $null },
     [ordered]@{ Name = "Run public readiness checks"; Uses = $null; Shell = "pwsh"; Run = "./scripts/test-public-readiness.ps1" },
     [ordered]@{ Name = "Run private marker scanner tests"; Uses = $null; Shell = "pwsh"; Run = "./scripts/test-scan-private-markers.ps1" },
     [ordered]@{ Name = "Run private marker scan"; Uses = $null; Shell = "pwsh"; Run = "./scripts/scan-private-markers.ps1" }
@@ -1591,11 +1594,15 @@ function Test-ValidationWorkflowContract {
     $validateCount = 0
     $jobNameCount = 0
     $runsOnCount = 0
+    $timeoutMinutesCount = 0
     $stepsCount = 0
     $runKeyCount = 0
+    $checkoutWithCount = 0
+    $persistCredentialsCount = 0
     $insideJobs = $false
     $currentJob = $null
     $currentStep = $null
+    $insideCheckoutWith = $false
     $invalid = $false
 
     foreach ($line in @($Content -split '\r?\n')) {
@@ -1604,6 +1611,9 @@ function Test-ValidationWorkflowContract {
         if (-not $lineMatch.Success -or $line.StartsWith("`t")) { $invalid = $true; continue }
         $indent = $lineMatch.Groups["indent"].Value.Length
         $text = $lineMatch.Groups["text"].Value
+
+        # checkout の with 配下は直前の with: に属する10-space入力だけを受理する。
+        if ($indent -le 8) { $insideCheckoutWith = $false }
 
         # workflow全体のrun keyを数え、対象step以外・block scalar・追加runをすべて拒否する。
         $runMatch = [regex]::Match($text, '^run:[ \t]+(?<value>.+)$')
@@ -1623,12 +1633,14 @@ function Test-ValidationWorkflowContract {
             if ($insideJobs) { $jobsCount++ } else { $invalid = $true }
             $currentJob = $null
             $currentStep = $null
+            $insideCheckoutWith = $false
             continue
         }
         if ($indent -eq 0) {
             $insideJobs = $false
             $currentJob = $null
             $currentStep = $null
+            $insideCheckoutWith = $false
             continue
         }
 
@@ -1636,6 +1648,7 @@ function Test-ValidationWorkflowContract {
         if ($indent -eq 2 -and $text -match '^(?<job>[^:]+):$') {
             $currentJob = $Matches["job"]
             $currentStep = $null
+            $insideCheckoutWith = $false
             if ($currentJob -ceq "validate") { $validateCount++ } else { $invalid = $true }
             continue
         }
@@ -1648,6 +1661,7 @@ function Test-ValidationWorkflowContract {
             switch -CaseSensitive ($text) {
                 "name: Public readiness and marker scan" { $jobNameCount++ }
                 "runs-on: windows-latest" { $runsOnCount++ }
+                "timeout-minutes: $expectedValidationTimeoutMinutes" { $timeoutMinutesCount++ }
                 "steps:" { $stepsCount++ }
                 default { $invalid = $true }
             }
@@ -1662,6 +1676,14 @@ function Test-ValidationWorkflowContract {
         }
 
         if ($indent -eq 8 -and $null -ne $currentStep) {
+            # checkout だけに単一の credentials 無効化ブロックを許可する。
+            if ($text -ceq "with:") {
+                if ($currentStep -cne "Check out repository") { $invalid = $true; continue }
+                $checkoutWithCount++
+                $insideCheckoutWith = $true
+                continue
+            }
+
             $property = [regex]::Match($text, '^(?<key>uses|shell): (?<value>.+)$')
             if (-not $property.Success) { $invalid = $true; continue }
             $table = if ($property.Groups["key"].Value -ceq "uses") { $uses } else { $shells }
@@ -1669,13 +1691,24 @@ function Test-ValidationWorkflowContract {
             $table[$currentStep] = $property.Groups["value"].Value
             continue
         }
+
+        # checkout credentials の入力名・値・字下げを exact contract として固定する。
+        if ($indent -eq 10 -and $currentStep -ceq "Check out repository" -and $insideCheckoutWith) {
+            if ($text -cne "persist-credentials: $expectedCheckoutPersistCredentials") {
+                $invalid = $true
+                continue
+            }
+            $persistCredentialsCount++
+            continue
+        }
         $invalid = $true
     }
 
     if ($jobsCount -ne 1 -or $validateCount -ne 1 -or $jobNameCount -ne 1 -or $runsOnCount -ne 1 -or
-        $stepsCount -ne 1 -or $runKeyCount -ne 3 -or
+        $timeoutMinutesCount -ne 1 -or $stepsCount -ne 1 -or $runKeyCount -ne 3 -or
         ($stepNames -join "`n") -cne ($expectedStepNames -join "`n") -or
-        $uses.Count -ne 1 -or $uses["Check out repository"] -cne "actions/checkout@v4" -or
+        $uses.Count -ne 1 -or $uses["Check out repository"] -cne $expectedCheckoutUses -or
+        $checkoutWithCount -ne 1 -or $persistCredentialsCount -ne 1 -or
         $shells.Count -ne 3 -or $runs.Count -ne 3) {
         $invalid = $true
     }
@@ -1714,10 +1747,13 @@ jobs:
   validate:
     name: Public readiness and marker scan
     runs-on: windows-latest
+    timeout-minutes: 10
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Run public readiness checks
         shell: pwsh
@@ -1754,9 +1790,21 @@ jobs:
         [pscustomobject]@{ Label = "long fence before canonical"; Readme = $canonicalReadme.Replace($canonicalFence, $longFence + "`n`n" + $canonicalFence); Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
         [pscustomobject]@{ Label = "disabled job"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("    steps:", "    if: false`n    steps:"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "continue on error"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        shell: pwsh", "        continue-on-error: true`n        shell: pwsh"); ExpectedFailure = "Validation workflow" },
-        [pscustomobject]@{ Label = "extra run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        uses: actions/checkout@v4", "        uses: actions/checkout@v4`n        run: ./scripts/test-public-readiness.ps1"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "extra run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        uses: $expectedCheckoutUses", "        uses: $expectedCheckoutUses`n        run: ./scripts/test-public-readiness.ps1"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "block scalar run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        run: ./scripts/test-public-readiness.ps1", "        run: |`n          ./scripts/test-public-readiness.ps1"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "quoted run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("run: ./scripts/test-public-readiness.ps1", 'run: "./scripts/test-public-readiness.ps1"'); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "mutable checkout ref"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@v4"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "wrong checkout SHA"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4.4.0"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "missing checkout version comment"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@11d5960a326750d5838078e36cf38b85af677262"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "missing timeout"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("    timeout-minutes: 10`n`n", ""); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "wrong timeout"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("    timeout-minutes: 10", "    timeout-minutes: 15"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "duplicate timeout"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("    timeout-minutes: 10", "    timeout-minutes: 10`n    timeout-minutes: 10"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "missing checkout credentials block"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        with:`n          persist-credentials: false`n", ""); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "missing persist credentials"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("          persist-credentials: false", ""); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "persist credentials enabled"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("          persist-credentials: false", "          persist-credentials: true"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "duplicate persist credentials"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("          persist-credentials: false", "          persist-credentials: false`n          persist-credentials: false"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "extra checkout input"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("          persist-credentials: false", "          persist-credentials: false`n          fetch-depth: 1"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "with on run step"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        shell: pwsh", "        with:`n          persist-credentials: false`n        shell: pwsh"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "duplicate exact jobs"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow + "`njobs:"; ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "quoted jobs"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow + "`n`"jobs`":"; ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "spaced jobs"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow + "`njobs :"; ExpectedFailure = "Validation workflow" },

@@ -2,14 +2,21 @@
 
 > 自律エージェント（例: Codex）のタスク台帳。運用ルールは [`AGENTS.md`](AGENTS.md)（§4 ループ / §5 選定 / §14 記録）を参照。doing は常に1件のみ。2026-07-11 以前の詳細な検証ログと同期経緯は、git 履歴にある本ファイルの旧版を参照。
 
-## 現在のスナップショット（2026-07-29 JST 実測）
+## 現在のスナップショット（2026-07-30 JST 実測）
 
-- 対象ブランチ: `main`（`f89f943`、T034 統合済み）
-- doing タスク: 0件。現在の GitHub open issue / open PR: 0件
+- 対象ブランチ: `ci/harden-validation-actions`（`origin/main` の `d5d27ed` から分岐）
+- doing タスク: T035 の1件。着手前の GitHub open issue / open PR: 0件
 - check:all 3本（`AGENTS.md` §7）: 2026-07-29 T034 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
+
+### T035: Validation workflow の依存・権限・実行時間境界を固定
+
+- Class M。`.github/workflows/validation.yml` の checkout を v4.4.0 の完全SHAへ固定し、`persist-credentials: false` と `timeout-minutes: 10` を設定する。
+- trigger / permission / job / runner / step / commandは維持し、public-readiness のcanonical contractとnegative fixtureでmutable ref、SHA drift、timeout欠落・重複、credentials保持・入力driftをfail closedにする。
+- 4ファイルの実装とローカル測定は完了。PowerShell 7 / Windows PowerShell 5.1のcheck:all 6コマンド、workflow不変条件比較、Gitleaks、Semgrepはpass。actionlintは既知の実行ポリシー拒否により未確認（再試行・代替取得なし）。現在は独立レビュー用freeze中で、commit、push、PRは未実行。
+- 完了条件: PowerShell 7 / Windows PowerShell 5.1のcheck:all、security checks、独立レビュー、PR CIを実測し、PRをmerge後にmainと作業treeの状態を確認する。
 
 ### ゲート①承認待ち
 
@@ -49,6 +56,11 @@
 
 | コマンド | 結果 |
 | --- | --- |
+| T035 check:all contract focused assertion | production正常系1件＋table-driven 33件がpass、failure 0 |
+| T035 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |
+| T035 workflow不変条件比較 | trigger / permission / job / runner / 4 steps / 3 commandsの維持と、timeout / checkout pin / credentials無効化だけの追加を確認 |
+| T035 Gitleaks / Semgrep | Gitleaks directory scan: no leaks、Semgrep local security rules: exit 0 |
+| T035 actionlint | 既知の実行ポリシー拒否により未確認（再試行・代替取得なし） |
 | T034 check:all contract focused assertion | production正常系1件＋table-driven 21件がpass、failure 0 |
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1` | 2026-07-29 T034 pass: `Public readiness checks passed.` |
 | `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1` | 2026-07-29 T034 pass: `Private marker scanner tests passed.` |
