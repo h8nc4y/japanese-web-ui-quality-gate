@@ -29,7 +29,8 @@
 
 ## 確認済みスナップショット（2026-07-29 JST 実測）
 
-- 既定ブランチ `main`。T001–T033 が完了済み。T033 は PR #43（merge commit `bfdb2fb`）で統合され、統合後の open issue / open PR は0件。
+- 既定ブランチ `main`。T001–T033 は統合済み。T034 は `main` の `ddce5bc` から分離した `test/readme-checkall-contract` でローカル実装・検証を完了し、doing は0件。着手時の open issue / open PR は0件。
+- T034（Class M）では、README `Validation` 節と `AGENTS.md` §7のvisible heading＋最初のPowerShell fence/bodyをexact copy-paste契約として結び、CI `validate` job / 4 steps / 3 runも構造照合する。HTML comment/raw HTML/fence decoy、case/長いfence、無効化、余分なrun、block scalar等を含むproduction正常系1件＋table-driven 21件はfailure 0。PowerShell 7 / Windows PowerShell 5.1のcheck:all 3本も各hostでpassした。workflow、release、tag、スキル本体の挙動は変えていない。
 - T033 では、資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約し、`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ変更した。public-readiness は正本の順序と各参照元を検査し、PowerShell 7 / Windows PowerShell 5.1 の両方で pass した。
 - T032 では、実行中の scanner file を常時走査対象外にする blanket self-exemption を廃止し、scanner 自身へ混入した marker 候補も fail closed に検出するようにした。scratch copy 自身を走査する合成回帰で修正前 RED、値非反射、PowerShell 7 / Windows PowerShell 5.1、通常 repository scanを確認した。
 - T022 では checklist 実項目数と軸数を README の数値表記と固定値なしで相互比較する public-readiness 検証を追加。
@@ -48,12 +49,12 @@
 - T031 は PR #39（merge commit `132913f`）で統合済み。統合後の open issue / open PR: 0件。doing タスク: 0件。
 - 最新の tag と GitHub Release は `v0.1.0`。
 - `references/checklist.md` は実測80項目・7節で README の表記と一致。
-- check:all 3本（§7）と Windows PowerShell 5.1 互換実行は 2026-07-29 T033 で pass。PR CI（run `30424681772`）と merge commit `bfdb2fb` の `main` CI（run `30424727678`）も success。
+- check:all 3本（§7）は 2026-07-29 T034 で PowerShell 7 / Windows PowerShell 5.1 ともにpass（6コマンドすべてexit 0）。直前のT033ではPR CI（run `30424681772`）とmerge commit `bfdb2fb` の `main` CI（run `30424727678`）もsuccess。
 - 2026-07-12 に文書整理を実施: 陳腐化した tracked 文書3件を削除し（判断は `docs/advisory-review-disposition.md`）、台帳と本文書をスリム化。
 
 ## 承認待ち（次の担当エージェントへの引き継ぎ）
 
-現在選定済みの通常実装タスクはない。
+通常実装タスク T034 はローカル実装・検証を完了。次の通常タスクはGit/GitHubの現在値を再確認して選定する。
 次のリリース操作は `AGENTS.md` §6 のゲート①に該当する。
 
 1. **v0.2.0 リリース最終化**: 人間がゲート①を明示承認した場合だけ、`docs/release-v0.2.0-preparation.md` の手順に従って最終化 PR、tag 発行、GitHub Release 作成を進める。
@@ -81,6 +82,5 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 
 ## 次にやるべきこと
 
-1. `AGENTS.md` §15 の kickoff チェックリストに従い、living SSOT、Git/GitHub、check:all を実測で取り直す。
-2. ゲート①未承認の間は公開操作を行わず、コード・検証・文書の不整合から次のローカル安全な改善を選定する。
-3. v0.2.0 のtag / GitHub Releaseは、ゲート①の明示承認がある場合だけ`docs/release-v0.2.0-preparation.md`に従って最終化する。
+1. Git/GitHubの現在値と未完了タスクを実測し、次の安全な通常タスクを選定する。
+2. ゲート①未承認の間は v0.2.0 のtag / GitHub Releaseを作成しない。

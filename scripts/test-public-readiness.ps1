@@ -7,6 +7,19 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path -LiteralPath $Path).Path
 $failures = [System.Collections.Generic.List[string]]::new()
 $unsupportedChecklistStructureError = "Unsupported checklist Markdown structure; use top-level headings and checklist items."
+$expectedCheckAllCommands = @(
+    "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-public-readiness.ps1",
+    "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/test-scan-private-markers.ps1",
+    "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1"
+)
+$expectedReadmeCheckAllHeading = "## Validation"
+$expectedAgentsCheckAllHeading = '## §7. 検証 ＝ `check:all` の定義と合格基準'
+$expectedWorkflowSteps = @(
+    [ordered]@{ Name = "Check out repository"; Uses = "actions/checkout@v4"; Shell = $null; Run = $null },
+    [ordered]@{ Name = "Run public readiness checks"; Uses = $null; Shell = "pwsh"; Run = "./scripts/test-public-readiness.ps1" },
+    [ordered]@{ Name = "Run private marker scanner tests"; Uses = $null; Shell = "pwsh"; Run = "./scripts/test-scan-private-markers.ps1" },
+    [ordered]@{ Name = "Run private marker scan"; Uses = $null; Shell = "pwsh"; Run = "./scripts/scan-private-markers.ps1" }
+)
 
 function Add-Failure {
     param([string]$Message)
@@ -1470,6 +1483,322 @@ function Assert-ChecklistSummaryMatchesReadme {
     }
 }
 
+function Test-VisibleMarkdownCheckAllContract {
+    param(
+        [string]$Content,
+        [string]$ExpectedHeading
+    )
+
+    $headingCount = 0
+    $matchingFenceCount = 0
+    $firstTargetFenceIsCanonical = $false
+    $targetFenceSeen = $false
+    $insideTargetSection = $false
+    $inComment = $false
+    $inHtmlBlock = $false
+    $inFence = $false
+    $fenceCharacter = [char]0
+    $fenceLength = 0
+    $captureFence = $false
+    $capturingFirstTargetFence = $false
+    $fenceBody = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($line in @($Content -split '\r?\n')) {
+        if ($inFence) {
+            $closePattern = '^[ ]{0,3}' + [regex]::Escape([string]$fenceCharacter) + '{' + $fenceLength + ',}[ \t]*$'
+            if ([regex]::IsMatch($line, $closePattern)) {
+                $isCanonicalFence = $captureFence -and $line -ceq '```' -and
+                    ($fenceBody -join "`n") -ceq ($expectedCheckAllCommands -join "`n")
+                if ($isCanonicalFence) {
+                    $matchingFenceCount++
+                }
+                if ($capturingFirstTargetFence) { $firstTargetFenceIsCanonical = $isCanonicalFence }
+                $inFence = $false
+                $captureFence = $false
+                $capturingFirstTargetFence = $false
+                continue
+            }
+            if ($captureFence) { [void]$fenceBody.Add($line) }
+            continue
+        }
+
+        # fence外ではHTML commentを左から除き、inline/multiline decoyをvisible Markdownとして数えない。
+        if ($inComment -or $line.Contains("<!--")) {
+            $visibleLine = [System.Text.StringBuilder]::new()
+            $cursor = 0
+            while ($cursor -lt $line.Length) {
+                if ($inComment) {
+                    $commentEnd = $line.IndexOf("-->", $cursor, [System.StringComparison]::Ordinal)
+                    if ($commentEnd -lt 0) { $cursor = $line.Length; break }
+                    $inComment = $false
+                    $cursor = $commentEnd + 3
+                    continue
+                }
+                $commentStart = $line.IndexOf("<!--", $cursor, [System.StringComparison]::Ordinal)
+                if ($commentStart -lt 0) {
+                    [void]$visibleLine.Append($line.Substring($cursor))
+                    break
+                }
+                [void]$visibleLine.Append($line.Substring($cursor, $commentStart - $cursor))
+                $inComment = $true
+                $cursor = $commentStart + 4
+            }
+            $line = $visibleLine.ToString()
+        }
+        if ($inHtmlBlock) {
+            if ([string]::IsNullOrWhiteSpace($line)) { $inHtmlBlock = $false }
+            continue
+        }
+        # Validation decoyを閉じる最小deny: raw HTML block風の開始から空行まではvisible Markdownとして数えない。
+        if ([regex]::IsMatch($line, '^[ ]{0,3}<(?:/?[A-Za-z]|![A-Z]|!\[|\?)')) {
+            $inHtmlBlock = $true
+            continue
+        }
+
+        $fenceOpen = [regex]::Match($line, '^[ ]{0,3}(?<fence>`{3,}|~{3,}).*$')
+        if ($fenceOpen.Success) {
+            $fenceToken = $fenceOpen.Groups["fence"].Value
+            $inFence = $true
+            $fenceCharacter = $fenceToken[0]
+            $fenceLength = $fenceToken.Length
+            $isPowerShellLikeFence = $insideTargetSection -and
+                [regex]::IsMatch($line, '^(?i:[ ]{0,3}`{3,}[ \t]*powershell[ \t]*)$')
+            $captureFence = $insideTargetSection -and $line -ceq '```powershell'
+            $capturingFirstTargetFence = $isPowerShellLikeFence -and -not $targetFenceSeen
+            if ($isPowerShellLikeFence) { $targetFenceSeen = $true }
+            $fenceBody.Clear()
+            continue
+        }
+
+        if ([regex]::IsMatch($line, '^##(?:[ \t]+|$)')) {
+            $insideTargetSection = $line -ceq $ExpectedHeading
+            if ($insideTargetSection) { $headingCount++ }
+        }
+    }
+
+    return $headingCount -eq 1 -and $matchingFenceCount -eq 1 -and $firstTargetFenceIsCanonical
+}
+
+function Test-ValidationWorkflowContract {
+    param([string]$Content)
+
+    $expectedStepNames = @($expectedWorkflowSteps | ForEach-Object { $_["Name"] })
+    $stepNames = [System.Collections.Generic.List[string]]::new()
+    $runs = @{}
+    $shells = @{}
+    $uses = @{}
+    $jobsCount = 0
+    $validateCount = 0
+    $jobNameCount = 0
+    $runsOnCount = 0
+    $stepsCount = 0
+    $runKeyCount = 0
+    $insideJobs = $false
+    $currentJob = $null
+    $currentStep = $null
+    $invalid = $false
+
+    foreach ($line in @($Content -split '\r?\n')) {
+        if ([string]::IsNullOrWhiteSpace($line) -or [regex]::IsMatch($line, '^[ ]*#')) { continue }
+        $lineMatch = [regex]::Match($line, '^(?<indent> *)(?<text>.*)$')
+        if (-not $lineMatch.Success -or $line.StartsWith("`t")) { $invalid = $true; continue }
+        $indent = $lineMatch.Groups["indent"].Value.Length
+        $text = $lineMatch.Groups["text"].Value
+
+        # workflow全体のrun keyを数え、対象step以外・block scalar・追加runをすべて拒否する。
+        $runMatch = [regex]::Match($text, '^run:[ \t]+(?<value>.+)$')
+        if ($runMatch.Success) {
+            $runKeyCount++
+            $runValue = $runMatch.Groups["value"].Value
+            if ($currentJob -cne "validate" -or $indent -ne 8 -or $null -eq $currentStep -or
+                $runs.ContainsKey($currentStep) -or [regex]::IsMatch($runValue, '^[|>]')) {
+                $invalid = $true
+            }
+            else { $runs[$currentStep] = $runValue }
+            continue
+        }
+
+        if ($indent -eq 0 -and [regex]::IsMatch($text, '^(?:"jobs"|''jobs''|jobs)[ \t]*:')) {
+            $insideJobs = $text -ceq "jobs:"
+            if ($insideJobs) { $jobsCount++ } else { $invalid = $true }
+            $currentJob = $null
+            $currentStep = $null
+            continue
+        }
+        if ($indent -eq 0) {
+            $insideJobs = $false
+            $currentJob = $null
+            $currentStep = $null
+            continue
+        }
+
+        if (-not $insideJobs) { continue }
+        if ($indent -eq 2 -and $text -match '^(?<job>[^:]+):$') {
+            $currentJob = $Matches["job"]
+            $currentStep = $null
+            if ($currentJob -ceq "validate") { $validateCount++ } else { $invalid = $true }
+            continue
+        }
+
+        if ($currentJob -cne "validate") { continue }
+        if ($indent -ge 4 -and $text -match '^(?:if|continue-on-error):') { $invalid = $true; continue }
+
+        if ($indent -eq 4) {
+            $currentStep = $null
+            switch -CaseSensitive ($text) {
+                "name: Public readiness and marker scan" { $jobNameCount++ }
+                "runs-on: windows-latest" { $runsOnCount++ }
+                "steps:" { $stepsCount++ }
+                default { $invalid = $true }
+            }
+            continue
+        }
+
+        if ($indent -eq 6 -and $text -match '^- name: (?<name>.+)$') {
+            $currentStep = $Matches["name"]
+            [void]$stepNames.Add($currentStep)
+            if ($expectedStepNames -cnotcontains $currentStep) { $invalid = $true }
+            continue
+        }
+
+        if ($indent -eq 8 -and $null -ne $currentStep) {
+            $property = [regex]::Match($text, '^(?<key>uses|shell): (?<value>.+)$')
+            if (-not $property.Success) { $invalid = $true; continue }
+            $table = if ($property.Groups["key"].Value -ceq "uses") { $uses } else { $shells }
+            if ($table.ContainsKey($currentStep)) { $invalid = $true }
+            $table[$currentStep] = $property.Groups["value"].Value
+            continue
+        }
+        $invalid = $true
+    }
+
+    if ($jobsCount -ne 1 -or $validateCount -ne 1 -or $jobNameCount -ne 1 -or $runsOnCount -ne 1 -or
+        $stepsCount -ne 1 -or $runKeyCount -ne 3 -or
+        ($stepNames -join "`n") -cne ($expectedStepNames -join "`n") -or
+        $uses.Count -ne 1 -or $uses["Check out repository"] -cne "actions/checkout@v4" -or
+        $shells.Count -ne 3 -or $runs.Count -ne 3) {
+        $invalid = $true
+    }
+    for ($index = 1; $index -lt $expectedWorkflowSteps.Count; $index++) {
+        $step = $expectedWorkflowSteps[$index]
+        if ($shells[$step["Name"]] -cne $step["Shell"] -or $runs[$step["Name"]] -cne $step["Run"]) { $invalid = $true }
+    }
+    return -not $invalid
+}
+
+function Get-CheckAllContractFailures {
+    param(
+        [string]$ReadmeContent,
+        [string]$AgentsContent,
+        [string]$WorkflowContent
+    )
+
+    if (-not (Test-VisibleMarkdownCheckAllContract $ReadmeContent $expectedReadmeCheckAllHeading)) {
+        "README.md does not contain exactly one visible canonical Validation section and exact check:all fence/body."
+    }
+    if (-not (Test-VisibleMarkdownCheckAllContract $AgentsContent $expectedAgentsCheckAllHeading)) {
+        "AGENTS.md does not contain exactly one visible canonical section 7 and exact check:all fence/body."
+    }
+
+    if (-not (Test-ValidationWorkflowContract $WorkflowContent)) {
+        "Validation workflow does not match the exact enabled check:all job and step contract."
+    }
+}
+
+function Assert-ReadmeCheckAllContractParser {
+    $canonicalFence = (@('```powershell') + $expectedCheckAllCommands + @('```')) -join "`n"
+    $canonicalReadme = @("# Example", "", $expectedReadmeCheckAllHeading, "", "Run the local checks:", "", $canonicalFence, "", "## Next") -join "`n"
+    $canonicalAgents = @("# Agent contract", "", $expectedAgentsCheckAllHeading, "", $canonicalFence, "", "## §8. Next") -join "`n"
+    $canonicalWorkflow = @'
+jobs:
+  validate:
+    name: Public readiness and marker scan
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run public readiness checks
+        shell: pwsh
+        run: ./scripts/test-public-readiness.ps1
+
+      - name: Run private marker scanner tests
+        shell: pwsh
+        run: ./scripts/test-scan-private-markers.ps1
+
+      - name: Run private marker scan
+        shell: pwsh
+        run: ./scripts/scan-private-markers.ps1
+'@
+    $commentDecoy = @("<!--", $expectedReadmeCheckAllHeading, '```powershell', "decoy", '```', "-->") -join "`n"
+    $inlineCommentDecoy = @("visible prefix <!--", $expectedReadmeCheckAllHeading, '```powershell', "decoy", '```', "-->") -join "`n"
+    $htmlDecoy = @("<div>", $expectedReadmeCheckAllHeading, '```powershell', "decoy", '```', "</div>", "") -join "`n"
+    $fenceDecoy = @("~~~text", $expectedReadmeCheckAllHeading, "decoy", "~~~") -join "`n"
+    $duplicateSection = @($expectedReadmeCheckAllHeading, "", $canonicalFence) -join "`n"
+    $longFence = (@('````powershell') + $expectedCheckAllCommands + @('````')) -join "`n"
+    $caseFence = $canonicalFence.Replace('```powershell', '```PowerShell')
+    $wrongFirstFence = @('```powershell', "wrong command", '```') -join "`n"
+
+    $cases = @(
+        [pscustomobject]@{ Label = "canonical"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow; ExpectedFailure = $null },
+        [pscustomobject]@{ Label = "HTML comment decoy"; Readme = $commentDecoy + "`n" + $canonicalReadme; Workflow = $canonicalWorkflow; ExpectedFailure = $null },
+        [pscustomobject]@{ Label = "inline HTML comment decoy"; Readme = $inlineCommentDecoy + "`n" + $canonicalReadme; Workflow = $canonicalWorkflow; ExpectedFailure = $null },
+        [pscustomobject]@{ Label = "raw HTML decoy"; Readme = $htmlDecoy + $canonicalReadme; Workflow = $canonicalWorkflow; ExpectedFailure = $null },
+        [pscustomobject]@{ Label = "fenced H2 decoy"; Readme = $fenceDecoy + "`n" + $canonicalReadme; Workflow = $canonicalWorkflow; ExpectedFailure = $null },
+        [pscustomobject]@{ Label = "duplicate visible H2"; Readme = $canonicalReadme + "`n" + $duplicateSection; Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
+        [pscustomobject]@{ Label = "case variant H2"; Readme = $canonicalReadme.Replace("## Validation", "## validation"); Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
+        [pscustomobject]@{ Label = "long target fence"; Readme = $canonicalReadme.Replace($canonicalFence, $longFence); Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
+        [pscustomobject]@{ Label = "wrong first target fence"; Readme = $canonicalReadme.Replace($canonicalFence, $wrongFirstFence + "`n`n" + $canonicalFence); Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
+        [pscustomobject]@{ Label = "case fence before canonical"; Readme = $canonicalReadme.Replace($canonicalFence, $caseFence + "`n`n" + $canonicalFence); Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
+        [pscustomobject]@{ Label = "long fence before canonical"; Readme = $canonicalReadme.Replace($canonicalFence, $longFence + "`n`n" + $canonicalFence); Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
+        [pscustomobject]@{ Label = "disabled job"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("    steps:", "    if: false`n    steps:"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "continue on error"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        shell: pwsh", "        continue-on-error: true`n        shell: pwsh"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "extra run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        uses: actions/checkout@v4", "        uses: actions/checkout@v4`n        run: ./scripts/test-public-readiness.ps1"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "block scalar run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        run: ./scripts/test-public-readiness.ps1", "        run: |`n          ./scripts/test-public-readiness.ps1"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "quoted run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("run: ./scripts/test-public-readiness.ps1", 'run: "./scripts/test-public-readiness.ps1"'); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "duplicate exact jobs"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow + "`njobs:"; ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "quoted jobs"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow + "`n`"jobs`":"; ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "spaced jobs"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow + "`njobs :"; ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "flow jobs"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow + "`njobs: {}"; ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "other job"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow + "`n  decoy:`n    runs-on: windows-latest`n    steps:`n      - name: Decoy`n        shell: pwsh`n        run: ./scripts/test-public-readiness.ps1"; ExpectedFailure = "Validation workflow" }
+    )
+
+    foreach ($case in $cases) {
+        $caseFailures = @(Get-CheckAllContractFailures $case.Readme $canonicalAgents $case.Workflow)
+        if ($null -eq $case.ExpectedFailure) {
+            if ($caseFailures.Count -ne 0) {
+                Add-Failure "Internal check:all contract case '$($case.Label)' unexpectedly failed."
+            }
+            continue
+        }
+
+        if ($caseFailures.Count -eq 0 -or
+            -not ($caseFailures | Where-Object { $_.Contains($case.ExpectedFailure) })) {
+            Add-Failure "Internal check:all contract case '$($case.Label)' did not fail closed."
+        }
+    }
+}
+
+function Assert-ReadmeCheckAllContract {
+    $readmeFile = Get-RepoFile "README.md"
+    $agentsFile = Get-RepoFile "AGENTS.md"
+    $workflowFile = Get-RepoFile ".github/workflows/validation.yml"
+
+    foreach ($requiredFile in @($readmeFile, $agentsFile, $workflowFile)) {
+        if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
+            Add-Failure "Cannot compare missing check:all contract file."
+            return
+        }
+    }
+
+    $readmeContent = Get-Content -LiteralPath $readmeFile -Raw -Encoding UTF8
+    $agentsContent = Get-Content -LiteralPath $agentsFile -Raw -Encoding UTF8
+    $workflowContent = Get-Content -LiteralPath $workflowFile -Raw -Encoding UTF8
+    @(Get-CheckAllContractFailures $readmeContent $agentsContent $workflowContent) |
+        ForEach-Object { Add-Failure $_ }
+}
+
 @(
     "AGENTS.md",
     "CODEX_START_HERE.md",
@@ -1513,6 +1842,8 @@ Assert-ChecklistAxisParser
 Assert-ChecklistItemParser
 Assert-UnsupportedChecklistParser
 Assert-ChecklistSummaryMatchesReadme "references/checklist.md" "README.md"
+Assert-ReadmeCheckAllContractParser
+Assert-ReadmeCheckAllContract
 
 Assert-Contains "CODE_OF_CONDUCT.md" "harassment" "conduct expectations"
 Assert-Contains "CONTRIBUTING.md" "scripts/scan-private-markers\.ps1" "private marker scan command"
