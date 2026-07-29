@@ -22,7 +22,7 @@ Goal
 公開OSSリポジトリ japanese-web-ui-quality-gate の主開発者として開発を引き継いでください。v0.2.0 のリリース最終化は、現在のユーザーが AGENTS.md §6 のゲート①を明示承認した場合だけ実行してください。報告の冒頭には現在の日本時間を YYYY/MM/DD HH:MM:SS で付けてください。
 
 Context
-- 最初に AGENTS.md（運用契約）を読む。次に HANDOFF.md（資料マップと現況）→ TASKS_BACKLOG.md（受け入れ条件の正本）→ README.md → SKILL.md → docs/requirements-redefinition-2026-07.md の順。
+- `CODEX_START_HERE.md` の「読み順（唯一の正本）」を使う。同一覧の先頭に従って最初に `AGENTS.md` を読み、以降も列挙順に進む。このプロンプトには順序を重複保持しない。
 - SKILL.md は v2（7軸構成）。checklist の実項目数・軸数、完了タスク範囲、直近検証日は、起動時の `HANDOFF.md` / `TASKS_BACKLOG.md` と check:all の実測から取得する。この日付付きプロンプトの過去スナップショットを現在値として使わない。
 - `CHANGELOG.md` には v0.2.0 candidate があり、リリースノート案、最終化手順、ゲート①承認依頼の正本は `docs/release-v0.2.0-preparation.md`。内容と承認状態は起動時に読み直す。
 - 最新の tag / GitHub Release と `v0.2.0` の有無は、`git tag` / `gh release list` で実測する。本文中の作成日や過去の記録だけで未作成と断定しない。

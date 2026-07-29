@@ -7,13 +7,18 @@
 
 日本語WebUIの品質ゲートを提供する公開OSSのagent skill。
 
-## 読み順(正本)
+## 読み順（唯一の正本）
 
-1. `README.md` — 概要(公開導線)
-2. `HANDOFF.md` — 現況の正本
-3. `docs/requirements-redefinition-2026-07.md` — 要件(実装済み)
-4. `TASKS_BACKLOG.md` — タスク台帳
-5. `docs/CODEX_PROMPT_2026-07-12.md` — 起動プロンプト例
+本ファイルは入口です。以下を資料読み順の唯一の正本とし、ほかの運用文書には順序を重複記載しません。
+
+1. `AGENTS.md` — 自律エージェント運用契約
+2. `HANDOFF.md` — 資料マップと現況
+3. `TASKS_BACKLOG.md` — タスク台帳と受け入れ条件
+4. `README.md` — 利用者向け概要と公開導線
+5. `SKILL.md` — 品質ゲート本体
+6. `docs/requirements-redefinition-2026-07.md` — 実装済み要件の判断記録
+
+用途別の補助資料は、必要になった時点で資料マップから選びます。新規セッション用の起動例は `docs/CODEX_PROMPT_2026-07-12.md`、ゲート①の承認依頼と承認後のリリース手順は `docs/release-v0.2.0-preparation.md` です。
 
 ## 検証コマンド
 

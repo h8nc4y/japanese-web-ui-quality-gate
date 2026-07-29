@@ -1471,13 +1471,19 @@ function Assert-ChecklistSummaryMatchesReadme {
 }
 
 @(
+    "AGENTS.md",
+    "CODEX_START_HERE.md",
+    "HANDOFF.md",
     "README.md",
     "LICENSE",
     "SKILL.md",
+    "TASKS_BACKLOG.md",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
     "CHANGELOG.md",
+    "docs/CODEX_PROMPT_2026-07-12.md",
+    "docs/requirements-redefinition-2026-07.md",
     "references/checklist.md",
     ".github/workflows/validation.yml",
     ".github/PULL_REQUEST_TEMPLATE.md",
@@ -1491,6 +1497,10 @@ Assert-DirectoryExists ".github/workflows"
 Assert-DirectoryExists ".github/ISSUE_TEMPLATE"
 
 Assert-Contains ".gitignore" "(^|`n)\.test-tmp/" ".test-tmp/ is ignored"
+Assert-Contains "CODEX_START_HERE.md" '(?ms)^## 読み順（唯一の正本）\s*$.*?^1\. `AGENTS\.md`.*?^2\. `HANDOFF\.md`.*?^3\. `TASKS_BACKLOG\.md`.*?^4\. `README\.md`.*?^5\. `SKILL\.md`.*?^6\. `docs/requirements-redefinition-2026-07\.md`' "canonical document reading order"
+Assert-Contains "AGENTS.md" '`CODEX_START_HERE\.md` の「読み順（唯一の正本）」' "agent contract refers to canonical reading order"
+Assert-Contains "HANDOFF.md" '資料読み順の唯一の正本は \[`CODEX_START_HERE\.md`\]\(CODEX_START_HERE\.md\)' "handoff refers to canonical reading order"
+Assert-Contains "docs/CODEX_PROMPT_2026-07-12.md" '`CODEX_START_HERE\.md` の「読み順（唯一の正本）」' "dated prompt refers to canonical reading order"
 Assert-Contains "README.md" "## License" "license section"
 Assert-Contains "README.md" "MIT License" "MIT license is declared"
 Assert-Contains "README.md" "## Contributing" "contribution path"
