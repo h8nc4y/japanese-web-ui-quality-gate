@@ -29,7 +29,7 @@
 
 ## 確認済みスナップショット（2026-07-29 JST 実測）
 
-- 既定ブランチ `main`。T001–T033 は統合済み。T034 は `main` の `ddce5bc` から分離した `test/readme-checkall-contract` でローカル実装・検証を完了し、doing は0件。着手時の open issue / open PR は0件。
+- 既定ブランチ `main`。T001–T034 は `f89f943` までに統合済みで、doing は0件。現在の open issue / open PR は0件。
 - T034（Class M）では、README `Validation` 節と `AGENTS.md` §7のvisible heading＋最初のPowerShell fence/bodyをexact copy-paste契約として結び、CI `validate` job / 4 steps / 3 runも構造照合する。HTML comment/raw HTML/fence decoy、case/長いfence、無効化、余分なrun、block scalar等を含むproduction正常系1件＋table-driven 21件はfailure 0。PowerShell 7 / Windows PowerShell 5.1のcheck:all 3本も各hostでpassした。workflow、release、tag、スキル本体の挙動は変えていない。
 - T033 では、資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約し、`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ変更した。public-readiness は正本の順序と各参照元を検査し、PowerShell 7 / Windows PowerShell 5.1 の両方で pass した。
 - T032 では、実行中の scanner file を常時走査対象外にする blanket self-exemption を廃止し、scanner 自身へ混入した marker 候補も fail closed に検出するようにした。scratch copy 自身を走査する合成回帰で修正前 RED、値非反射、PowerShell 7 / Windows PowerShell 5.1、通常 repository scanを確認した。
@@ -54,7 +54,7 @@
 
 ## 承認待ち（次の担当エージェントへの引き継ぎ）
 
-通常実装タスク T034 はローカル実装・検証を完了。次の通常タスクはGit/GitHubの現在値を再確認して選定する。
+通常実装タスク T034 は `main` の `f89f943` へ統合済み。次の通常タスクはGit/GitHubの現在値を再確認して選定する。
 次のリリース操作は `AGENTS.md` §6 のゲート①に該当する。
 
 1. **v0.2.0 リリース最終化**: 人間がゲート①を明示承認した場合だけ、`docs/release-v0.2.0-preparation.md` の手順に従って最終化 PR、tag 発行、GitHub Release 作成を進める。
