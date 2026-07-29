@@ -29,7 +29,8 @@
 
 ## 確認済みスナップショット（2026-07-29 JST 実測）
 
-- 既定ブランチ `main`。T001–T032 が完了済み。T032 は PR #41（merge commit `0843f2d`）で統合され、統合後の open issue / open PR は0件。
+- 既定ブランチ `main`。T001–T033 が完了済み。T033 は PR #43（merge commit `bfdb2fb`）で統合され、統合後の open issue / open PR は0件。
+- T033 では、資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約し、`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ変更した。public-readiness は正本の順序と各参照元を検査し、PowerShell 7 / Windows PowerShell 5.1 の両方で pass した。
 - T032 では、実行中の scanner file を常時走査対象外にする blanket self-exemption を廃止し、scanner 自身へ混入した marker 候補も fail closed に検出するようにした。scratch copy 自身を走査する合成回帰で修正前 RED、値非反射、PowerShell 7 / Windows PowerShell 5.1、通常 repository scanを確認した。
 - T022 では checklist 実項目数と軸数を README の数値表記と固定値なしで相互比較する public-readiness 検証を追加。
 - T026 では軸数抽出を `## 1. ...` 形式の番号付き H2 に限定し、補助 H2 とコードフェンス内の見出し風テキストを除外。公開文書の読み取りを UTF-8 に固定し、PowerShell 7 / Windows PowerShell 5.1 の判定を一致させた。
@@ -47,7 +48,7 @@
 - T031 は PR #39（merge commit `132913f`）で統合済み。統合後の open issue / open PR: 0件。doing タスク: 0件。
 - 最新の tag と GitHub Release は `v0.1.0`。
 - `references/checklist.md` は実測80項目・7節で README の表記と一致。
-- check:all 3本（§7）と Windows PowerShell 5.1 互換実行は 2026-07-29 T032 で pass。exact diff独立レビューは P0/P1/P2/P3 = 0、CLEARANCE YES。PR CI（run `30392159972`）と merge commit `0843f2d` の `main` CI（run `30392277496`）も success。
+- check:all 3本（§7）と Windows PowerShell 5.1 互換実行は 2026-07-29 T033 で pass。PR CI（run `30424681772`）と merge commit `bfdb2fb` の `main` CI（run `30424727678`）も success。
 - 2026-07-12 に文書整理を実施: 陳腐化した tracked 文書3件を削除し（判断は `docs/advisory-review-disposition.md`）、台帳と本文書をスリム化。
 
 ## 承認待ち（次の担当エージェントへの引き継ぎ）
