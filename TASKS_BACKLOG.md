@@ -4,8 +4,8 @@
 
 ## 現在のスナップショット（2026-07-30 JST 実測）
 
-- 対象ブランチ: `test/validate-workflow-top-level-contract`（verified `main` `6787959` から分離）
-- doing タスク: 1件（T036）。着手時の GitHub open issue / open PR: 0件
+- 対象: verified `main` T036 feature merge `3cf264c`
+- doing タスク: 0件。T036統合後の GitHub open issue / open PR: 0件
 - check:all 3本（`AGENTS.md` §7）: 2026-07-30 T036 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
 - コード内 TODO / FIXME・失敗中の検証: なし
 
@@ -13,11 +13,7 @@
 
 ### doing
 
-- **T036 / Class M — Validation workflow の top-level contract を fail closed にする**
-  - 目的: T035 で手動確認に留まった workflow 名、trigger、対象branch、read-only permissionをpublic-readinessの回帰契約へ昇格する。
-  - 影響: `.github/workflows/validation.yml` 自体は変更せず、`scripts/test-public-readiness.ps1` が `name: Validation`、`pull_request`、`main` push、`permissions.contents: read` の欠落・追加・拡大・重複を拒否する。
-  - 受け入れ条件: workflow dispatch / schedule / 追加branch / tag filter / permission欠落 / `contents: write` / 追加permission / 重複keyを負例で拒否し、LF / CRLF と既存job・runner・timeout・action pin・credentials・step・command契約を維持する。
-  - ゲート: release、tag、workflow trigger / permission、外部送信、課金、secret、実データは変更しない。v0.2.0はゲート①承認待ちのまま。
+- なし
 
 ### ゲート①承認待ち
 
@@ -53,6 +49,7 @@
 | T033 | 資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約。`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ寄せ、public-readiness に順序と参照の drift 検査を追加 | 2026-07-29 / PR #43 |
 | T034 | README / AGENTS のvisible heading＋最初のPowerShell fence/bodyと、CI `validate` job / 4 steps / 3 exact runを構造照合。production正常系1件＋table-driven 21件をfailure 0で確認し、PowerShell 7 / Windows PowerShell 5.1のcheck:allもpass | 2026-07-29 |
 | T035 | checkoutを公式v4.4.0の完全SHAへ固定し、credentials非保持・10分timeout・exact contractを追加。CRLF fixture harnessをLF正規化し、PR / main CI成功後にfeature branchをlocal / remoteから削除、feature worktreeを通常remove 1回で削除 | 2026-07-30 / PR #47 / feature merge `78e789e` |
+| T036 | Validation workflowのname、pull-request／main push、`contents: read`をexact contractへ追加。追加trigger／branch／tag、permission欠落・拡大・重複を13負例で拒否し、両PowerShell hostの47件とcheck:allをpass。PR / main Validation成功後にfeature branch / worktreeを削除 | 2026-07-30 / PR #49 / feature merge `3cf264c` |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
@@ -61,6 +58,8 @@
 | T036 TDD RED | 新規top-level負例13件が変更前parserでfail-openすることをfocused harnessで確認 |
 | T036 focused GREEN | production正常系、LF / CRLFを含むtable-driven 47件がPowerShell 7 / Windows PowerShell 5.1でpass、failure 0 |
 | T036 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |
+| T036 PR #49 / `main` Validation | feature commit `28e272a`のPR run `30514640965`、merge `3cf264c`のmain run `30514729429` ともに success |
+| T036 security / cleanup | private marker 0、Gitleaks worktree / history 0、Semgrep対象なし、global hook pass。feature branchはlocal / remoteともに不存在、feature worktreeは通常remove 1回で削除。actionlintは未確認 |
 | PR #47 初回 Validation | run `30484328603` failure: CRLFで`missing timeout` / `missing checkout credentials block`の負例生成がno-op。production parserのfailureではない |
 | PR #47 更新 / `main` Validation | corrective run `30485126958`、feature merge `78e789e` のmain run `30485204225` ともに success |
 | T035 feature cleanup | feature branchはlocal / remoteともに不存在、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除 |
