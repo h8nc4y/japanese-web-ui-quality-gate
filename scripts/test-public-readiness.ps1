@@ -15,7 +15,7 @@ $expectedCheckAllCommands = @(
 $expectedReadmeCheckAllHeading = "## Validation"
 $expectedAgentsCheckAllHeading = '## §7. 検証 ＝ `check:all` の定義と合格基準'
 $expectedValidationTimeoutMinutes = "10"
-$expectedCheckoutUses = "actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0"
+$expectedCheckoutUses = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1"
 $expectedCheckoutPersistCredentials = "false"
 $expectedWorkflowTopLevelContractLines = @(
     "name: Validation",
@@ -1785,7 +1785,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -1843,9 +1843,10 @@ jobs:
         [pscustomobject]@{ Label = "extra run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        uses: $expectedCheckoutUses", "        uses: $expectedCheckoutUses`n        run: ./scripts/test-public-readiness.ps1"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "block scalar run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        run: ./scripts/test-public-readiness.ps1", "        run: |`n          ./scripts/test-public-readiness.ps1"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "quoted run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("run: ./scripts/test-public-readiness.ps1", 'run: "./scripts/test-public-readiness.ps1"'); ExpectedFailure = "Validation workflow" },
-        [pscustomobject]@{ Label = "mutable checkout ref"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@v4"); ExpectedFailure = "Validation workflow" },
-        [pscustomobject]@{ Label = "wrong checkout SHA"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4.4.0"); ExpectedFailure = "Validation workflow" },
-        [pscustomobject]@{ Label = "missing checkout version comment"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@11d5960a326750d5838078e36cf38b85af677262"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "mutable checkout ref"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@v7"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "stale Node 20 checkout pin"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "wrong checkout SHA"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b2 # v7.0.1"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "missing checkout version comment"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace($expectedCheckoutUses, "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "missing timeout"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("    timeout-minutes: 10`n`n", ""); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "wrong timeout"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("    timeout-minutes: 10", "    timeout-minutes: 15"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "duplicate timeout"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("    timeout-minutes: 10", "    timeout-minutes: 10`n    timeout-minutes: 10"); ExpectedFailure = "Validation workflow" },

@@ -4,16 +4,20 @@
 
 ## 現在のスナップショット（2026-07-30 JST 実測）
 
-- 対象: verified `main` T036 feature merge `3cf264c`
-- doing タスク: 0件。T036統合後の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）: 2026-07-30 T036 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
+- 対象ブランチ: `chore/upgrade-checkout-v7`（verified `main` closeout merge `c18c779` から分離）
+- doing タスク: 1件（T037）。着手時の GitHub open issue / open PR: 0件
+- check:all 3本（`AGENTS.md` §7）: 2026-07-30 T037 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
 - コード内 TODO / FIXME・失敗中の検証: なし
 
 ## 未完了タスク
 
 ### doing
 
-- なし
+- **T037 / Class M — checkoutをNode.js 24対応の公式v7へ更新する**
+  - 目的: PR #50とpost-main Validationで実測した`actions/checkout` v4.4.0のNode.js 20非推奨annotationを解消する。
+  - 影響: `.github/workflows/validation.yml`のcheckoutだけを、公式v7.0.1のverified commit `3d3c42e5aac5ba805825da76410c181273ba90b1`へ更新する。trigger / permission / job / runner / timeout / credentials / step / commandは変更しない。
+  - 受け入れ条件: mutable v7、旧v4.4.0 pin、誤SHA、version comment欠落を負例で拒否し、LF / CRLFと既存top-level / job契約を維持する。PowerShell 7 / Windows PowerShell 5.1のcheck:all、PR / post-main Validationをpassし、Node.js 20非推奨annotationが再発しない。
+  - ゲート: release、tag、workflow trigger / permission、外部送信、課金、secret、実データは変更しない。v0.2.0はゲート①承認待ちのまま。
 
 ### ゲート①承認待ち
 
@@ -55,6 +59,10 @@
 
 | コマンド | 結果 |
 | --- | --- |
+| T037 TDD RED | v7.0.1 exact contractを先行させ、旧v4.4.0 workflowがPowerShell 7 / Windows PowerShell 5.1で各1件failすることを確認 |
+| T037 focused GREEN | v7.0.1 workflow、mutable v7、旧v4.4.0 pin、誤SHA、comment欠落を含むtable-driven 48件が両PowerShell hostでpass、failure 0 |
+| T037 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |
+| T037 Gitleaks / Semgrep / actionlint | Gitleaks worktree / 61 commitsはfinding 0。Semgrepは対象拡張子なし。actionlintは未確認 |
 | T036 TDD RED | 新規top-level負例13件が変更前parserでfail-openすることをfocused harnessで確認 |
 | T036 focused GREEN | production正常系、LF / CRLFを含むtable-driven 47件がPowerShell 7 / Windows PowerShell 5.1でpass、failure 0 |
 | T036 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |
