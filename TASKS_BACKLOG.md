@@ -4,8 +4,8 @@
 
 ## 現在のスナップショット（2026-07-30 JST 実測）
 
-- 対象ブランチ: `chore/upgrade-checkout-v7`（verified `main` closeout merge `c18c779` から分離）
-- doing タスク: 1件（T037）。着手時の GitHub open issue / open PR: 0件
+- 対象: verified `main` T037 feature merge `0473a02`
+- doing タスク: 0件。T037統合後の GitHub open issue / open PR: 0件
 - check:all 3本（`AGENTS.md` §7）: 2026-07-30 T037 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
 - コード内 TODO / FIXME・失敗中の検証: なし
 
@@ -13,11 +13,7 @@
 
 ### doing
 
-- **T037 / Class M — checkoutをNode.js 24対応の公式v7へ更新する**
-  - 目的: PR #50とpost-main Validationで実測した`actions/checkout` v4.4.0のNode.js 20非推奨annotationを解消する。
-  - 影響: `.github/workflows/validation.yml`のcheckoutだけを、公式v7.0.1のverified commit `3d3c42e5aac5ba805825da76410c181273ba90b1`へ更新する。trigger / permission / job / runner / timeout / credentials / step / commandは変更しない。
-  - 受け入れ条件: mutable v7、旧v4.4.0 pin、誤SHA、version comment欠落を負例で拒否し、LF / CRLFと既存top-level / job契約を維持する。PowerShell 7 / Windows PowerShell 5.1のcheck:all、PR / post-main Validationをpassし、Node.js 20非推奨annotationが再発しない。
-  - ゲート: release、tag、workflow trigger / permission、外部送信、課金、secret、実データは変更しない。v0.2.0はゲート①承認待ちのまま。
+- なし
 
 ### ゲート①承認待ち
 
@@ -54,6 +50,7 @@
 | T034 | README / AGENTS のvisible heading＋最初のPowerShell fence/bodyと、CI `validate` job / 4 steps / 3 exact runを構造照合。production正常系1件＋table-driven 21件をfailure 0で確認し、PowerShell 7 / Windows PowerShell 5.1のcheck:allもpass | 2026-07-29 |
 | T035 | checkoutを公式v4.4.0の完全SHAへ固定し、credentials非保持・10分timeout・exact contractを追加。CRLF fixture harnessをLF正規化し、PR / main CI成功後にfeature branchをlocal / remoteから削除、feature worktreeを通常remove 1回で削除 | 2026-07-30 / PR #47 / feature merge `78e789e` |
 | T036 | Validation workflowのname、pull-request／main push、`contents: read`をexact contractへ追加。追加trigger／branch／tag、permission欠落・拡大・重複を13負例で拒否し、両PowerShell hostの47件とcheck:allをpass。PR / main Validation成功後にfeature branch / worktreeを削除 | 2026-07-30 / PR #49 / feature merge `3cf264c` |
+| T037 | checkoutをNode.js 24対応の公式v7.0.1 verified commitへ更新。mutable v7、旧v4.4.0 pin、誤SHA、comment欠落を48件のexact contractで拒否し、PR / main Validationのannotation 0を確認後にfeature branch / worktreeを削除 | 2026-07-30 / PR #51 / feature merge `0473a02` |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
@@ -63,6 +60,8 @@
 | T037 focused GREEN | v7.0.1 workflow、mutable v7、旧v4.4.0 pin、誤SHA、comment欠落を含むtable-driven 48件が両PowerShell hostでpass、failure 0 |
 | T037 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |
 | T037 Gitleaks / Semgrep / actionlint | Gitleaks worktree / 61 commitsはfinding 0。Semgrepは対象拡張子なし。actionlintは未確認 |
+| T037 PR #51 / `main` Validation | feature commit `77cf12d`のPR run `30516021844`、merge `0473a02`のmain run `30516069205` ともにsuccess。両check runのannotation 0 |
+| T037 feature cleanup | feature branchはlocal / remoteともに不存在、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除 |
 | T036 TDD RED | 新規top-level負例13件が変更前parserでfail-openすることをfocused harnessで確認 |
 | T036 focused GREEN | production正常系、LF / CRLFを含むtable-driven 47件がPowerShell 7 / Windows PowerShell 5.1でpass、failure 0 |
 | T036 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |
