@@ -29,8 +29,8 @@
 
 ## 確認済みスナップショット（2026-07-30 JST 実測）
 
-- 既定ブランチ `main` は closeout merge `6787959` まで確認済み。T001–T035 は統合済みで、T036着手時の open issue / open PR は0件。
-- T036（Class M、doing）では、Validation workflow の `name: Validation`、`pull_request`、`main` push、`permissions.contents: read` をpublic-readinessのexact contractへ追加した。workflow dispatch、schedule、追加branch、tag filter、permission欠落・write化・追加・重複を含む新規13負例は変更前parserでRED、実装後はproduction正常系とLF / CRLFを含むtable-driven 47件がPowerShell 7 / Windows PowerShell 5.1でGREEN。workflow自体、既存job / runner / timeout / action pin / credentials / step / command、release / tagは変更していない。
+- 既定ブランチ `main` は T036 feature merge `3cf264c` まで確認済み。T001–T036 は統合済みで、統合後の open issue / open PR は0件。
+- T036（Class M）では、Validation workflow の `name: Validation`、`pull_request`、`main` push、`permissions.contents: read` をpublic-readinessのexact contractへ追加した。workflow dispatch、schedule、追加branch、tag filter、permission欠落・write化・追加・重複を含む新規13負例は変更前parserでRED、実装後はproduction正常系とLF / CRLFを含むtable-driven 47件がPowerShell 7 / Windows PowerShell 5.1でGREEN。workflow自体、既存job / runner / timeout / action pin / credentials / step / command、release / tagは変更していない。PR #49のValidation run `30514640965` とmerge後のmain run `30514729429` はsuccess。feature branchはlocal / remoteともに削除し、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除済み。
 - T035（Class M）では、Validation workflow の checkout を `actions/checkout` v4.4.0 の完全SHAへ固定し、認証情報を保持せず、job timeoutを10分へ制限した。trigger / permission / job / runner / step / commandは変更していない。public-readiness のexact contractとLF / CRLFを含む34件のtable-driven fixtureも同期した。PR #47の初回run `30484328603` はCRLFで負例生成がno-opになるfixture harnessの問題によりfailure。LF正規化とCRLF正常系を追加したcommit `0acebcb` 後、PR run `30485126958` とmain run `30485204225` はsuccess。PowerShell 7 / Windows PowerShell 5.1のcheck:all 6コマンド、Gitleaks、Semgrep、独立レビューもpassした。actionlintは既知の実行ポリシー拒否により未確認（再試行・代替取得なし）。feature branchはlocal / remoteともに削除し、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除済み。
 - T034（Class M）では、README `Validation` 節と `AGENTS.md` §7のvisible heading＋最初のPowerShell fence/bodyをexact copy-paste契約として結び、CI `validate` job / 4 steps / 3 runも構造照合する。HTML comment/raw HTML/fence decoy、case/長いfence、無効化、余分なrun、block scalar等を含むproduction正常系1件＋table-driven 21件はfailure 0。PowerShell 7 / Windows PowerShell 5.1のcheck:all 3本も各hostでpassした。workflow、release、tag、スキル本体の挙動は変えていない。
 - T033 では、資料読み順を `CODEX_START_HERE.md` の単一の正本へ集約し、`AGENTS.md` / `HANDOFF.md` / 日付付き起動プロンプトを正本参照へ変更した。public-readiness は正本の順序と各参照元を検査し、PowerShell 7 / Windows PowerShell 5.1 の両方で pass した。
@@ -51,12 +51,12 @@
 - T031 は PR #39（merge commit `132913f`）で統合済み。統合後の open issue / open PR: 0件。doing タスク: 0件。
 - 最新の tag と GitHub Release は `v0.1.0`。
 - `references/checklist.md` は実測80項目・7節で README の表記と一致。
-- check:all 3本（§7）は 2026-07-30 T036 で PowerShell 7 / Windows PowerShell 5.1 ともにpass（6コマンドすべてexit 0）。T036のcommit / PR / CI / mergeは未確認。
+- check:all 3本（§7）は 2026-07-30 T036 で PowerShell 7 / Windows PowerShell 5.1 ともにpass（6コマンドすべてexit 0）。T036はcommit `28e272a`、PR #49、merge `3cf264c`、PR / post-main Validation successまで確認済み。actionlintは未確認。
 - 2026-07-12 に文書整理を実施: 陳腐化した tracked 文書3件を削除し（判断は `docs/advisory-review-disposition.md`）、台帳と本文書をスリム化。
 
 ## 未完了・承認待ち（次の担当エージェントへの引き継ぎ）
 
-通常実装タスク T036 は `test/validate-workflow-top-level-contract` でdoing。focused検証と両PowerShell hostのcheck:allはpassし、commit / PR / CI / mergeは未確認。
+通常実装タスクのdoingは0件。未完了はゲート①承認待ちのリリース操作だけ。
 次のリリース操作は `AGENTS.md` §6 のゲート①に該当する。
 
 1. **v0.2.0 リリース最終化**: 人間がゲート①を明示承認した場合だけ、`docs/release-v0.2.0-preparation.md` の手順に従って最終化 PR、tag 発行、GitHub Release 作成を進める。
@@ -84,6 +84,5 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 
 ## 次にやるべきこと
 
-1. T036を敵対的セルフレビューし、focused / check:all / UTF-8 / diff証拠を確認して通常のPR・CI・mergeへ進める。
-2. T036統合後に `TASKS_BACKLOG.md` / 本文書をdoneへ同期する。
-3. ゲート①未承認の間は v0.2.0 のtag / GitHub Releaseを作成しない。
+1. ゲート①未承認の間は v0.2.0 のtag / GitHub Releaseを作成しない。
+2. 通常のローカル安全な改善候補が生じた場合は、Git / GitHub / check:allを再実測して次のtaskを採番する。
