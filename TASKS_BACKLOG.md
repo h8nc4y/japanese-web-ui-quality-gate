@@ -2,12 +2,12 @@
 
 > 自律エージェント（例: Codex）のタスク台帳。運用ルールは [`AGENTS.md`](AGENTS.md)（§4 ループ / §5 選定 / §14 記録）を参照。doing は常に1件のみ。2026-07-11 以前の詳細な検証ログと同期経緯は、git 履歴にある本ファイルの旧版を参照。
 
-## 現在のスナップショット（2026-07-30 JST 実測）
+## 運用時に再実測する現況と記録済み証跡
 
-- 対象: verified `main` T037 feature merge `0473a02`
-- doing タスク: 0件。T037統合後の GitHub open issue / open PR: 0件
-- check:all 3本（`AGENTS.md` §7）: 2026-07-30 T037 で PowerShell 7 / Windows PowerShell 5.1 ともに pass（6コマンドすべて exit 0）
-- コード内 TODO / FIXME・失敗中の検証: なし
+- default branch の SHA、open issue / open PR、CI、tag、GitHub Release は変動するため、固定のスナップショットを正本にしない。`CODEX_START_HERE.md` の読み順に従い、各セッションの着手時に Git / GitHub を再実測する。
+- doing の正本は下の「未完了タスク」。現在の記録は0件。
+- T037 のローカル check:all 履歴として、2026-07-30 に PowerShell 7 / Windows PowerShell 5.1 の6コマンドがすべて exit 0だった結果を保持する。次の変更では現在の working tree に対して改めて実行する。
+- T037 時点でコード内 TODO / FIXME・失敗中の検証は記録されていない。現況は着手時に再確認する。
 
 ## 未完了タスク
 
@@ -51,6 +51,8 @@
 | T035 | checkoutを公式v4.4.0の完全SHAへ固定し、credentials非保持・10分timeout・exact contractを追加。CRLF fixture harnessをLF正規化し、PR / main CI成功後にfeature branchをlocal / remoteから削除、feature worktreeを通常remove 1回で削除 | 2026-07-30 / PR #47 / feature merge `78e789e` |
 | T036 | Validation workflowのname、pull-request／main push、`contents: read`をexact contractへ追加。追加trigger／branch／tag、permission欠落・拡大・重複を13負例で拒否し、両PowerShell hostの47件とcheck:allをpass。PR / main Validation成功後にfeature branch / worktreeを削除 | 2026-07-30 / PR #49 / feature merge `3cf264c` |
 | T037 | checkoutをNode.js 24対応の公式v7.0.1 verified commitへ更新。mutable v7、旧v4.4.0 pin、誤SHA、comment欠落を48件のexact contractで拒否し、PR / main Validationのannotation 0を確認後にfeature branch / worktreeを削除 | 2026-07-30 / PR #51 / feature merge `0473a02` |
+| T038 | v0.2.0 の GitHub Release 本文案へ T032–T037 の実装済み変更を同期。リリース最終化手順とゲート①承認依頼は変えず、tag と GitHub Release は作成していない | 2026-07-30 / PR #53 / merge `4f227ef` |
+| T039 | `HANDOFF.md` / `TASKS_BACKLOG.md` から volatile な current SHA・最新task・GitHub現況の固定値を除き、着手時のlive実測を正本とする契約へ変更。T037のローカル検証を履歴証跡として保持し、T038の実質内容を台帳へ記録 | 2026-07-30 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
@@ -62,6 +64,7 @@
 | T037 Gitleaks / Semgrep / actionlint | Gitleaks worktree / 61 commitsはfinding 0。Semgrepは対象拡張子なし。actionlintは未確認 |
 | T037 PR #51 / `main` Validation | feature commit `77cf12d`のPR run `30516021844`、merge `0473a02`のmain run `30516069205` ともにsuccess。両check runのannotation 0 |
 | T037 feature cleanup | feature branchはlocal / remoteともに不存在、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除 |
+| T038 PR #53 / `main` Validation | feature commit `6f2ead6`のPR run `30536566632`、merge `4f227ef`のmain run `30536638371` ともにsuccess。両check runのannotation 0。`v0.2.0` の tag / GitHub Release は作成していない |
 | T036 TDD RED | 新規top-level負例13件が変更前parserでfail-openすることをfocused harnessで確認 |
 | T036 focused GREEN | production正常系、LF / CRLFを含むtable-driven 47件がPowerShell 7 / Windows PowerShell 5.1でpass、failure 0 |
 | T036 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |

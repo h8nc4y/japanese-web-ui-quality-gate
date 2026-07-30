@@ -27,9 +27,10 @@
 - 4ゲートのみ人間承認（§6）: ①デプロイ/Actions/release・tag ②課金・有料API ③secret・実素材・実データの外部送信 ④製品要件の変更。
 - 検証していない主張は書かず `未確認` と明記（§1・§8）。
 
-## 確認済みスナップショット（2026-07-30 JST 実測）
+## 記録済みの検証・変更履歴（現況は着手時に再実測）
 
-- 既定ブランチ `main` は T037 feature merge `0473a02` まで確認済み。T001–T037 は統合済みで、統合後の open issue / open PR は0件。
+- default branch の SHA、open issue / open PR、CI、tag、GitHub Release の現況は、この文書に固定しない。各セッションの着手時に `git` / `gh` で再実測し、食い違いがあれば実測を正とする。完了タスクの履歴は `TASKS_BACKLOG.md` を参照する。
+- T038（Class S）では、`docs/release-v0.2.0-preparation.md` の GitHub Release 本文案へ T032–T037 の実装済み変更を同期した。リリース最終化手順とゲート①承認依頼は変えず、`v0.2.0` の tag と GitHub Release は作成していない。PR #53 の Validation run `30536566632` と merge 後の run `30536638371` は success、両 check run の annotation は0件だった。
 - T037（Class M）では、PR #50とmerge後mainのValidationに出たNode.js 20非推奨annotationを根拠に、checkoutをNode.js 24対応の公式v7.0.1 verified commit `3d3c42e5aac5ba805825da76410c181273ba90b1`へ更新した。exact contractを先に更新したTDD REDはPowerShell 7 / Windows PowerShell 5.1で各1件、workflow更新後は旧v4.4.0 pinを含むtable-driven 48件が両hostでGREEN。trigger / permission / job / runner / timeout / credentials / step / command、release / tagは変更していない。PR #51のValidation run `30516021844` とmerge後のmain run `30516069205` はsuccessで、両check runのannotationは0件。feature branchはlocal / remoteともに削除し、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除済み。
 - T036（Class M）では、Validation workflow の `name: Validation`、`pull_request`、`main` push、`permissions.contents: read` をpublic-readinessのexact contractへ追加した。workflow dispatch、schedule、追加branch、tag filter、permission欠落・write化・追加・重複を含む新規13負例は変更前parserでRED、実装後はproduction正常系とLF / CRLFを含むtable-driven 47件がPowerShell 7 / Windows PowerShell 5.1でGREEN。workflow自体、既存job / runner / timeout / action pin / credentials / step / command、release / tagは変更していない。PR #49のValidation run `30514640965` とmerge後のmain run `30514729429` はsuccess。feature branchはlocal / remoteともに削除し、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除済み。
 - T035（Class M）では、Validation workflow の checkout を `actions/checkout` v4.4.0 の完全SHAへ固定し、認証情報を保持せず、job timeoutを10分へ制限した。trigger / permission / job / runner / step / commandは変更していない。public-readiness のexact contractとLF / CRLFを含む34件のtable-driven fixtureも同期した。PR #47の初回run `30484328603` はCRLFで負例生成がno-opになるfixture harnessの問題によりfailure。LF正規化とCRLF正常系を追加したcommit `0acebcb` 後、PR run `30485126958` とmain run `30485204225` はsuccess。PowerShell 7 / Windows PowerShell 5.1のcheck:all 6コマンド、Gitleaks、Semgrep、独立レビューもpassした。actionlintは既知の実行ポリシー拒否により未確認（再試行・代替取得なし）。feature branchはlocal / remoteともに削除し、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除済み。
@@ -50,14 +51,13 @@
 - T030 は PR #37（merge commit `a817a57`）で統合済み。統合後の open issue / open PR: 0件。doing タスク: 0件。
 - T031 では、indexではtrackedのままworking treeから欠落したscan targetを黙ってskipし、未検査の公開対象をgreenにし得るfail-open経路を修正した。actual git fixtureでworking fileだけを削除し、固定のredactedメッセージ + exit 1とpath非出力をPowerShell 7 / Windows PowerShell 5.1で検証した。
 - T031 は PR #39（merge commit `132913f`）で統合済み。統合後の open issue / open PR: 0件。doing タスク: 0件。
-- 最新の tag と GitHub Release は `v0.1.0`。
 - `references/checklist.md` は実測80項目・7節で README の表記と一致。
-- check:all 3本（§7）は 2026-07-30 T037 でPowerShell 7 / Windows PowerShell 5.1ともにpass（6コマンドすべてexit 0）。T037はcommit `77cf12d`、PR #51、merge `0473a02`、PR / post-main Validation success、annotation 0まで確認済み。actionlintは未確認。
+- T037 のローカル check:all 証跡として、2026-07-30 に PowerShell 7 / Windows PowerShell 5.1 の6コマンドがすべて exit 0だった結果を保持する。T037はcommit `77cf12d`、PR #51、merge `0473a02`、PR / post-main Validation success、annotation 0まで確認済み。actionlintは未確認。この履歴証跡は現在の working tree の再検証を代替せず、次の変更では check:all を改めて実行する。
 - 2026-07-12 に文書整理を実施: 陳腐化した tracked 文書3件を削除し（判断は `docs/advisory-review-disposition.md`）、台帳と本文書をスリム化。
 
 ## 未完了・承認待ち（次の担当エージェントへの引き継ぎ）
 
-通常実装タスクのdoingは0件。未完了はゲート①承認待ちのリリース操作だけ。
+通常実装タスクの状態は `TASKS_BACKLOG.md` の「未完了タスク」を正本とし、この文書には件数を複製しない。ゲート①承認待ちのリリース操作は次のとおり。
 次のリリース操作は `AGENTS.md` §6 のゲート①に該当する。
 
 1. **v0.2.0 リリース最終化**: 人間がゲート①を明示承認した場合だけ、`docs/release-v0.2.0-preparation.md` の手順に従って最終化 PR、tag 発行、GitHub Release 作成を進める。
@@ -66,7 +66,7 @@
 ## 既知の問題・残懸念
 
 - 本リポジトリに UI ソースは無いため、ブラウザ表示確認は通常対象外。ただし `AGENTS.md` §2 の二層構造に注意: skill が「適用される対象」には日本向け Web UI が含まれるため、`SKILL.md` 内の UI 検証観点を「対象外」と誤判断しない。
-- `HANDOFF.md` / `TASKS_BACKLOG.md` は確認時点のスナップショット。PR番号だけを追う自己同期 PR は作らない。
+- `HANDOFF.md` / `TASKS_BACKLOG.md` に残す変更・検証結果は履歴証跡であり、Git / GitHub の現況は着手時に再実測する。PR番号や current SHA だけを追う自己同期 PR は作らない。
 - JIS X 8341-3 改正後の確定内容は未確認。WAIC の 2026-06-08 公開情報でも改正は検討段階（`docs/requirements-redefinition-2026-07.md` §4.1 / §9）。
 - v0.2.0 の公開日は未確定。ゲート①承認前に changelog の日付、tag、GitHub Release を確定しない。
 - `scripts/test-public-readiness.ps1` は PS 5.1 で日本語コメントを正しく解釈させるため UTF-8 BOM 付き。ほかのテキストを一括で BOM 付きへ変換しない。
