@@ -29,7 +29,8 @@
 
 ## 確認済みスナップショット（2026-07-30 JST 実測）
 
-- 既定ブランチ `main` は T036 feature merge `3cf264c` まで確認済み。T001–T036 は統合済みで、統合後の open issue / open PR は0件。
+- 既定ブランチ `main` は T036 closeout merge `c18c779` まで確認済み。T001–T036 は統合済みで、T037着手時の open issue / open PR は0件。
+- T037（Class M、doing）では、PR #50とmerge後mainのValidationに出たNode.js 20非推奨annotationを根拠に、checkoutをNode.js 24対応の公式v7.0.1 verified commit `3d3c42e5aac5ba805825da76410c181273ba90b1`へ更新した。exact contractを先に更新したTDD REDはPowerShell 7 / Windows PowerShell 5.1で各1件、workflow更新後は旧v4.4.0 pinを含むtable-driven 48件が両hostでGREEN。trigger / permission / job / runner / timeout / credentials / step / command、release / tagは変更していない。
 - T036（Class M）では、Validation workflow の `name: Validation`、`pull_request`、`main` push、`permissions.contents: read` をpublic-readinessのexact contractへ追加した。workflow dispatch、schedule、追加branch、tag filter、permission欠落・write化・追加・重複を含む新規13負例は変更前parserでRED、実装後はproduction正常系とLF / CRLFを含むtable-driven 47件がPowerShell 7 / Windows PowerShell 5.1でGREEN。workflow自体、既存job / runner / timeout / action pin / credentials / step / command、release / tagは変更していない。PR #49のValidation run `30514640965` とmerge後のmain run `30514729429` はsuccess。feature branchはlocal / remoteともに削除し、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除済み。
 - T035（Class M）では、Validation workflow の checkout を `actions/checkout` v4.4.0 の完全SHAへ固定し、認証情報を保持せず、job timeoutを10分へ制限した。trigger / permission / job / runner / step / commandは変更していない。public-readiness のexact contractとLF / CRLFを含む34件のtable-driven fixtureも同期した。PR #47の初回run `30484328603` はCRLFで負例生成がno-opになるfixture harnessの問題によりfailure。LF正規化とCRLF正常系を追加したcommit `0acebcb` 後、PR run `30485126958` とmain run `30485204225` はsuccess。PowerShell 7 / Windows PowerShell 5.1のcheck:all 6コマンド、Gitleaks、Semgrep、独立レビューもpassした。actionlintは既知の実行ポリシー拒否により未確認（再試行・代替取得なし）。feature branchはlocal / remoteともに削除し、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除済み。
 - T034（Class M）では、README `Validation` 節と `AGENTS.md` §7のvisible heading＋最初のPowerShell fence/bodyをexact copy-paste契約として結び、CI `validate` job / 4 steps / 3 runも構造照合する。HTML comment/raw HTML/fence decoy、case/長いfence、無効化、余分なrun、block scalar等を含むproduction正常系1件＋table-driven 21件はfailure 0。PowerShell 7 / Windows PowerShell 5.1のcheck:all 3本も各hostでpassした。workflow、release、tag、スキル本体の挙動は変えていない。
@@ -51,12 +52,12 @@
 - T031 は PR #39（merge commit `132913f`）で統合済み。統合後の open issue / open PR: 0件。doing タスク: 0件。
 - 最新の tag と GitHub Release は `v0.1.0`。
 - `references/checklist.md` は実測80項目・7節で README の表記と一致。
-- check:all 3本（§7）は 2026-07-30 T036 で PowerShell 7 / Windows PowerShell 5.1 ともにpass（6コマンドすべてexit 0）。T036はcommit `28e272a`、PR #49、merge `3cf264c`、PR / post-main Validation successまで確認済み。actionlintは未確認。
+- check:all 3本（§7）は 2026-07-30 T037 でPowerShell 7 / Windows PowerShell 5.1ともにpass（6コマンドすべてexit 0）。T037のcommit / PR / CI / mergeは未確認。actionlintは未確認。
 - 2026-07-12 に文書整理を実施: 陳腐化した tracked 文書3件を削除し（判断は `docs/advisory-review-disposition.md`）、台帳と本文書をスリム化。
 
 ## 未完了・承認待ち（次の担当エージェントへの引き継ぎ）
 
-通常実装タスクのdoingは0件。未完了はゲート①承認待ちのリリース操作だけ。
+通常実装タスク T037 は `chore/upgrade-checkout-v7` でdoing。focused RED / GREENと両PowerShell hostのcheck:allはpassし、commit / PR / CI / mergeは未確認。
 次のリリース操作は `AGENTS.md` §6 のゲート①に該当する。
 
 1. **v0.2.0 リリース最終化**: 人間がゲート①を明示承認した場合だけ、`docs/release-v0.2.0-preparation.md` の手順に従って最終化 PR、tag 発行、GitHub Release 作成を進める。
@@ -84,5 +85,6 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 
 ## 次にやるべきこと
 
-1. ゲート①未承認の間は v0.2.0 のtag / GitHub Releaseを作成しない。
-2. 通常のローカル安全な改善候補が生じた場合は、Git / GitHub / check:allを再実測して次のtaskを採番する。
+1. T037の両PowerShell host check:all、security scan、独立レビュー後に通常のPR / CI / mergeへ進め、Node.js 20非推奨annotationが消えたことを確認する。
+2. T037統合後に `TASKS_BACKLOG.md` / 本文書をdoneへ同期する。
+3. ゲート①未承認の間は v0.2.0 のtag / GitHub Releaseを作成しない。
