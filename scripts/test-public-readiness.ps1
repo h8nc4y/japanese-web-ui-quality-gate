@@ -17,6 +17,17 @@ $expectedAgentsCheckAllHeading = '## §7. 検証 ＝ `check:all` の定義と合
 $expectedValidationTimeoutMinutes = "10"
 $expectedCheckoutUses = "actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0"
 $expectedCheckoutPersistCredentials = "false"
+$expectedWorkflowTopLevelContractLines = @(
+    "name: Validation",
+    "on:",
+    "  pull_request:",
+    "  push:",
+    "    branches:",
+    "      - main",
+    "permissions:",
+    "  contents: read",
+    "jobs:"
+)
 $expectedWorkflowSteps = @(
     [ordered]@{ Name = "Check out repository"; Uses = $expectedCheckoutUses; Shell = $null; Run = $null },
     [ordered]@{ Name = "Run public readiness checks"; Uses = $null; Shell = "pwsh"; Run = "./scripts/test-public-readiness.ps1" },
@@ -1599,6 +1610,8 @@ function Test-ValidationWorkflowContract {
     $runKeyCount = 0
     $checkoutWithCount = 0
     $persistCredentialsCount = 0
+    $workflowTopLevelContractLines = [System.Collections.Generic.List[string]]::new()
+    $workflowTopLevelContractComplete = $false
     $insideJobs = $false
     $currentJob = $null
     $currentStep = $null
@@ -1611,6 +1624,14 @@ function Test-ValidationWorkflowContract {
         if (-not $lineMatch.Success -or $line.StartsWith("`t")) { $invalid = $true; continue }
         $indent = $lineMatch.Groups["indent"].Value.Length
         $text = $lineMatch.Groups["text"].Value
+
+        # Capture the enabled events and read-only permission boundary before jobs.
+        if (-not $workflowTopLevelContractComplete) {
+            [void]$workflowTopLevelContractLines.Add($line)
+            if ($indent -eq 0 -and $text -ceq "jobs:") {
+                $workflowTopLevelContractComplete = $true
+            }
+        }
 
         # checkout の with 配下は直前の with: に属する10-space入力だけを受理する。
         if ($indent -le 8) { $insideCheckoutWith = $false }
@@ -1637,6 +1658,7 @@ function Test-ValidationWorkflowContract {
             continue
         }
         if ($indent -eq 0) {
+            if ($workflowTopLevelContractComplete) { $invalid = $true }
             $insideJobs = $false
             $currentJob = $null
             $currentStep = $null
@@ -1706,6 +1728,7 @@ function Test-ValidationWorkflowContract {
 
     if ($jobsCount -ne 1 -or $validateCount -ne 1 -or $jobNameCount -ne 1 -or $runsOnCount -ne 1 -or
         $timeoutMinutesCount -ne 1 -or $stepsCount -ne 1 -or $runKeyCount -ne 3 -or
+        ($workflowTopLevelContractLines -join "`n") -cne ($expectedWorkflowTopLevelContractLines -join "`n") -or
         ($stepNames -join "`n") -cne ($expectedStepNames -join "`n") -or
         $uses.Count -ne 1 -or $uses["Check out repository"] -cne $expectedCheckoutUses -or
         $checkoutWithCount -ne 1 -or $persistCredentialsCount -ne 1 -or
@@ -1743,6 +1766,17 @@ function Assert-ReadmeCheckAllContractParser {
     $canonicalReadme = @("# Example", "", $expectedReadmeCheckAllHeading, "", "Run the local checks:", "", $canonicalFence, "", "## Next") -join "`n"
     $canonicalAgents = @("# Agent contract", "", $expectedAgentsCheckAllHeading, "", $canonicalFence, "", "## §8. Next") -join "`n"
     $canonicalWorkflow = @'
+name: Validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
 jobs:
   validate:
     name: Public readiness and marker scan
@@ -1791,6 +1825,19 @@ jobs:
         [pscustomobject]@{ Label = "wrong first target fence"; Readme = $canonicalReadme.Replace($canonicalFence, $wrongFirstFence + "`n`n" + $canonicalFence); Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
         [pscustomobject]@{ Label = "case fence before canonical"; Readme = $canonicalReadme.Replace($canonicalFence, $caseFence + "`n`n" + $canonicalFence); Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
         [pscustomobject]@{ Label = "long fence before canonical"; Readme = $canonicalReadme.Replace($canonicalFence, $longFence + "`n`n" + $canonicalFence); Workflow = $canonicalWorkflow; ExpectedFailure = "README.md" },
+        [pscustomobject]@{ Label = "missing workflow name"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("name: Validation`n`n", ""); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "wrong workflow name"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("name: Validation", "name: Other"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "missing event map"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("on:`n  pull_request:`n  push:`n    branches:`n      - main`n`n", ""); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "missing pull request event"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("  pull_request:`n", ""); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "missing push event"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("  push:`n    branches:`n      - main`n", ""); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "workflow dispatch event"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("  pull_request:", "  workflow_dispatch:`n  pull_request:"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "scheduled event"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("  pull_request:", "  schedule:`n    - cron: '0 0 * * *'`n  pull_request:"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "additional push branch"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("      - main", "      - main`n      - develop"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "push tag filter"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("      - main", "      - main`n    tags:`n      - 'v*'"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "missing permissions"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("permissions:`n  contents: read`n`n", ""); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "contents write permission"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("  contents: read", "  contents: write"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "additional permission"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("  contents: read", "  contents: read`n  issues: read"); ExpectedFailure = "Validation workflow" },
+        [pscustomobject]@{ Label = "duplicate permissions key"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("permissions:`n  contents: read", "permissions:`n  contents: read`n`npermissions:`n  contents: read"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "disabled job"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("    steps:", "    if: false`n    steps:"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "continue on error"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        shell: pwsh", "        continue-on-error: true`n        shell: pwsh"); ExpectedFailure = "Validation workflow" },
         [pscustomobject]@{ Label = "extra run"; Readme = $canonicalReadme; Workflow = $canonicalWorkflow.Replace("        uses: $expectedCheckoutUses", "        uses: $expectedCheckoutUses`n        run: ./scripts/test-public-readiness.ps1"); ExpectedFailure = "Validation workflow" },
