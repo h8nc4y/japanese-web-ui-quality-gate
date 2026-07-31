@@ -35,6 +35,7 @@ The format follows a simple keep-a-changelog style, and this project uses semant
 - `CHANGELOG.md` now describes semantic versioning as active for versioned releases.
 - The dated Codex handoff prompt no longer duplicates a fixed completed-task range, verification date, or tag/Release state. It now requires each new session to read the living sources of truth and remeasure Git/GitHub state before acting.
 - The repository document reading order now has a single source of truth in `CODEX_START_HERE.md`; agent instructions, handoff guidance, and the dated Codex prompt refer to that list instead of maintaining divergent copies.
+- `AGENTS.md` now treats current Git / GitHub state as live evidence instead of embedding a branch, release, issue, task, or CI snapshot. Public-readiness extracts the visible section 3 contract, requires the local/remote/WIP measurement set, and rejects point-in-time version, SHA, count, branch, release, or CI claims while ignoring fenced and commented examples.
 - `HANDOFF.md` and `TASKS_BACKLOG.md` updated to reflect the merged task inventory and the autonomous operating model, then streamlined in the 2026-07-12 documentation cleanup: `HANDOFF.md` gained a document map pointing to each source of truth, `TASKS_BACKLOG.md` moved historical verification logs and sync narratives to git history, and `docs/requirements-redefinition-2026-07.md` now records its implemented status per task.
 
 ### Removed

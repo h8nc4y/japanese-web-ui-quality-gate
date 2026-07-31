@@ -53,6 +53,7 @@
 | T037 | checkoutをNode.js 24対応の公式v7.0.1 verified commitへ更新。mutable v7、旧v4.4.0 pin、誤SHA、comment欠落を48件のexact contractで拒否し、PR / main Validationのannotation 0を確認後にfeature branch / worktreeを削除 | 2026-07-30 / PR #51 / feature merge `0473a02` |
 | T038 | v0.2.0 の GitHub Release 本文案へ T032–T037 の実装済み変更を同期。リリース最終化手順とゲート①承認依頼は変えず、tag と GitHub Release は作成していない | 2026-07-30 / PR #53 / merge `4f227ef` |
 | T039 | `HANDOFF.md` / `TASKS_BACKLOG.md` から volatile な current SHA・最新task・GitHub現況の固定値を除き、着手時のlive実測を正本とする契約へ変更。T037のローカル検証を履歴証跡として保持し、T038の実質内容を台帳へ記録 | 2026-07-30 |
+| T040 | `AGENTS.md` §3 / §5 の時点依存snapshotをremote配線・worktree / stash・local / remote branch / tag・GitHubのlive実測契約へ変更。public-readinessはvisible §3で時点依存断定を拒否しdecoyを識別する17件と、§5のH2境界を固定する5件を追加。changelog / v0.2.0本文案も同期し、release / tag / workflow / permission は変更なし | 2026-08-01 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
@@ -61,6 +62,9 @@
 | T037 TDD RED | v7.0.1 exact contractを先行させ、旧v4.4.0 workflowがPowerShell 7 / Windows PowerShell 5.1で各1件failすることを確認 |
 | T037 focused GREEN | v7.0.1 workflow、mutable v7、旧v4.4.0 pin、誤SHA、comment欠落を含むtable-driven 48件が両PowerShell hostでpass、failure 0 |
 | T037 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |
+| T040 TDD RED | 初期4 assertion時点でlive実測契約を先行追加し、旧 `AGENTS.md` に対して期待した4件が PowerShell 7 で fail |
+| T040 scoped parser | visible §3のexact契約・時点依存断定・fence / comment decoyの17件と、§5のH2境界・evergreen冒頭の5件が PowerShell 7 / Windows PowerShell 5.1でpass |
+| T040 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-08-01 pass（6コマンドすべて exit 0） |
 | T037 Gitleaks / Semgrep / actionlint | Gitleaks worktree / 61 commitsはfinding 0。Semgrepは対象拡張子なし。actionlintは未確認 |
 | T037 PR #51 / `main` Validation | feature commit `77cf12d`のPR run `30516021844`、merge `0473a02`のmain run `30516069205` ともにsuccess。両check runのannotation 0 |
 | T037 feature cleanup | feature branchはlocal / remoteともに不存在、feature worktreeは通常の`git worktree remove`を1回だけ実行して削除 |
