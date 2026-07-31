@@ -14,6 +14,16 @@ $expectedCheckAllCommands = @(
 )
 $expectedReadmeCheckAllHeading = "## Validation"
 $expectedAgentsCheckAllHeading = '## §7. 検証 ＝ `check:all` の定義と合格基準'
+$expectedAgentsLiveStateHeading = "## §3. 現況の取得契約"
+$expectedAgentsBacklogHeading = "## §5. タスク選定の指針（バックログが空のときの動き方）"
+$expectedAgentsBacklogOpening = "着手時の live 実測で未完了バックログが空なら、スコープを膨らませず、本リポジトリの価値（移植性・公開安全・検証の正直さ）を高める方向で **小さく確実な改善** を自分で選びます。"
+$expectedAgentsLiveStateBodyLines = @(
+    '> Git / GitHub の現況は変動するため、このファイルへスナップショットを固定しない。**食い違いがあれば「着手時の live 実測 > このファイル > 他の文書」の順で実測を正とする。**',
+    '- default branch の current SHA、local / remote branch の一覧、open issue / open PR、doing、tag、GitHub Release、CI の結果、TODO / FIXME の有無は、いずれも時点依存のためここへ現在値を書かない。',
+    '- 着手時に `git status --short`、`git log --oneline -5`、`git remote -v`、`git worktree list --porcelain`、`git stash list`、`git branch --all`、`git ls-remote origin HEAD`、`git ls-remote --heads origin`、`git tag --list`、`git ls-remote --tags origin`、`gh pr list`、`gh issue list`、`gh run list`、`gh release list` を再実測する。列挙した各 worktree でも `git status --short` を確認し、`TASKS_BACKLOG.md` の doing と `rg -n ''TODO|FIXME''` の結果も確認する。remote 同期が必要な場合は、既存 WIP を確認・保全してから安全に更新する。',
+    '- 完了済みタスクと過去の検証証跡は `TASKS_BACKLOG.md` / `HANDOFF.md` に履歴として残すが、現在も同じ状態だとはみなさない。',
+    '- 変動しない運用規約は各節に置く。ビルド/検証コマンドは §7、owner gate は §6 を正本とする。'
+)
 $expectedValidationTimeoutMinutes = "10"
 $expectedCheckoutUses = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1"
 $expectedCheckoutPersistCredentials = "false"
@@ -96,6 +106,231 @@ function Assert-NotContains {
     if ([regex]::IsMatch($content, $Pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
         Add-Failure "$RelativePath contains disallowed content: $Description"
     }
+}
+
+function Get-VisibleMarkdownH2SectionBodies {
+    param(
+        [string]$Content,
+        [string]$ExpectedHeading
+    )
+
+    $sectionBodies = [System.Collections.Generic.List[string]]::new()
+    $currentSection = $null
+    $inComment = $false
+    $inHtmlBlock = $false
+    $inFence = $false
+    $fenceCharacter = [char]0
+    $fenceLength = 0
+
+    foreach ($rawLine in @($Content -split '\r?\n')) {
+        $line = $rawLine
+
+        # fenced code 内の見出しやsnapshot例は、実際の運用契約として扱わない。
+        if ($inFence) {
+            $closePattern = '^[ ]{0,3}' + [regex]::Escape([string]$fenceCharacter) + '{' + $fenceLength + ',}[ \t]*$'
+            if ([regex]::IsMatch($line, $closePattern)) { $inFence = $false }
+            continue
+        }
+
+        # HTML comment 内のdecoyを除き、同じ行でcomment後に戻るvisible textは保持する。
+        if ($inComment -or $line.Contains("<!--")) {
+            $visibleLine = [System.Text.StringBuilder]::new()
+            $cursor = 0
+            while ($cursor -lt $line.Length) {
+                if ($inComment) {
+                    $commentEnd = $line.IndexOf("-->", $cursor, [System.StringComparison]::Ordinal)
+                    if ($commentEnd -lt 0) { $cursor = $line.Length; break }
+                    $inComment = $false
+                    $cursor = $commentEnd + 3
+                    continue
+                }
+                $commentStart = $line.IndexOf("<!--", $cursor, [System.StringComparison]::Ordinal)
+                if ($commentStart -lt 0) {
+                    [void]$visibleLine.Append($line.Substring($cursor))
+                    break
+                }
+                [void]$visibleLine.Append($line.Substring($cursor, $commentStart - $cursor))
+                $inComment = $true
+                $cursor = $commentStart + 4
+            }
+            $line = $visibleLine.ToString()
+        }
+
+        if ($inHtmlBlock) {
+            if ([string]::IsNullOrWhiteSpace($line)) { $inHtmlBlock = $false }
+            continue
+        }
+        # raw HTML block風の範囲もvisible Markdown契約から除外する。
+        if ([regex]::IsMatch($line, '^[ ]{0,3}<(?:/?[A-Za-z]|![A-Z]|!\[|\?)')) {
+            $inHtmlBlock = $true
+            continue
+        }
+
+        $fenceOpen = [regex]::Match($line, '^[ ]{0,3}(?<fence>`{3,}|~{3,}).*$')
+        if ($fenceOpen.Success) {
+            $fenceToken = $fenceOpen.Groups["fence"].Value
+            $inFence = $true
+            $fenceCharacter = $fenceToken[0]
+            $fenceLength = $fenceToken.Length
+            continue
+        }
+
+        # 次のvisible H2でsectionを閉じ、同名sectionが複数ならすべて返してfail closedにする。
+        if ([regex]::IsMatch($line, '^##(?:[ \t]+|$)')) {
+            if ($null -ne $currentSection) {
+                [void]$sectionBodies.Add(($currentSection -join "`n"))
+                $currentSection = $null
+            }
+            if ($line -ceq $ExpectedHeading) {
+                $currentSection = [System.Collections.Generic.List[string]]::new()
+            }
+            continue
+        }
+
+        if ($null -ne $currentSection) { [void]$currentSection.Add($line) }
+    }
+
+    if ($null -ne $currentSection) { [void]$sectionBodies.Add(($currentSection -join "`n")) }
+    return $sectionBodies.ToArray()
+}
+
+function Get-AgentsLiveStateContractFailures {
+    param([string]$Content)
+
+    $sections = @(Get-VisibleMarkdownH2SectionBodies $Content $expectedAgentsLiveStateHeading)
+    if ($sections.Count -ne 1) {
+        return "AGENTS.md does not contain exactly one visible canonical section 3 live-state contract."
+    }
+
+    $body = $sections[0]
+    # blank lineとthematic breakだけを正規化し、visibleな契約行は順序・余分な行を含めてexactに固定する。
+    $visibleContractLines = @($body -split '\r?\n' | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_) -and $_ -cne '---'
+    })
+    if (($visibleContractLines -join "`n") -cne ($expectedAgentsLiveStateBodyLines -join "`n")) {
+        "AGENTS.md section 3 does not match the exact live-state contract."
+    }
+
+    # current version/SHA/count/branch/release/CI断定をsection内だけで拒否し、履歴節の正当な証跡は妨げない。
+    $pointInTimePatterns = @(
+        '(?i)\bv\d+\.\d+\.\d+\b',
+        '(?i)\b[0-9a-f]{7,40}\b',
+        '(?im)^(?!.*現在値を書かない).*(?:open issue|open PR|doing).*\b\d+\s*件.*$',
+        '(?im)^.*(?:branch|ブランチ).*(?:最新|のみ).*$' ,
+        '(?im)^.*(?:CI|検証).*(?:緑|success).*$' ,
+        '(?im)^\s*-\s*(?:open issue|open PR|doing(?: タスク)?|tag|GitHub Release|リリース|release)(?:\s|:|：).*$'
+    )
+    foreach ($pattern in $pointInTimePatterns) {
+        if ([regex]::IsMatch($body, $pattern)) {
+            "AGENTS.md section 3 contains a point-in-time snapshot claim."
+        }
+    }
+}
+
+function Assert-AgentsLiveStateContractParser {
+    $canonical = (@("# Example", "", $expectedAgentsLiveStateHeading, "") +
+        $expectedAgentsLiveStateBodyLines + @("", "---", "", "## §4. Next")) -join "`n"
+    # double-quoted stringではbacktickがescapeになるため、fence token自体はsingle-quoted literalで保持する。
+    $fence3 = '```'
+    $fence4 = '````'
+    $cases = @(
+        @{ Label = "canonical"; Content = $canonical; ExpectedFailure = $null },
+        @{ Label = "missing heading"; Content = $canonical.Replace($expectedAgentsLiveStateHeading, "## §3. Other"); ExpectedFailure = "exactly one visible" },
+        @{ Label = "duplicate heading"; Content = "$canonical`n`n$canonical"; ExpectedFailure = "exactly one visible" },
+        @{ Label = "contract moved outside section"; Content = $canonical.Replace($expectedAgentsLiveStateHeading, "## §4. Moved") + "`n`n$expectedAgentsLiveStateHeading`n`n---"; ExpectedFailure = "does not match the exact live-state contract" },
+        @{ Label = "fenced heading decoy"; Content = "${fence4}markdown`n$canonical`n${fence4}"; ExpectedFailure = "exactly one visible" },
+        @{ Label = "point-in-time counts"; Content = $canonical.Replace("`n---", "`n- open issue / open PR: 0 件。doing: 0 件。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "point-in-time version"; Content = $canonical.Replace("`n---", "`n- current version: v9.9.9。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "point-in-time SHA"; Content = $canonical.Replace("`n---", "`n- current SHA: deadbeef。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "point-in-time branch"; Content = $canonical.Replace("`n---", "`n- remote branch は main のみ。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "point-in-time CI"; Content = $canonical.Replace("`n---", "`n- ローカル検証と CI は success / 緑。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "point-in-time release"; Content = $canonical.Replace("`n---", "`n- リリース: stable（タグ済み）。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "point-in-time empty items"; Content = $canonical.Replace("`n---", "`n- open issue / open PR: なし。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "point-in-time empty doing"; Content = $canonical.Replace("`n---", "`n- doing: なし。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "point-in-time tag"; Content = $canonical.Replace("`n---", "`n- tag: latest。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "point-in-time GitHub Release"; Content = $canonical.Replace("`n---", "`n- GitHub Release: stable。`n---"); ExpectedFailure = "point-in-time snapshot claim" },
+        @{ Label = "comment decoy ignored"; Content = $canonical.Replace("`n---", "`n<!-- - open issue / open PR: 0 件。 -->`n---"); ExpectedFailure = $null },
+        @{ Label = "fence decoy ignored"; Content = $canonical.Replace("`n---", "`n${fence3}text`n- CI は緑。`n${fence3}`n---"); ExpectedFailure = $null }
+    )
+
+    foreach ($case in $cases) {
+        $caseFailures = @(Get-AgentsLiveStateContractFailures $case.Content)
+        if ($null -eq $case.ExpectedFailure) {
+            if ($caseFailures.Count -ne 0) {
+                Add-Failure "Internal live-state contract case '$($case.Label)' failed unexpectedly."
+            }
+            continue
+        }
+        if ($caseFailures.Count -eq 0 -or
+            -not ($caseFailures | Where-Object { $_.Contains($case.ExpectedFailure) })) {
+            Add-Failure "Internal live-state contract case '$($case.Label)' did not fail closed."
+        }
+    }
+}
+
+function Assert-AgentsLiveStateContract {
+    $file = Get-RepoFile "AGENTS.md"
+    if (-not (Test-Path -LiteralPath $file -PathType Leaf)) {
+        Add-Failure "Cannot check missing file: AGENTS.md"
+        return
+    }
+    $content = Get-Content -LiteralPath $file -Raw -Encoding UTF8
+    @(Get-AgentsLiveStateContractFailures $content) | ForEach-Object { Add-Failure $_ }
+}
+
+function Get-AgentsBacklogGuidanceFailures {
+    param([string]$Content)
+
+    $sections = @(Get-VisibleMarkdownH2SectionBodies $Content $expectedAgentsBacklogHeading)
+    if ($sections.Count -ne 1) {
+        return "AGENTS.md does not contain exactly one visible canonical section 5 backlog guidance."
+    }
+
+    $body = $sections[0]
+    $visibleLines = @($body -split '\r?\n' | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_) -and $_ -cne '---'
+    })
+    if ($visibleLines.Count -eq 0 -or $visibleLines[0] -cne $expectedAgentsBacklogOpening) {
+        "AGENTS.md section 5 does not start with the evergreen backlog guidance."
+    }
+    if ($body.Contains("v0.1.0 後でバックログは空です")) {
+        "AGENTS.md section 5 contains stale release-specific backlog guidance."
+    }
+}
+
+function Assert-AgentsBacklogGuidanceParser {
+    $canonical = @("# Example", "", $expectedAgentsBacklogHeading, "", $expectedAgentsBacklogOpening, "", "## §6. Gate") -join "`n"
+    $cases = @(
+        @{ Label = "canonical"; Content = $canonical; ExpectedFailure = $null },
+        @{ Label = "missing heading"; Content = $canonical.Replace($expectedAgentsBacklogHeading, "## §5. Other"); ExpectedFailure = "exactly one visible" },
+        @{ Label = "duplicate heading"; Content = "$canonical`n`n$canonical"; ExpectedFailure = "exactly one visible" },
+        @{ Label = "opening moved after next H2"; Content = "$expectedAgentsBacklogHeading`n`n## §6. Gate`n`n$expectedAgentsBacklogOpening"; ExpectedFailure = "does not start with the evergreen" },
+        @{ Label = "stale release opening"; Content = $canonical.Replace($expectedAgentsBacklogOpening, "v0.1.0 後でバックログは空です。"); ExpectedFailure = "stale release-specific" }
+    )
+
+    foreach ($case in $cases) {
+        $caseFailures = @(Get-AgentsBacklogGuidanceFailures $case.Content)
+        if ($null -eq $case.ExpectedFailure) {
+            if ($caseFailures.Count -ne 0) {
+                Add-Failure "Internal backlog guidance case '$($case.Label)' failed unexpectedly."
+            }
+            continue
+        }
+        if ($caseFailures.Count -eq 0 -or
+            -not ($caseFailures | Where-Object { $_.Contains($case.ExpectedFailure) })) {
+            Add-Failure "Internal backlog guidance case '$($case.Label)' did not fail closed."
+        }
+    }
+}
+
+function Assert-AgentsBacklogGuidance {
+    $file = Get-RepoFile "AGENTS.md"
+    if (-not (Test-Path -LiteralPath $file -PathType Leaf)) {
+        Add-Failure "Cannot check missing file: AGENTS.md"
+        return
+    }
+    $content = Get-Content -LiteralPath $file -Raw -Encoding UTF8
+    @(Get-AgentsBacklogGuidanceFailures $content) | ForEach-Object { Add-Failure $_ }
 }
 
 function Get-LeadingIndentColumns {
@@ -1927,6 +2162,11 @@ Assert-DirectoryExists ".github/ISSUE_TEMPLATE"
 Assert-Contains ".gitignore" "(^|`n)\.test-tmp/" ".test-tmp/ is ignored"
 Assert-Contains "CODEX_START_HERE.md" '(?ms)^## 読み順（唯一の正本）\s*$.*?^1\. `AGENTS\.md`.*?^2\. `HANDOFF\.md`.*?^3\. `TASKS_BACKLOG\.md`.*?^4\. `README\.md`.*?^5\. `SKILL\.md`.*?^6\. `docs/requirements-redefinition-2026-07\.md`' "canonical document reading order"
 Assert-Contains "AGENTS.md" '`CODEX_START_HERE\.md` の「読み順（唯一の正本）」' "agent contract refers to canonical reading order"
+# AGENTS 自体が陳腐化する現況値を正本化しないよう、visible §3だけをscopeにcontractと禁止snapshotを検査する。
+Assert-AgentsLiveStateContractParser
+Assert-AgentsLiveStateContract
+Assert-AgentsBacklogGuidanceParser
+Assert-AgentsBacklogGuidance
 Assert-Contains "HANDOFF.md" '資料読み順の唯一の正本は \[`CODEX_START_HERE\.md`\]\(CODEX_START_HERE\.md\)' "handoff refers to canonical reading order"
 Assert-Contains "docs/CODEX_PROMPT_2026-07-12.md" '`CODEX_START_HERE\.md` の「読み順（唯一の正本）」' "dated prompt refers to canonical reading order"
 Assert-Contains "README.md" "## License" "license section"

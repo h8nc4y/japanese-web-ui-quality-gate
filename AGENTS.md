@@ -41,16 +41,14 @@
 
 ---
 
-## §3. 現状スナップショット
+## §3. 現況の取得契約
 
-> このスナップショットは陳腐化します。着手前に必ず `git pull` / `git log --oneline -5` / `gh pr list` / `gh issue list` で最新の事実を取り直すこと。**食い違いがあれば「実測 > このファイル > 他の文書」の順で実測を正とする。**
+> Git / GitHub の現況は変動するため、このファイルへスナップショットを固定しない。**食い違いがあれば「着手時の live 実測 > このファイル > 他の文書」の順で実測を正とする。**
 
-- 既定ブランチ `main` が最新。タスク棚卸し（`TASKS_BACKLOG.md` / `HANDOFF.md` 追加）とこの運用契約 `AGENTS.md` の導入まで取り込み済み。作業ブランチは整理され、ローカル/リモートとも `main` のみ。
-- リリース: `v0.1.0`（タグ済み）。
-- open issue / open PR: 0 件。コード内 TODO / FIXME: 実質なし。
-- doing タスク: 0 件（`TASKS_BACKLOG.md` 参照）。
-- ビルドシステム/パッケージマネージャ: **なし**。検証は §7 の PowerShell スクリプト3本。
-- ローカル検証3本・CI（`.github/workflows/validation.yml`）はいずれも緑。
+- default branch の current SHA、local / remote branch の一覧、open issue / open PR、doing、tag、GitHub Release、CI の結果、TODO / FIXME の有無は、いずれも時点依存のためここへ現在値を書かない。
+- 着手時に `git status --short`、`git log --oneline -5`、`git remote -v`、`git worktree list --porcelain`、`git stash list`、`git branch --all`、`git ls-remote origin HEAD`、`git ls-remote --heads origin`、`git tag --list`、`git ls-remote --tags origin`、`gh pr list`、`gh issue list`、`gh run list`、`gh release list` を再実測する。列挙した各 worktree でも `git status --short` を確認し、`TASKS_BACKLOG.md` の doing と `rg -n 'TODO|FIXME'` の結果も確認する。remote 同期が必要な場合は、既存 WIP を確認・保全してから安全に更新する。
+- 完了済みタスクと過去の検証証跡は `TASKS_BACKLOG.md` / `HANDOFF.md` に履歴として残すが、現在も同じ状態だとはみなさない。
+- 変動しない運用規約は各節に置く。ビルド/検証コマンドは §7、owner gate は §6 を正本とする。
 
 ---
 
@@ -74,7 +72,7 @@
 
 ## §5. タスク選定の指針（バックログが空のときの動き方）
 
-v0.1.0 後でバックログは空です。スコープを膨らませず、本リポジトリの価値（移植性・公開安全・検証の正直さ）を高める方向で **小さく確実な改善** を自分で選びます。
+着手時の live 実測で未完了バックログが空なら、スコープを膨らませず、本リポジトリの価値（移植性・公開安全・検証の正直さ）を高める方向で **小さく確実な改善** を自分で選びます。
 
 **承認なしで進めてよい（in-scope）例**
 - `SKILL.md` の明確化（曖昧な指示の具体化、抜けている状態/観点の補強、矛盾の解消）。

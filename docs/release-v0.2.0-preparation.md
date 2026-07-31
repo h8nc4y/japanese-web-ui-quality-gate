@@ -36,6 +36,7 @@
 - scanner 自身の blanket self-exemption を廃止し、scanner source に marker 候補が混入した場合も、ほかの公開対象と同じく fail closed に検出します。
 - public-readiness は top-level の番号付き評価軸と、marker 後 indent が tab-stop 換算1–4列の未チェック hyphen 項目だけを構造的に数えて README の数値表記と比較します。親項目の content column 以深にあるnested checkbox、fence / HTML block 内の例示、list item 内のparagraph / Setext / Type 7をtop-level件数へ含めません。0–3-space fence、labelがCommonMark上限の999文字以内で安全に証明できる単行link reference subset、space / tab 区切りの hyphen / asterisk thematic break は受理し、active axis内の非canonical container、複数行link reference、4列/TAB開始leafなど安全に確定できない構造だけを固定エラーと0件へ fail closed します。Setext heading は直前paragraphが top-level と証明できる場合だけ軸scopeを終了します。
 - 資料の読み順は `CODEX_START_HERE.md` を単一の正本とし、public-readiness はその順序に加えて、README、`AGENTS.md`、Validation workflow の copy-paste可能な検証契約を照合します。
+- `AGENTS.md` の現況案内は固定snapshotではなく、remote配線、worktree / stash、branch / tag、GitHub状態を着手時に再実測する契約へ変更しました。public-readiness はvisibleな§3だけを検査し、時点依存のversion / SHA / 件数 / branch / release / CI断定の再混入を拒否します。
 - Validation workflow は名前、pull request と `main` push、`contents: read`、10分のtimeout、認証情報の非保持を固定し、`actions/checkout` はNode.js 24対応のv7.0.1 verified commitへpinして、mutable tag、旧pin、誤ったSHAをexact contractで拒否します。
 
 ### 利用者向け補足
