@@ -5,7 +5,7 @@
 ## 運用時に再実測する現況と記録済み証跡
 
 - default branch の SHA、open issue / open PR、CI、tag、GitHub Release は変動するため、固定のスナップショットを正本にしない。`CODEX_START_HERE.md` の読み順に従い、各セッションの着手時に Git / GitHub を再実測する。
-- doing の正本は下の「未完了タスク」。T041 は統合とcleanupまで完了し、現在のdoingは0件。
+- doing の正本は下の「未完了タスク」。T042 はPR #58で完了し、現在のdoingは0件。
 - T037 のローカル check:all 履歴として、2026-07-30 に PowerShell 7 / Windows PowerShell 5.1 の6コマンドがすべて exit 0だった結果を保持する。次の変更では現在の working tree に対して改めて実行する。
 - T037 時点でコード内 TODO / FIXME・失敗中の検証は記録されていない。現況は着手時に再確認する。
 
@@ -55,11 +55,14 @@
 | T039 | `HANDOFF.md` / `TASKS_BACKLOG.md` から volatile な current SHA・最新task・GitHub現況の固定値を除き、着手時のlive実測を正本とする契約へ変更。T037のローカル検証を履歴証跡として保持し、T038の実質内容を台帳へ記録 | 2026-07-30 |
 | T040 | `AGENTS.md` §3 / §5 の時点依存snapshotをremote配線・worktree / stash・local / remote branch / tag・GitHubのlive実測契約へ変更。public-readinessはvisible §3で時点依存断定を拒否しdecoyを識別する17件と、§5のH2境界を固定する5件を追加。changelog / v0.2.0本文案も同期し、release / tag / workflow / permission は変更なし | 2026-08-01 |
 | T041 | `SKILL.md` のfrontmatterと番号付き7軸を `references/checklist.md` と順序込みで照合。fence／comment／raw HTMLによる軸隠蔽・偽axis算入を負例で固定し、未証明構造をfail closedに拒否 | 2026-08-01 / PR #56 / merge `6545419` |
+| T042 | T041で追加したfrontmatter canonical contractと番号付き7軸の順序照合をv0.2.0 GitHub Release本文案へ同期。最終化手順・ゲート①承認依頼・tag・Release・workflow・permissionは変更なし | 2026-08-02 / PR #58 |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
+| T042 PowerShell 7 / Windows PowerShell 5.1 check:all | 変更前baselineと変更後に6コマンドを実行し、すべてexit 0。public-readiness、scanner回帰、tracked private-marker scanが両hostでpass |
+| T042 diff / pre-commit security | `git diff --check` / `git diff --cached --check` pass。global pre-commit Gitleaks pass、Semgrepは対象ファイルなしでskip |
 | T041 TDD RED | frontmatter、description、axis同期の負例15件を先行追加し、最小stubに対して期待どおり15件fail |
 | T041 public-readiness / final | 実装直後24件、追加後28件は両hostでpass。独立reviewの極性/fence 3負例、raw HTML終端4負例、Type 7/block-comment終端4負例、multiline inline comment 2負例は各修正前にRED。修正後の最終41件とproduction文書は両hostでpassし、full check:all 6コマンドもpass |
 | T041 security scan | Gitleaks worktree / 報告上66 commitsは0件。Semgrep 82 rules / 29 filesは0 findings |
