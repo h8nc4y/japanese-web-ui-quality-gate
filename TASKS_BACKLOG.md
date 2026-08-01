@@ -5,7 +5,7 @@
 ## 運用時に再実測する現況と記録済み証跡
 
 - default branch の SHA、open issue / open PR、CI、tag、GitHub Release は変動するため、固定のスナップショットを正本にしない。`CODEX_START_HERE.md` の読み順に従い、各セッションの着手時に Git / GitHub を再実測する。
-- doing の正本は下の「未完了タスク」。現在の記録は0件。
+- doing の正本は下の「未完了タスク」。T041 の実装、独立review修正、両PowerShell hostのfull check:all、security scanを終え、統合を引き継いでいる。
 - T037 のローカル check:all 履歴として、2026-07-30 に PowerShell 7 / Windows PowerShell 5.1 の6コマンドがすべて exit 0だった結果を保持する。次の変更では現在の working tree に対して改めて実行する。
 - T037 時点でコード内 TODO / FIXME・失敗中の検証は記録されていない。現況は着手時に再確認する。
 
@@ -13,7 +13,11 @@
 
 ### doing
 
-- なし
+- **T041 / Class M：`SKILL.md` の構造drift検出**
+  - 目的：中核成果物のfrontmatter（`name` / `description`）と番号付き7軸を、`references/checklist.md` と順序込みで照合し、存在確認だけでは見逃すdriftをfail closedに検出する。
+  - 受け入れ条件：frontmatterの欠落・破損・重複、名称違い、pass/fail用途または主要除外条件の欠落、軸の欠落・追加・改名・順序変更を拒否する。fence / comment内のdecoyは数えない。LF / CRLFとPowerShell 7 / Windows PowerShell 5.1で同じ判定にする。
+  - 現況：実装と文書同期を完了。初期stubでは負例15件がRED。実装直後は24件、trigger・必須field・両文書同時改名追加後は28件が両hostでpass。独立reviewで検出した除外極性反転と不正backtick fenceによる軸隠蔽2経路は、追加3負例のRED後に修正。続くreviewで検出した同一行終端raw HTMLによる軸隠蔽は4負例のRED後に修正し、Type 7 paragraph中断誤判定とblock comment終端suffixの偽axis算入も4負例のRED後に修正した。最後に複数行inline commentの終端suffixでcanonical H2を合成できる経路を2負例のRED後に固定sentinelへ倒した。comment以外のraw HTMLも部分解釈せずfail closedにする。最終41件とproduction文書、両hostのfull check:all 6コマンドがpass。Gitleaksはworktreeと報告上66 commitsで0件、Semgrepは82 rules / 29 filesで0 findings。
+  - 統合前の未確認：commit、push、PR、CI、merge、cleanup。
 
 ### ゲート①承認待ち
 
@@ -59,6 +63,9 @@
 
 | コマンド | 結果 |
 | --- | --- |
+| T041 TDD RED | frontmatter、description、axis同期の負例15件を先行追加し、最小stubに対して期待どおり15件fail |
+| T041 public-readiness / final | 実装直後24件、追加後28件は両hostでpass。独立reviewの極性/fence 3負例、raw HTML終端4負例、Type 7/block-comment終端4負例、multiline inline comment 2負例は各修正前にRED。修正後の最終41件とproduction文書は両hostでpassし、full check:all 6コマンドもpass |
+| T041 security scan | Gitleaks worktree / 報告上66 commitsは0件。Semgrep 82 rules / 29 filesは0 findings |
 | T037 TDD RED | v7.0.1 exact contractを先行させ、旧v4.4.0 workflowがPowerShell 7 / Windows PowerShell 5.1で各1件failすることを確認 |
 | T037 focused GREEN | v7.0.1 workflow、mutable v7、旧v4.4.0 pin、誤SHA、comment欠落を含むtable-driven 48件が両PowerShell hostでpass、failure 0 |
 | T037 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |

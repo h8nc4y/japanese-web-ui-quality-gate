@@ -44,6 +44,17 @@ $expectedWorkflowSteps = @(
     [ordered]@{ Name = "Run private marker scanner tests"; Uses = $null; Shell = "pwsh"; Run = "./scripts/test-scan-private-markers.ps1" },
     [ordered]@{ Name = "Run private marker scan"; Uses = $null; Shell = "pwsh"; Run = "./scripts/scan-private-markers.ps1" }
 )
+$expectedSkillName = "japanese-web-ui-quality-gate"
+$expectedSkillDescription = "Use this as a pass/fail quality gate (not a generation guide) before shipping or reviewing Japanese web UI - pages, apps, React/Next.js, forms, dashboards, admin tools - when the task needs Japanese-first copy review, Japanese text rendering/layout checks, Japanese form input handling (postal code, phone, furigana), accessibility essentials, or responsive/rendered browser verification. Do not use this for generating visual design from scratch, building a design system, or producing a WCAG/JIS conformance certification."
+$expectedSkillAxisHeadings = @(
+    "1. UI Language",
+    "2. Japanese Text Rendering",
+    "3. Japanese Form Input",
+    "4. Accessibility Essentials",
+    "5. Rendered Verification",
+    "6. Honest Reporting",
+    "7. Stop Conditions"
+)
 
 function Add-Failure {
     param([string]$Message)
@@ -331,6 +342,288 @@ function Assert-AgentsBacklogGuidance {
     }
     $content = Get-Content -LiteralPath $file -Raw -Encoding UTF8
     @(Get-AgentsBacklogGuidanceFailures $content) | ForEach-Object { Add-Failure $_ }
+}
+
+function Get-VisibleNumberedH2Headings {
+    param([string]$Content)
+
+    $headings = [System.Collections.Generic.List[string]]::new()
+    $inComment = $false
+    $inHtmlCommentBlock = $false
+    $inFence = $false
+    $fenceCharacter = [char]0
+    $fenceLength = 0
+
+    foreach ($rawLine in @($Content -split '\r?\n')) {
+        $line = $rawLine
+
+        # code fence内の見出し風テキストは、公開されるaxis構造へ数えない。
+        if ($inFence) {
+            $closePattern = '^[ ]{0,3}' + [regex]::Escape([string]$fenceCharacter) + '{' + $fenceLength + ',}[ \t]*$'
+            if ([regex]::IsMatch($line, $closePattern)) { $inFence = $false }
+            continue
+        }
+
+        # 行頭commentはCommonMark Type 2 blockとして扱い、終端markerを含む行全体を除外する。
+        # suffixをinline Markdownへ戻すと偽axisを数えるため、inline comment stateと分離する。
+        if ($inHtmlCommentBlock) {
+            if ($line.Contains("-->")) { $inHtmlCommentBlock = $false }
+            continue
+        }
+        if ([regex]::IsMatch($line, '^[ ]{0,3}<!--')) {
+            if (-not $line.Contains("-->")) { $inHtmlCommentBlock = $true }
+            continue
+        }
+
+        # 行途中commentが改行をまたぐ場合、closing suffixを新しい行頭Markdownへ
+        # 昇格させず固定sentinelへ倒す。終端行も全体を除外する。
+        if ($inComment) {
+            if ($line.Contains("-->")) { $inComment = $false }
+            continue
+        }
+
+        # 単一行inline commentだけは除去し、同じ行に残るvisible textを評価する。
+        if ($line.Contains("<!--")) {
+            $visibleLine = [System.Text.StringBuilder]::new()
+            $cursor = 0
+            while ($cursor -lt $line.Length) {
+                $commentStart = $line.IndexOf("<!--", $cursor, [System.StringComparison]::Ordinal)
+                if ($commentStart -lt 0) {
+                    [void]$visibleLine.Append($line.Substring($cursor))
+                    break
+                }
+                [void]$visibleLine.Append($line.Substring($cursor, $commentStart - $cursor))
+                $commentEnd = $line.IndexOf("-->", $commentStart + 4, [System.StringComparison]::Ordinal)
+                if ($commentEnd -lt 0) {
+                    [void]$headings.Add('__UNSUPPORTED_MULTILINE_INLINE_COMMENT__')
+                    $inComment = $true
+                    $cursor = $line.Length
+                    break
+                }
+                $cursor = $commentEnd + 3
+            }
+            $line = $visibleLine.ToString()
+        }
+
+        # 軸の正本はcanonical Markdownだけを許可する。comment以外のraw HTMLは
+        # CommonMark 7種を不完全に再実装せず、固定sentinelで必ずaxis不一致へ倒す。
+        if ([regex]::IsMatch($line, '^[ ]{0,3}<(?:\?|!\[CDATA\[|![A-Za-z]|/?[A-Za-z])')) {
+            [void]$headings.Add('__UNSUPPORTED_RAW_HTML__')
+            continue
+        }
+
+        $fenceOpen = [regex]::Match($line, '^[ ]{0,3}(?<fence>`{3,}|~{3,})(?<suffix>.*)$')
+        if ($fenceOpen.Success) {
+            $fenceToken = $fenceOpen.Groups["fence"].Value
+            $fenceSuffix = $fenceOpen.Groups["suffix"].Value
+            # CommonMarkではbacktick fenceのinfo stringにbacktickを含められない。
+            # 不正openerをfence扱いすると、後続の追加axisをdecoyとして隠せるため拒否側へ流す。
+            $isInvalidBacktickFenceOpener = (
+                ($fenceToken[0] -eq [char]'`') -and
+                $fenceSuffix.Contains('`')
+            )
+            if (-not $isInvalidBacktickFenceOpener) {
+                $inFence = $true
+                $fenceCharacter = $fenceToken[0]
+                $fenceLength = $fenceToken.Length
+                continue
+            }
+        }
+
+        # 中核契約はcopy-paste可能なcanonical H2だけを受理し、別表記は意図的な更新として扱う。
+        $headingMatch = [regex]::Match($line, '^## (?<heading>[1-9][0-9]*\. [^\r\n]+)$')
+        if ($headingMatch.Success) {
+            [void]$headings.Add($headingMatch.Groups["heading"].Value)
+        }
+    }
+
+    return $headings.ToArray()
+}
+
+function Get-SkillContractFailures {
+    param(
+        [string]$SkillContent,
+        [string]$ChecklistContent
+    )
+
+    # 外部YAML parserへ依存せず、公開契約で採用している単行scalarだけを限定的に解釈する。
+    $skillLines = @($SkillContent -split '\r?\n')
+    $frontmatterEnd = -1
+    if ($skillLines.Count -eq 0 -or $skillLines[0] -cne '---') {
+        "SKILL.md frontmatter must start on the first line."
+    }
+    else {
+        for ($index = 1; $index -lt $skillLines.Count; $index++) {
+            if ($skillLines[$index] -ceq '---') {
+                $frontmatterEnd = $index
+                break
+            }
+        }
+        if ($frontmatterEnd -lt 0) {
+            "SKILL.md frontmatter is not terminated."
+        }
+    }
+
+    if ($frontmatterEnd -ge 0) {
+        $nameValues = [System.Collections.Generic.List[string]]::new()
+        $descriptionValues = [System.Collections.Generic.List[string]]::new()
+        $frontmatterHasUnsupportedLine = $false
+
+        for ($index = 1; $index -lt $frontmatterEnd; $index++) {
+            $metadataMatch = [regex]::Match($skillLines[$index], '^(?<key>[A-Za-z][A-Za-z0-9_-]*): (?<value>.+)$')
+            if (-not $metadataMatch.Success) {
+                $frontmatterHasUnsupportedLine = $true
+                continue
+            }
+            switch -CaseSensitive ($metadataMatch.Groups["key"].Value) {
+                "name" { [void]$nameValues.Add($metadataMatch.Groups["value"].Value) }
+                "description" { [void]$descriptionValues.Add($metadataMatch.Groups["value"].Value) }
+                default { $frontmatterHasUnsupportedLine = $true }
+            }
+        }
+
+        if ($frontmatterHasUnsupportedLine) {
+            "SKILL.md frontmatter contains an unsupported or malformed line."
+        }
+        if ($nameValues.Count -ne 1 -or $nameValues[0] -cne $expectedSkillName) {
+            "SKILL.md name must appear exactly once and match the canonical skill name."
+        }
+        if ($descriptionValues.Count -ne 1) {
+            "SKILL.md description must appear exactly once as a single-line scalar."
+        }
+        else {
+            $description = $descriptionValues[0]
+            # 必須語の単純包含では否定語だけを反転した意味driftを見逃す。
+            # triggerと除外を一体のcanonical scalarとして固定し、極性も含めて比較する。
+            if ($description -cne $expectedSkillDescription) {
+                "SKILL.md description must exactly match the canonical trigger and exclusion contract."
+            }
+        }
+
+        # closing delimiter直後に別のfrontmatter blockが続く形は、metadataの正本を二重化するため拒否する。
+        $bodyStart = $frontmatterEnd + 1
+        while ($bodyStart -lt $skillLines.Count -and [string]::IsNullOrWhiteSpace($skillLines[$bodyStart])) {
+            $bodyStart++
+        }
+        if ($bodyStart -lt $skillLines.Count -and $skillLines[$bodyStart] -ceq '---') {
+            "SKILL.md must not contain duplicate frontmatter blocks."
+        }
+    }
+
+    # product要件に属する7軸は固定し、SKILLと詳細checklistを同じ順序で同期させる。
+    $skillHeadings = @(Get-VisibleNumberedH2Headings $SkillContent)
+    $checklistHeadings = @(Get-VisibleNumberedH2Headings $ChecklistContent)
+    $expectedHeadingsText = $expectedSkillAxisHeadings -join "`n"
+    if (($skillHeadings -join "`n") -cne $expectedHeadingsText) {
+        "SKILL.md axis headings do not match the canonical ordered seven-axis contract."
+    }
+    if (($checklistHeadings -join "`n") -cne $expectedHeadingsText) {
+        "references/checklist.md axis headings do not match the canonical ordered seven-axis contract."
+    }
+}
+
+function Assert-SkillContractParser {
+    $frontmatter = @(
+        "---",
+        "name: $expectedSkillName",
+        "description: $expectedSkillDescription",
+        "---"
+    ) -join "`n"
+    $skillAxes = @($expectedSkillAxisHeadings | ForEach-Object { "## $_`n`n- Contract item." }) -join "`n`n"
+    $checklistAxes = @($expectedSkillAxisHeadings | ForEach-Object { "## $_`n`n- [ ] Checklist item." }) -join "`n`n"
+    $canonicalSkill = "$frontmatter`n`n# Japanese Web UI Quality Gate`n`n$skillAxes"
+    $canonicalChecklist = "# Detailed Checklist`n`n$checklistAxes"
+    $fence = '```'
+    $invalidBacktickFence = $fence + "markdown" + [char]'`'
+    $sameLineProcessingBlock = "<?done?>"
+    $sameLineRawBlock = "<script></script>"
+    $typeSevenInsideParagraph = "Text`n<span>"
+    $blockCommentWithClosingSuffix = "<!--`n## 8. Decoy`n-->## 8. Decoy"
+    $multilineInlineCommentAxis = "Text <!--`n-->## 1. UI Language"
+
+    $reorderedSkill = $canonicalSkill.Replace(
+        "## 1. UI Language",
+        "## TEMP. Axis"
+    ).Replace(
+        "## 2. Japanese Text Rendering",
+        "## 1. UI Language"
+    ).Replace(
+        "## TEMP. Axis",
+        "## 2. Japanese Text Rendering"
+    )
+
+    $cases = @(
+        @{ Label = "canonical"; Skill = $canonicalSkill; Checklist = $canonicalChecklist; ExpectedFailure = $null },
+        @{ Label = "canonical CRLF"; Skill = $canonicalSkill.Replace("`n", "`r`n"); Checklist = $canonicalChecklist.Replace("`n", "`r`n"); ExpectedFailure = $null },
+        @{ Label = "missing frontmatter"; Skill = $canonicalSkill.Substring($canonicalSkill.IndexOf("`n") + 1); Checklist = $canonicalChecklist; ExpectedFailure = "frontmatter" },
+        @{ Label = "unterminated frontmatter"; Skill = $canonicalSkill.Replace("description: $expectedSkillDescription`n---", "description: $expectedSkillDescription"); Checklist = $canonicalChecklist; ExpectedFailure = "frontmatter" },
+        @{ Label = "duplicate frontmatter"; Skill = "$frontmatter`n`n$canonicalSkill"; Checklist = $canonicalChecklist; ExpectedFailure = "frontmatter" },
+        @{ Label = "missing name"; Skill = $canonicalSkill.Replace("name: $expectedSkillName`n", ""); Checklist = $canonicalChecklist; ExpectedFailure = "name" },
+        @{ Label = "duplicate name"; Skill = $canonicalSkill.Replace("name: $expectedSkillName", "name: $expectedSkillName`nname: $expectedSkillName"); Checklist = $canonicalChecklist; ExpectedFailure = "name" },
+        @{ Label = "missing description"; Skill = $canonicalSkill.Replace("description: $expectedSkillDescription`n", ""); Checklist = $canonicalChecklist; ExpectedFailure = "description" },
+        @{ Label = "duplicate description"; Skill = $canonicalSkill.Replace("description: $expectedSkillDescription", "description: $expectedSkillDescription`ndescription: $expectedSkillDescription"); Checklist = $canonicalChecklist; ExpectedFailure = "description" },
+        @{ Label = "unknown frontmatter field"; Skill = $canonicalSkill.Replace("name: $expectedSkillName", "name: $expectedSkillName`nversion: 1"); Checklist = $canonicalChecklist; ExpectedFailure = "frontmatter" },
+        @{ Label = "multiline description"; Skill = $canonicalSkill.Replace("description: $expectedSkillDescription", "description: >`n  $expectedSkillDescription"); Checklist = $canonicalChecklist; ExpectedFailure = "frontmatter" },
+        @{ Label = "wrong name"; Skill = $canonicalSkill.Replace("name: $expectedSkillName", "name: another-skill"); Checklist = $canonicalChecklist; ExpectedFailure = "name" },
+        @{ Label = "missing pass fail purpose"; Skill = $canonicalSkill.Replace("pass/fail quality gate", "review guide"); Checklist = $canonicalChecklist; ExpectedFailure = "description" },
+        @{ Label = "missing Japanese UI target"; Skill = $canonicalSkill.Replace("Japanese web UI", "web content"); Checklist = $canonicalChecklist; ExpectedFailure = "description" },
+        @{ Label = "missing generation exclusion"; Skill = $canonicalSkill.Replace("not a generation guide", "review helper"); Checklist = $canonicalChecklist; ExpectedFailure = "description" },
+        @{ Label = "missing visual design exclusion"; Skill = $canonicalSkill.Replace("generating visual design from scratch", "generating examples"); Checklist = $canonicalChecklist; ExpectedFailure = "description" },
+        @{ Label = "missing design system exclusion"; Skill = $canonicalSkill.Replace("building a design system", "building a sample"); Checklist = $canonicalChecklist; ExpectedFailure = "description" },
+        @{ Label = "missing conformance exclusion"; Skill = $canonicalSkill.Replace("WCAG/JIS conformance certification", "a report"); Checklist = $canonicalChecklist; ExpectedFailure = "description" },
+        @{ Label = "reversed exclusion polarity"; Skill = $canonicalSkill.Replace("Do not use this for", "Use this for"); Checklist = $canonicalChecklist; ExpectedFailure = "description" },
+        @{ Label = "missing axis"; Skill = $canonicalSkill.Replace("## 7. Stop Conditions", "### 7. Stop Conditions"); Checklist = $canonicalChecklist; ExpectedFailure = "axis" },
+        @{ Label = "renamed axis"; Skill = $canonicalSkill.Replace("## 3. Japanese Form Input", "## 3. Form Input"); Checklist = $canonicalChecklist; ExpectedFailure = "axis" },
+        @{ Label = "reordered axes"; Skill = $reorderedSkill; Checklist = $canonicalChecklist; ExpectedFailure = "axis" },
+        @{ Label = "extra axis"; Skill = "$canonicalSkill`n`n## 8. Extra Axis`n`n- Extra."; Checklist = $canonicalChecklist; ExpectedFailure = "axis" },
+        @{ Label = "checklist drift"; Skill = $canonicalSkill; Checklist = $canonicalChecklist.Replace("## 4. Accessibility Essentials", "## 4. Accessibility"); ExpectedFailure = "axis" },
+        @{ Label = "paired axis drift"; Skill = $canonicalSkill.Replace("## 6. Honest Reporting", "## 6. Reporting"); Checklist = $canonicalChecklist.Replace("## 6. Honest Reporting", "## 6. Reporting"); ExpectedFailure = "axis" },
+        @{ Label = "fenced axis decoy ignored"; Skill = "$canonicalSkill`n`n${fence}markdown`n## 8. Decoy`n${fence}"; Checklist = $canonicalChecklist; ExpectedFailure = $null },
+        @{ Label = "comment axis decoy ignored"; Skill = "$canonicalSkill`n`n<!--`n## 8. Decoy`n-->"; Checklist = $canonicalChecklist; ExpectedFailure = $null },
+        @{ Label = "invalid backtick fence cannot hide skill axis"; Skill = "$canonicalSkill`n`n$invalidBacktickFence`n## 8. Extra Axis`n${fence}"; Checklist = $canonicalChecklist; ExpectedFailure = "axis" },
+        @{ Label = "same-line processing block cannot hide skill axis"; Skill = "$canonicalSkill`n`n$sameLineProcessingBlock`n## 8. Extra Axis"; Checklist = $canonicalChecklist; ExpectedFailure = "axis" },
+        @{ Label = "same-line raw block cannot hide skill axis"; Skill = "$canonicalSkill`n`n$sameLineRawBlock`n## 8. Extra Axis"; Checklist = $canonicalChecklist; ExpectedFailure = "axis" },
+        @{ Label = "type seven tag in paragraph cannot hide skill axis"; Skill = "$canonicalSkill`n`n$typeSevenInsideParagraph`n## 8. Extra Axis"; Checklist = $canonicalChecklist; ExpectedFailure = "axis" },
+        @{ Label = "block comment closing suffix ignored for skill"; Skill = "$canonicalSkill`n`n$blockCommentWithClosingSuffix"; Checklist = $canonicalChecklist; ExpectedFailure = $null },
+        @{ Label = "multiline inline comment cannot synthesize skill axis"; Skill = $canonicalSkill.Replace("## 1. UI Language", $multilineInlineCommentAxis); Checklist = $canonicalChecklist; ExpectedFailure = "axis" },
+        @{ Label = "checklist fenced decoy ignored"; Skill = $canonicalSkill; Checklist = "$canonicalChecklist`n`n${fence}markdown`n## 8. Decoy`n${fence}"; ExpectedFailure = $null },
+        @{ Label = "checklist comment decoy ignored"; Skill = $canonicalSkill; Checklist = "$canonicalChecklist`n`n<!--`n## 8. Decoy`n-->"; ExpectedFailure = $null },
+        @{ Label = "invalid backtick fence cannot hide checklist axis"; Skill = $canonicalSkill; Checklist = "$canonicalChecklist`n`n$invalidBacktickFence`n## 8. Extra Axis`n${fence}"; ExpectedFailure = "axis" },
+        @{ Label = "same-line processing block cannot hide checklist axis"; Skill = $canonicalSkill; Checklist = "$canonicalChecklist`n`n$sameLineProcessingBlock`n## 8. Extra Axis"; ExpectedFailure = "axis" },
+        @{ Label = "same-line raw block cannot hide checklist axis"; Skill = $canonicalSkill; Checklist = "$canonicalChecklist`n`n$sameLineRawBlock`n## 8. Extra Axis"; ExpectedFailure = "axis" },
+        @{ Label = "type seven tag in paragraph cannot hide checklist axis"; Skill = $canonicalSkill; Checklist = "$canonicalChecklist`n`n$typeSevenInsideParagraph`n## 8. Extra Axis"; ExpectedFailure = "axis" },
+        @{ Label = "block comment closing suffix ignored for checklist"; Skill = $canonicalSkill; Checklist = "$canonicalChecklist`n`n$blockCommentWithClosingSuffix"; ExpectedFailure = $null },
+        @{ Label = "multiline inline comment cannot synthesize checklist axis"; Skill = $canonicalSkill; Checklist = $canonicalChecklist.Replace("## 1. UI Language", $multilineInlineCommentAxis); ExpectedFailure = "axis" }
+    )
+
+    foreach ($case in $cases) {
+        $caseFailures = @(Get-SkillContractFailures $case.Skill $case.Checklist)
+        if ($null -eq $case.ExpectedFailure) {
+            if ($caseFailures.Count -ne 0) {
+                Add-Failure "Internal SKILL contract case '$($case.Label)' failed unexpectedly."
+            }
+            continue
+        }
+        if ($caseFailures.Count -eq 0 -or
+            -not ($caseFailures | Where-Object { $_.Contains($case.ExpectedFailure) })) {
+            Add-Failure "Internal SKILL contract case '$($case.Label)' did not fail closed."
+        }
+    }
+}
+
+function Assert-SkillContract {
+    $skillFile = Get-RepoFile "SKILL.md"
+    $checklistFile = Get-RepoFile "references/checklist.md"
+    foreach ($requiredFile in @($skillFile, $checklistFile)) {
+        if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
+            Add-Failure "Cannot compare missing SKILL contract file."
+            return
+        }
+    }
+
+    $skillContent = Get-Content -LiteralPath $skillFile -Raw -Encoding UTF8
+    $checklistContent = Get-Content -LiteralPath $checklistFile -Raw -Encoding UTF8
+    @(Get-SkillContractFailures $skillContent $checklistContent) | ForEach-Object { Add-Failure $_ }
 }
 
 function Get-LeadingIndentColumns {
@@ -2177,6 +2470,8 @@ Assert-Contains "README.md" "## Updating an Existing Install" "existing install 
 Assert-Contains "README.md" "Compare-Object" "installed skill comparison guidance"
 Assert-Contains "README.md" "Copy-Item" "installed skill update command"
 Assert-NotContains "README.md" "license draft|before public release" "stale draft-release language"
+Assert-SkillContractParser
+Assert-SkillContract
 Assert-ChecklistAxisParser
 Assert-ChecklistItemParser
 Assert-UnsupportedChecklistParser
