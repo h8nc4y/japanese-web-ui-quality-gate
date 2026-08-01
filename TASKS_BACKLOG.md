@@ -5,7 +5,7 @@
 ## 運用時に再実測する現況と記録済み証跡
 
 - default branch の SHA、open issue / open PR、CI、tag、GitHub Release は変動するため、固定のスナップショットを正本にしない。`CODEX_START_HERE.md` の読み順に従い、各セッションの着手時に Git / GitHub を再実測する。
-- doing の正本は下の「未完了タスク」。T041 の実装、独立review修正、両PowerShell hostのfull check:all、security scanを終え、統合を引き継いでいる。
+- doing の正本は下の「未完了タスク」。T041 は統合とcleanupまで完了し、現在のdoingは0件。
 - T037 のローカル check:all 履歴として、2026-07-30 に PowerShell 7 / Windows PowerShell 5.1 の6コマンドがすべて exit 0だった結果を保持する。次の変更では現在の working tree に対して改めて実行する。
 - T037 時点でコード内 TODO / FIXME・失敗中の検証は記録されていない。現況は着手時に再確認する。
 
@@ -13,11 +13,7 @@
 
 ### doing
 
-- **T041 / Class M：`SKILL.md` の構造drift検出**
-  - 目的：中核成果物のfrontmatter（`name` / `description`）と番号付き7軸を、`references/checklist.md` と順序込みで照合し、存在確認だけでは見逃すdriftをfail closedに検出する。
-  - 受け入れ条件：frontmatterの欠落・破損・重複、名称違い、pass/fail用途または主要除外条件の欠落、軸の欠落・追加・改名・順序変更を拒否する。fence / comment内のdecoyは数えない。LF / CRLFとPowerShell 7 / Windows PowerShell 5.1で同じ判定にする。
-  - 現況：実装と文書同期を完了。初期stubでは負例15件がRED。実装直後は24件、trigger・必須field・両文書同時改名追加後は28件が両hostでpass。独立reviewで検出した除外極性反転と不正backtick fenceによる軸隠蔽2経路は、追加3負例のRED後に修正。続くreviewで検出した同一行終端raw HTMLによる軸隠蔽は4負例のRED後に修正し、Type 7 paragraph中断誤判定とblock comment終端suffixの偽axis算入も4負例のRED後に修正した。最後に複数行inline commentの終端suffixでcanonical H2を合成できる経路を2負例のRED後に固定sentinelへ倒した。comment以外のraw HTMLも部分解釈せずfail closedにする。最終41件とproduction文書、両hostのfull check:all 6コマンドがpass。Gitleaksはworktreeと報告上66 commitsで0件、Semgrepは82 rules / 29 filesで0 findings。
-  - 統合前の未確認：commit、push、PR、CI、merge、cleanup。
+- 該当なし。
 
 ### ゲート①承認待ち
 
@@ -58,6 +54,7 @@
 | T038 | v0.2.0 の GitHub Release 本文案へ T032–T037 の実装済み変更を同期。リリース最終化手順とゲート①承認依頼は変えず、tag と GitHub Release は作成していない | 2026-07-30 / PR #53 / merge `4f227ef` |
 | T039 | `HANDOFF.md` / `TASKS_BACKLOG.md` から volatile な current SHA・最新task・GitHub現況の固定値を除き、着手時のlive実測を正本とする契約へ変更。T037のローカル検証を履歴証跡として保持し、T038の実質内容を台帳へ記録 | 2026-07-30 |
 | T040 | `AGENTS.md` §3 / §5 の時点依存snapshotをremote配線・worktree / stash・local / remote branch / tag・GitHubのlive実測契約へ変更。public-readinessはvisible §3で時点依存断定を拒否しdecoyを識別する17件と、§5のH2境界を固定する5件を追加。changelog / v0.2.0本文案も同期し、release / tag / workflow / permission は変更なし | 2026-08-01 |
+| T041 | `SKILL.md` のfrontmatterと番号付き7軸を `references/checklist.md` と順序込みで照合。fence／comment／raw HTMLによる軸隠蔽・偽axis算入を負例で固定し、未証明構造をfail closedに拒否 | 2026-08-01 / PR #56 / merge `6545419` |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
@@ -66,6 +63,8 @@
 | T041 TDD RED | frontmatter、description、axis同期の負例15件を先行追加し、最小stubに対して期待どおり15件fail |
 | T041 public-readiness / final | 実装直後24件、追加後28件は両hostでpass。独立reviewの極性/fence 3負例、raw HTML終端4負例、Type 7/block-comment終端4負例、multiline inline comment 2負例は各修正前にRED。修正後の最終41件とproduction文書は両hostでpassし、full check:all 6コマンドもpass |
 | T041 security scan | Gitleaks worktree / 報告上66 commitsは0件。Semgrep 82 rules / 29 filesは0 findings |
+| T041 PR #56 / `main` Validation | feature commit `6159992`のPR run `30685669592`、merge `6545419`のmain run `30685691011` ともにsuccess。各check runのannotationは0件 |
+| T041 feature cleanup | feature branchはlocal / remoteともに不存在、feature worktreeも不存在。2026-08-01の現行mainで両PowerShell hostのcheck:all 6コマンドを再実測し、すべてexit 0 |
 | T037 TDD RED | v7.0.1 exact contractを先行させ、旧v4.4.0 workflowがPowerShell 7 / Windows PowerShell 5.1で各1件failすることを確認 |
 | T037 focused GREEN | v7.0.1 workflow、mutable v7、旧v4.4.0 pin、誤SHA、comment欠落を含むtable-driven 48件が両PowerShell hostでpass、failure 0 |
 | T037 PowerShell 7 / Windows PowerShell 5.1 check:all | 2026-07-30 pass（6コマンドすべて exit 0） |
