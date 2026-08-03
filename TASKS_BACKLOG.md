@@ -5,7 +5,7 @@
 ## 運用時に再実測する現況と記録済み証跡
 
 - default branch の SHA、open issue / open PR、CI、tag、GitHub Release は変動するため、固定のスナップショットを正本にしない。`CODEX_START_HERE.md` の読み順に従い、各セッションの着手時に Git / GitHub を再実測する。
-- doing の正本は下の「未完了タスク」。T042 はPR #58で完了し、現在のdoingは0件。
+- doing の正本は下の「未完了タスク」。現在は T043 の scanner index / working-tree 整合性修正を実施中。
 - T037 のローカル check:all 履歴として、2026-07-30 に PowerShell 7 / Windows PowerShell 5.1 の6コマンドがすべて exit 0だった結果を保持する。次の変更では現在の working tree に対して改めて実行する。
 - T037 時点でコード内 TODO / FIXME・失敗中の検証は記録されていない。現況は着手時に再確認する。
 
@@ -13,7 +13,10 @@
 
 ### doing
 
-- 該当なし。
+- T043（Class M）: private-marker scanner が git-tracked mode で working tree だけを読み、stage 済み index blob の marker を見落とし得る経路を塞ぐ。
+  - 影響: `git add` 後に working tree だけを無害化しても、公開対象の index 内容を未検査のまま成功扱いしない。通常の tracked working-tree 検査と missing-target fail closed は維持する。
+  - 受け入れ条件: 合成 git fixture で staged / working-tree divergence を変更前 RED として固定し、index blob と working tree の両方を検査する。conflict、intent-to-add、symlink / gitlink 等の未証明 index entry は固定・redacted message で fail closed にする。PowerShell 7 / Windows PowerShell 5.1 の check:all、独立 security review、staged security scan を通す。
+  - 非対象: release / tag / workflow / permission、実 secret / 実データ、OAuth、deploy。
 
 ### ゲート①承認待ち
 

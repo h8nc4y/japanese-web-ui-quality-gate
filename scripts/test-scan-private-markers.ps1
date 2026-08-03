@@ -84,6 +84,20 @@ function Assert-OutputNotContains {
     }
 }
 
+function Assert-OutputMatchCount {
+    param(
+        [object]$Result,
+        [string]$Pattern,
+        [int]$Expected,
+        [string]$Description
+    )
+
+    $actual = [regex]::Matches($Result.Output, $Pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
+    if ($actual -ne $Expected) {
+        Add-Failure "$Description expected $Expected matches, got $actual. Output: $($Result.Output)"
+    }
+}
+
 function New-TestDirectory {
     New-Item -ItemType Directory -Force -Path $scratchRoot | Out-Null
     $directory = Join-Path $scratchRoot ([guid]::NewGuid().ToString("N"))
@@ -403,6 +417,45 @@ if ($gitCommand) {
             Assert-ExitCode -Result $trackedResult -Expected 1 -Description "git-tracked scan detects tracked private marker"
             Assert-OutputContains -Result $trackedResult -Pattern "OpenAI-style token" -Description "git-tracked scan detects tracked private marker"
 
+            # Keep the marker in the index, but overwrite only the working-tree copy with
+            # benign text. A pre-publish scan must still inspect the staged blob instead of
+            # trusting the newer working-tree bytes.
+            Set-Content -LiteralPath (Join-Path $gitFixtureRoot "untracked.md") -Value "benign working-tree text" -Encoding UTF8
+            $divergedResult = Invoke-Scanner -ScanPath $gitFixtureRoot
+            Assert-ExitCode -Result $divergedResult -Expected 1 -Description "git-tracked scan detects marker retained only in the index"
+            Assert-OutputContains -Result $divergedResult -Pattern "OpenAI-style token" -Description "git-tracked index scan reports the marker type"
+            Assert-OutputNotContains -Result $divergedResult -Pattern ([regex]::Escape($secretValue)) -Description "git-tracked index scan redacts the marker value"
+            Assert-OutputNotContains -Result $divergedResult -Pattern ([regex]::Escape($gitFixtureRoot)) -Description "git-tracked index scan does not expose the fixture root"
+
+            # Preserve the complementary boundary: an unstaged marker in an already tracked
+            # worktree file remains in scope even when the staged blob is benign.
+            Set-Content -LiteralPath (Join-Path $gitFixtureRoot "untracked.md") -Value "benign staged text" -Encoding UTF8
+            & git -C $gitFixtureRoot add untracked.md 2>&1 | Out-Null
+            $stageBenignExitCode = $LASTEXITCODE
+            Set-Content -LiteralPath (Join-Path $gitFixtureRoot "untracked.md") -Value ("Token: " + $secretValue) -Encoding UTF8
+            if ($stageBenignExitCode -ne 0) {
+                Add-Failure "git-tracked fixture could not stage benign content; worktree-only marker detection was not verified"
+            }
+            else {
+                $worktreeOnlyResult = Invoke-Scanner -ScanPath $gitFixtureRoot
+                Assert-ExitCode -Result $worktreeOnlyResult -Expected 1 -Description "git-tracked scan detects marker retained only in the worktree"
+                Assert-OutputContains -Result $worktreeOnlyResult -Pattern "OpenAI-style token" -Description "git-tracked worktree scan reports the marker type"
+                Assert-OutputNotContains -Result $worktreeOnlyResult -Pattern ([regex]::Escape($secretValue)) -Description "git-tracked worktree scan redacts the marker value"
+            }
+
+            # Identical staged/worktree bytes are scanned once so the same finding is not
+            # duplicated merely because two publication views exist.
+            & git -C $gitFixtureRoot add untracked.md 2>&1 | Out-Null
+            $stageMarkerExitCode = $LASTEXITCODE
+            if ($stageMarkerExitCode -ne 0) {
+                Add-Failure "git-tracked fixture could not restage the marker; duplicate suppression was not verified"
+            }
+            else {
+                $sameViewResult = Invoke-Scanner -ScanPath $gitFixtureRoot
+                Assert-ExitCode -Result $sameViewResult -Expected 1 -Description "git-tracked identical index and worktree marker"
+                Assert-OutputMatchCount -Result $sameViewResult -Pattern "OpenAI-style token" -Expected 1 -Description "git-tracked identical views report one marker row"
+            }
+
             # Keep the index entry but remove only the working-tree file. The scanner must
             # not silently turn an uninspected tracked target into a successful empty scan.
             Remove-Item -LiteralPath (Join-Path $gitFixtureRoot "untracked.md") -Force
@@ -418,6 +471,154 @@ if ($gitCommand) {
 }
 else {
     Write-Host "git not available; skipping git-tracked enumeration test (未確認)."
+}
+
+# --- Intent-to-add entries have no complete staged content and must fail closed. ---
+if ($gitCommand) {
+    $intentFixtureRoot = Join-Path $scratchRoot ("git-intent-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Force -Path $intentFixtureRoot | Out-Null
+    try {
+        & git -C $intentFixtureRoot init -q 2>&1 | Out-Null
+        Set-Content -LiteralPath (Join-Path $intentFixtureRoot "intent.md") -Value "benign intent fixture" -Encoding UTF8
+        & git -C $intentFixtureRoot add -N -- intent.md 2>&1 | Out-Null
+        $intentAddExitCode = $LASTEXITCODE
+        if ($intentAddExitCode -ne 0) {
+            Add-Failure "intent-to-add fixture setup failed; fail-closed behavior was not verified"
+        }
+        else {
+            $intentResult = Invoke-Scanner -ScanPath $intentFixtureRoot
+            Assert-ExitCode -Result $intentResult -Expected 1 -Description "intent-to-add git index entry"
+            Assert-OutputContains -Result $intentResult -Pattern "Intent-to-add git index entry; scan aborted" -Description "intent-to-add git index entry"
+            Assert-OutputNotContains -Result $intentResult -Pattern "intent\.md" -Description "intent-to-add diagnostic redacts the path"
+        }
+    }
+    finally {
+        Remove-TestDirectory -Directory $intentFixtureRoot
+    }
+}
+
+# --- Symlink/gitlink and other non-regular index modes are not safe text targets. ---
+if ($gitCommand) {
+    $modeFixtureRoot = Join-Path $scratchRoot ("git-mode-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Force -Path $modeFixtureRoot | Out-Null
+    try {
+        & git -C $modeFixtureRoot init -q 2>&1 | Out-Null
+        Set-Content -LiteralPath (Join-Path $modeFixtureRoot "blob-source.txt") -Value "benign blob" -Encoding UTF8
+        $blobId = ((& git -C $modeFixtureRoot hash-object -w -- blob-source.txt 2>$null) | Select-Object -First 1)
+        $hashExitCode = $LASTEXITCODE
+        if ($hashExitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace($blobId)) {
+            $cacheInfo = "120000,$($blobId.Trim()),unsafe-link"
+            & git -C $modeFixtureRoot update-index --add --cacheinfo $cacheInfo 2>&1 | Out-Null
+        }
+        $modeSetupExitCode = $LASTEXITCODE
+        if ($hashExitCode -ne 0 -or $modeSetupExitCode -ne 0) {
+            Add-Failure "unsupported-mode fixture setup failed; fail-closed behavior was not verified"
+        }
+        else {
+            $modeResult = Invoke-Scanner -ScanPath $modeFixtureRoot
+            Assert-ExitCode -Result $modeResult -Expected 1 -Description "unsupported git index mode"
+            Assert-OutputContains -Result $modeResult -Pattern "Unsupported git index entry; scan aborted" -Description "unsupported git index mode"
+            Assert-OutputNotContains -Result $modeResult -Pattern "unsafe-link" -Description "unsupported-mode diagnostic redacts the path"
+        }
+    }
+    finally {
+        Remove-TestDirectory -Directory $modeFixtureRoot
+    }
+}
+
+# --- A dirty worktree file can change bytes without changing its porcelain XY status. ---
+if ($gitCommand) {
+    $raceFixtureRoot = Join-Path $scratchRoot ("git-race-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Force -Path $raceFixtureRoot | Out-Null
+    $raceTargetPath = Join-Path $raceFixtureRoot "race.md"
+    try {
+        & git -C $raceFixtureRoot init -q 2>&1 | Out-Null
+        Set-Content -LiteralPath $raceTargetPath -Value "benign staged race fixture" -Encoding UTF8
+        & git -C $raceFixtureRoot add -- race.md 2>&1 | Out-Null
+        $raceAddExitCode = $LASTEXITCODE
+        Set-Content -LiteralPath $raceTargetPath -Value "different benign worktree fixture" -Encoding UTF8
+
+        # Instrument only a scratch copy: mutate the already-dirty file after its first read,
+        # immediately before production revalidation. The public scanner API remains unchanged.
+        $instrumentedScannerPath = Join-Path $raceFixtureRoot "instrumented-scanner.ps1"
+        $scannerSource = [System.IO.File]::ReadAllText($scannerPath, [System.Text.Encoding]::UTF8)
+        $raceHookAnchor = "# A success result is valid only for the index/status snapshot that was actually scanned."
+        $raceHook = @(
+            '$raceFixtureValue = ("s" + "k-" + "worktreeRaceMarker1234567890")',
+            '$raceFixtureEncoding = [System.Text.UTF8Encoding]::new($false)',
+            '[System.IO.File]::WriteAllText((Join-Path $rootPath "race.md"), ("Token: " + $raceFixtureValue), $raceFixtureEncoding)'
+        ) -join [System.Environment]::NewLine
+        $instrumentedSource = $scannerSource.Replace($raceHookAnchor, ($raceHook + [System.Environment]::NewLine + $raceHookAnchor))
+        [System.IO.File]::WriteAllText($instrumentedScannerPath, $instrumentedSource, [System.Text.UTF8Encoding]::new($false))
+
+        if ($raceAddExitCode -ne 0 -or $instrumentedSource -eq $scannerSource) {
+            Add-Failure "worktree-race fixture setup failed; final byte revalidation was not verified"
+        }
+        else {
+            $raceResult = Invoke-Scanner -ScanPath $raceFixtureRoot -ScannerScriptPath $instrumentedScannerPath
+            Assert-ExitCode -Result $raceResult -Expected 1 -Description "tracked worktree bytes change during inspection"
+            Assert-OutputContains -Result $raceResult -Pattern "A tracked working-tree target changed during inspection; scan aborted" -Description "tracked worktree bytes change during inspection"
+            Assert-OutputNotContains -Result $raceResult -Pattern "worktreeRaceMarker1234567890" -Description "worktree-race diagnostic redacts the marker value"
+            Assert-OutputNotContains -Result $raceResult -Pattern "race\.md" -Description "worktree-race diagnostic redacts the path"
+        }
+    }
+    finally {
+        # Remove even the synthetic marker before cleanup so a cleanup warning cannot leave a
+        # secret-shaped fixture behind in the ignored scratch directory.
+        if (Test-Path -LiteralPath $raceTargetPath -PathType Leaf) {
+            Set-Content -LiteralPath $raceTargetPath -Value "benign cleanup content" -Encoding UTF8
+        }
+        Remove-TestDirectory -Directory $raceFixtureRoot
+    }
+}
+
+# --- The index can change while exact worktree bytes are being revalidated. ---
+if ($gitCommand) {
+    $indexRaceFixtureRoot = Join-Path $scratchRoot ("git-index-race-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Force -Path $indexRaceFixtureRoot | Out-Null
+    $indexRaceTargetPath = Join-Path $indexRaceFixtureRoot "race.md"
+    try {
+        & git -C $indexRaceFixtureRoot init -q 2>&1 | Out-Null
+        Set-Content -LiteralPath $indexRaceTargetPath -Value "benign index-race fixture" -Encoding UTF8
+        & git -C $indexRaceFixtureRoot add -- race.md 2>&1 | Out-Null
+        $indexRaceAddExitCode = $LASTEXITCODE
+
+        # Inject an index-only mutation immediately after production worktree revalidation,
+        # then restore the worktree bytes so only the final Git snapshot can detect it.
+        $indexRaceScannerPath = Join-Path $indexRaceFixtureRoot "instrumented-index-scanner.ps1"
+        $indexRaceScannerSource = [System.IO.File]::ReadAllText($scannerPath, [System.Text.Encoding]::UTF8)
+        $indexRaceHookAnchor = "# Recheck Git after the worktree pass as well. This catches an index-only update that"
+        $indexRaceHook = @(
+            '$indexRaceTarget = Join-Path $rootPath "race.md"',
+            '$indexRaceOriginal = [System.IO.File]::ReadAllBytes($indexRaceTarget)',
+            '$indexRaceValue = ("s" + "k-" + "indexRaceMarker1234567890")',
+            '$indexRaceEncoding = [System.Text.UTF8Encoding]::new($false)',
+            '[System.IO.File]::WriteAllText($indexRaceTarget, ("Token: " + $indexRaceValue), $indexRaceEncoding)',
+            '& git -C $rootPath add -- race.md 2>$null | Out-Null',
+            '[System.IO.File]::WriteAllBytes($indexRaceTarget, $indexRaceOriginal)'
+        ) -join [System.Environment]::NewLine
+        $instrumentedIndexSource = $indexRaceScannerSource.Replace($indexRaceHookAnchor, ($indexRaceHook + [System.Environment]::NewLine + $indexRaceHookAnchor))
+        [System.IO.File]::WriteAllText($indexRaceScannerPath, $instrumentedIndexSource, [System.Text.UTF8Encoding]::new($false))
+
+        if ($indexRaceAddExitCode -ne 0 -or $instrumentedIndexSource -eq $indexRaceScannerSource) {
+            Add-Failure "index-race fixture setup failed; post-worktree Git revalidation was not verified"
+        }
+        else {
+            $indexRaceResult = Invoke-Scanner -ScanPath $indexRaceFixtureRoot -ScannerScriptPath $indexRaceScannerPath
+            Assert-ExitCode -Result $indexRaceResult -Expected 1 -Description "git index changes after worktree revalidation"
+            Assert-OutputContains -Result $indexRaceResult -Pattern "Git scan state changed during inspection; scan aborted" -Description "git index changes after worktree revalidation"
+            Assert-OutputNotContains -Result $indexRaceResult -Pattern "indexRaceMarker1234567890" -Description "index-race diagnostic redacts the marker value"
+            Assert-OutputNotContains -Result $indexRaceResult -Pattern "race\.md" -Description "index-race diagnostic redacts the path"
+        }
+    }
+    finally {
+        # Restore benign index/worktree state before bounded scratch cleanup.
+        if (Test-Path -LiteralPath $indexRaceTargetPath -PathType Leaf) {
+            Set-Content -LiteralPath $indexRaceTargetPath -Value "benign cleanup content" -Encoding UTF8
+            & git -C $indexRaceFixtureRoot add -- race.md 2>&1 | Out-Null
+        }
+        Remove-TestDirectory -Directory $indexRaceFixtureRoot
+    }
 }
 
 # --- A tracked-file enumeration failure must not become a successful zero-file scan. ---
