@@ -5,18 +5,15 @@
 ## 運用時に再実測する現況と記録済み証跡
 
 - default branch の SHA、open issue / open PR、CI、tag、GitHub Release は変動するため、固定のスナップショットを正本にしない。`CODEX_START_HERE.md` の読み順に従い、各セッションの着手時に Git / GitHub を再実測する。
-- doing の正本は下の「未完了タスク」。現在は T043 の scanner index / working-tree 整合性修正を実施中。
-- T037 のローカル check:all 履歴として、2026-07-30 に PowerShell 7 / Windows PowerShell 5.1 の6コマンドがすべて exit 0だった結果を保持する。次の変更では現在の working tree に対して改めて実行する。
+- doing の正本は下の「未完了タスク」。T043 はPR #59で完了し、現在のdoingは0件。
+- T043 のローカル check:all 履歴として、2026-08-03 に PowerShell 7 / Windows PowerShell 5.1 の6コマンドがすべて exit 0だった結果を保持する。次の変更では現在の working tree に対して改めて実行する。
 - T037 時点でコード内 TODO / FIXME・失敗中の検証は記録されていない。現況は着手時に再確認する。
 
 ## 未完了タスク
 
 ### doing
 
-- T043（Class M）: private-marker scanner が git-tracked mode で working tree だけを読み、stage 済み index blob の marker を見落とし得る経路を塞ぐ。
-  - 影響: `git add` 後に working tree だけを無害化しても、公開対象の index 内容を未検査のまま成功扱いしない。通常の tracked working-tree 検査と missing-target fail closed は維持する。
-  - 受け入れ条件: 合成 git fixture で staged / working-tree divergence を変更前 RED として固定し、index blob と working tree の両方を検査する。conflict、intent-to-add、symlink / gitlink 等の未証明 index entry は固定・redacted message で fail closed にする。PowerShell 7 / Windows PowerShell 5.1 の check:all、独立 security review、staged security scan を通す。
-  - 非対象: release / tag / workflow / permission、実 secret / 実データ、OAuth、deploy。
+- 該当なし。
 
 ### ゲート①承認待ち
 
@@ -59,11 +56,17 @@
 | T040 | `AGENTS.md` §3 / §5 の時点依存snapshotをremote配線・worktree / stash・local / remote branch / tag・GitHubのlive実測契約へ変更。public-readinessはvisible §3で時点依存断定を拒否しdecoyを識別する17件と、§5のH2境界を固定する5件を追加。changelog / v0.2.0本文案も同期し、release / tag / workflow / permission は変更なし | 2026-08-01 |
 | T041 | `SKILL.md` のfrontmatterと番号付き7軸を `references/checklist.md` と順序込みで照合。fence／comment／raw HTMLによる軸隠蔽・偽axis算入を負例で固定し、未証明構造をfail closedに拒否 | 2026-08-01 / PR #56 / merge `6545419` |
 | T042 | T041で追加したfrontmatter canonical contractと番号付き7軸の順序照合をv0.2.0 GitHub Release本文案へ同期。最終化手順・ゲート①承認依頼・tag・Release・workflow・permissionは変更なし | 2026-08-02 / PR #58 |
+| T043 | private-marker scannerをstage済みindex blob＋tracked working-tree bytesの両view検査へ変更。NUL-safe raw Git解析、未証明entryのfail closed、exact bytesとGit snapshotのrace再検証を追加 | 2026-08-03 / PR #59 / merge `e4106f8` |
 
 ## 検証ログ（直近のみ・過去分は git 履歴を参照）
 
 | コマンド | 結果 |
 | --- | --- |
+| T043 TDD / race fixtures / review | staged marker＋clean working treeが変更前にexit 0となる2 assertion REDを確認。index-only / worktree-only / 同一view / intent-to-add / symlink mode / worktree race / index raceを両hostでGREEN。独立review 2系統のworktree/index TOCTOU指摘を修正し、最終P0–P3 CLEAR |
+| T043 PowerShell 7 / Windows PowerShell 5.1 check:all | 変更前baselineと最終差分で6コマンドすべてexit 0。public-readiness、scanner回帰、tracked private-marker scanが両hostでpass |
+| T043 diff / security | `git diff --check` / `git diff --cached --check` pass。Gitleaks 8.30.1 staged 34.22 KBは0 leaks、Semgrep 1.165.0は82 rules / 29 filesで0 findings、global pre-commit Gitleaks pass |
+| T043 PR #59 / `main` Validation | feature commit `8e58b33`のPR run `30809598740`、merge `e4106f8`のmain run `30809711691` ともにsuccess。各check runのannotation 0 |
+| T043 feature cleanup | `fix/scan-staged-index-content` はlocal / remoteともに不存在。追加worktreeなし。release / tag / workflow / permissionは変更していない |
 | T042 PowerShell 7 / Windows PowerShell 5.1 check:all | 変更前baselineと変更後に6コマンドを実行し、すべてexit 0。public-readiness、scanner回帰、tracked private-marker scanが両hostでpass |
 | T042 diff / pre-commit security | `git diff --check` / `git diff --cached --check` pass。global pre-commit Gitleaks pass、Semgrepは対象ファイルなしでskip |
 | T041 TDD RED | frontmatter、description、axis同期の負例15件を先行追加し、最小stubに対して期待どおり15件fail |
