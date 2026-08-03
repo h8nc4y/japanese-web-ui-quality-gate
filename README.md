@@ -153,6 +153,8 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/scan-private-markers.ps1
 
 The scan allows this repository's own GitHub URLs by default. Add only intentional public repositories with `-AllowedGitHubRepositories` when needed.
 
+In the default git-tracked mode, the scanner reads both staged index blobs and the current copies of tracked working-tree files, then revalidates the exact working-tree bytes between two final Git index/status checks before reporting success. It fails closed when Git cannot provide a stable NUL-delimited index/status snapshot, a tracked target is missing, unsafe, or changes during inspection, an index entry is unmerged, intent-to-add, symlink/gitlink, or otherwise non-regular, or a text-like target cannot be read as UTF-8. This is bounded optimistic drift detection, not a cross-process filesystem lock; serialize staging/commit operations with the scan. Untracked files stay outside this publication-scope scan; use `-NoGit` only when an explicit filesystem walk is required.
+
 On Windows PowerShell:
 
 ```powershell

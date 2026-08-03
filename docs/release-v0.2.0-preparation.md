@@ -30,7 +30,7 @@
 
 ### 検証と公開安全
 
-- private-marker scanner は git-tracked file を既定の対象にし、`git ls-files` が失敗した場合や、列挙された tracked target が working tree から欠落している場合は、未検査の対象を成功扱いせず fail closed に停止します。行番号、binary-like file の除外、主要な credential marker の検出も追加しました。
+- private-marker scanner は git-tracked file を既定の対象にし、stage 済み index blob と現在の tracked working-tree bytes の両方を検査し、green の直前に2回の Git index/status 照合で path safety と exact working-tree bytes の再検証を挟みます。NUL 区切りの Git 出力を raw bytes で扱い、列挙・text-like blob 読み取り・UTF-8 decode の失敗、欠落・unsafe path・同時変更、unmerged / intent-to-add / symlink / gitlink 等の未証明 index entry、検査中の index/status drift は、未検査の対象を成功扱いせず redacted message で fail closed に停止します。これは cross-process lock ではなく bounded optimistic drift detection です。行番号、binary-like file の除外、主要な credential marker の検出も維持します。
 - scanner の回帰 harness は現在の PowerShell 実行ファイルを再利用し、Windows PowerShell 5.1 検証が内部で PowerShell 7 に委譲されないようにしました。
 - scanner の filesystem fallback、UTF-8 読み取り、重複報告、失敗時の終了処理を修正しました。
 - scanner 自身の blanket self-exemption を廃止し、scanner source に marker 候補が混入した場合も、ほかの公開対象と同じく fail closed に検出します。
